@@ -1,10 +1,13 @@
 import React from 'react'
 import {
   Authenticator, AmplifyProvider,
-  View, Heading, Text, Button
+  View, Heading, Button
 } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
+import 'draft-js/dist/Draft.css';
+import { Proposition } from './Proposition'
 import { theme } from './theme'
+
 
 function App() {
   return (
@@ -13,8 +16,8 @@ function App() {
         {({signOut, user}) => (
           <View>
             <Heading level={3}>Hello, {user.username} ({user.attributes.email})!</Heading>
-            <Text>{JSON.stringify(user.attributes)}</Text>
             <Button onClick={signOut}>Sign out</Button>
+            <Proposition/>
           </View>
         )}
       </Authenticator>
