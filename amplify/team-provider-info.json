@@ -10,6 +10,11 @@
       "StackName": "amplify-roxana-dev-201624",
       "StackId": "arn:aws:cloudformation:us-west-2:390364897292:stack/amplify-roxana-dev-201624/11ac31e0-7b3a-11ec-87ac-023e412ae7f7",
       "AmplifyAppId": "d2if2i59kqjcj1"
+    },
+    "categories": {
+      "auth": {
+        "roxana31481408": {}
+      }
     }
   }
 }
