@@ -9,9 +9,9 @@ export const store = configureStore({
   }
 })
 
-const { addedOne } = propositionsSlice.actions
-store.dispatch(addedOne('Foo'))
-store.dispatch(addedOne('Bar'))
+const { addProposition } = propositionsSlice.actions
+store.dispatch(addProposition('Foo'))
+store.dispatch(addProposition('Bar'))
 
 // propositionsAdapter.addOne({position: 1, content: 'Foo'})
 // propositionsAdapter.addOne({position: 2, content: 'Bar'})
