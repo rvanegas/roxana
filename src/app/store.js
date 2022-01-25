@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import counterReducer from '../features/counter/counterSlice'
-import propositionsReducer, { propositionsSlice } from '../features/discussion/propositionsSlice'
+import propositionsReducer from '../features/discussion/propositionsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -8,10 +8,6 @@ export const store = configureStore({
     propositions: propositionsReducer,
   }
 })
-
-const { addProposition } = propositionsSlice.actions
-store.dispatch(addProposition('Foo'))
-store.dispatch(addProposition('Bar'))
 
 // propositionsAdapter.addOne({position: 1, content: 'Foo'})
 // propositionsAdapter.addOne({position: 2, content: 'Bar'})

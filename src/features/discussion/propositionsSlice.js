@@ -18,20 +18,24 @@ import { createSlice, nanoid } from '@reduxjs/toolkit'
 //   sortComparer: (a, b) => a.index < b.index
 // })
 
+function newProposition(index) {
+  return {id: nanoid(), index, content: ''}
+}
+
 export const propositionsSlice = createSlice({
   name: 'propositions',
   // initialState: propositionsAdapter.getInitialState(),
-  initialState: [],
+  initialState: [newProposition(0)],
   reducers: {
-    addProposition(state, action) {
-      // payload = content
-      state.push({id: nanoid(), index: state.length, content: action.payload})
-    },
     updateProposition(state, action) {
-      // payload = {id, content}
+      // payload: {id, content}
       const proposition = state.find(proposition => action.payload.id === proposition.id)
       Object.assign(proposition, action.payload)
+      if (Boolean(state[state.length - 1].content)) {
+        state.push(newProposition(state.length))
+      }
     }
+
 
     // increment: (state) => {
     //   // Redux Toolkit allows us to write "mutating" logic in reducers. It
@@ -80,6 +84,6 @@ export const propositionsSlice = createSlice({
 // }
 
 export const selectPropositions = state => state.propositions
-export const { addProposition, updateProposition } = propositionsSlice.actions
+export const { updateProposition } = propositionsSlice.actions
 
 export default propositionsSlice.reducer
