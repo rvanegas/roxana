@@ -24,9 +24,11 @@ export const propositionsSlice = createSlice({
   initialState: [],
   reducers: {
     addProposition(state, action) {
+      // payload = content
       state.push({id: nanoid(), position: state.length, content: action.payload})
     },
     updateProposition(state, action) {
+      // payload = {id, content}
       const proposition = state.find(proposition => action.payload.id === proposition.id)
       Object.assign(proposition, action.payload)
     }
