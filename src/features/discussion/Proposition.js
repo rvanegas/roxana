@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { View, Button, Divider } from '@aws-amplify/ui-react'
+import { View, Divider } from '@aws-amplify/ui-react'
 import { Editor, EditorState, ContentState } from 'draft-js';
 import { updateProposition } from './propositionsSlice'
 
@@ -9,34 +9,22 @@ export function Proposition(props) {
     const contentState = ContentState.createFromText(props.proposition.content)
     return EditorState.createWithContent(contentState)
   }
-  function plainText() {
-    return editorState.getCurrentContent().getPlainText()
-  }
-  function reset() {
-    setEditorState(EditorState.createWithContent(editorState.getCurrentContent()))
-  }
-  function handleUpdate() {
+  function handleBlur() {
     const id = props.proposition.id
-    const content = plainText()
+    const content = editorState.getCurrentContent().getPlainText()
     dispatch(updateProposition({id, content}))
   }
 
   const [editorState, setEditorState] = useState(initEditorState)
-  const [readOnly, setReadOnly] = useState(false)
   const dispatch = useDispatch()
 
   return (
     <View>
-      <Button onClick={() => setReadOnly(!readOnly)}>edit</Button>
-      <Button onClick={() => console.log(plainText())}>text</Button>
-      <Button onClick={() => reset()}>reset</Button>
-      <Button onClick={() => handleUpdate()}>dispatch</Button>
+      <Editor editorState={editorState} onChange={setEditorState}
+        onBlur={handleBlur} readOnly={props.readOnly}
+      />
       <Divider/>
-      [{readOnly ? '1' : '0'}]
-      <Divider/>
-      <Editor editorState={editorState} onChange={setEditorState} readOnly={readOnly} />
-      <Divider/>
-      {JSON.stringify(editorState)}
+      {JSON.stringify(editorState).length}
       <Divider/>
     </View>
   )
