@@ -15,7 +15,7 @@ import { createSlice, nanoid } from '@reduxjs/toolkit'
 // );
 
 // const propositionsAdapter = createEntityAdapter({
-//   sortComparer: (a, b) => a.position < b.position
+//   sortComparer: (a, b) => a.index < b.index
 // })
 
 export const propositionsSlice = createSlice({
@@ -25,7 +25,7 @@ export const propositionsSlice = createSlice({
   reducers: {
     addProposition(state, action) {
       // payload = content
-      state.push({id: nanoid(), position: state.length, content: action.payload})
+      state.push({id: nanoid(), index: state.length, content: action.payload})
     },
     updateProposition(state, action) {
       // payload = {id, content}

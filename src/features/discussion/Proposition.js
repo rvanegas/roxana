@@ -20,7 +20,7 @@ export function Proposition({proposition, readOnly}) {
 
   return (
     <View>
-      {proposition.position}
+      {proposition.index}
       <Editor editorState={editorState} onChange={setEditorState}
         onBlur={handleBlur} readOnly={readOnly}
       />
