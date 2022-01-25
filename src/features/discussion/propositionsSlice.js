@@ -1,4 +1,4 @@
-import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
+import { createSlice, nanoid } from '@reduxjs/toolkit'
 
 // // The function below is called a thunk and allows us to perform async logic. It
 // // can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
@@ -14,15 +14,18 @@ import { createSlice, createEntityAdapter } from '@reduxjs/toolkit'
 //   }
 // );
 
-const propositionsAdapter = createEntityAdapter({
-  sortComparer: (a, b) => a.position < b.position
-})
+// const propositionsAdapter = createEntityAdapter({
+//   sortComparer: (a, b) => a.position < b.position
+// })
 
 export const propositionsSlice = createSlice({
   name: 'propositions',
-  initialState: propositionsAdapter.getInitialState(),
+  // initialState: propositionsAdapter.getInitialState(),
+  initialState: [],
   reducers: {
-    addedOne: propositionsAdapter.addOne,
+    addedOne: (state, action) => {
+      state.push({id: nanoid(), position: state.length, content: action.payload})
+    }
 
     // increment: (state) => {
     //   // Redux Toolkit allows us to write "mutating" logic in reducers. It
@@ -70,4 +73,6 @@ export const propositionsSlice = createSlice({
 //   }
 // }
 
-// export default counterSlice.reducer
+export const selectPropositions = state => state.propositions
+
+export default propositionsSlice.reducer
