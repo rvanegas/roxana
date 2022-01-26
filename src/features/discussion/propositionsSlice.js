@@ -1,7 +1,9 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit'
 
 function newProposition(index) {
-  return {id: nanoid(), index, content: ''}
+  const proposition = {id: nanoid(), index, content: ''}
+  if (index === 0) proposition.autoFocus = true
+  return proposition
 }
 
 export const propositionsSlice = createSlice({
