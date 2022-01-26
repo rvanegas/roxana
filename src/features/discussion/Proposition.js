@@ -1,10 +1,32 @@
-import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { View, Divider } from '@aws-amplify/ui-react'
-import { Editor, EditorState, ContentState } from 'draft-js';
-import { updateProposition } from './propositionsSlice'
+import React, {useState, useEffect} from 'react'
+import {useDispatch} from 'react-redux'
+import {View, Divider} from '@aws-amplify/ui-react'
+import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
+import {updateProposition} from './propositionsSlice'
 
 export function Proposition({proposition, readOnly}) {
+  const dispatch = useDispatch()
+  const editorRef = React.createRef()
+  const [editorState, setEditorState] = useState(initEditorState)
+
+  function myKeyBindingFn(e) {
+    const defaultKeyBinding = getDefaultKeyBinding(e)
+    console.log('k', e.keyCode, defaultKeyBinding)
+    if (e.keyCode === 13) {
+      return 'next-line'
+    }
+    return defaultKeyBinding
+  }
+  function handleKeyCommand(command) {
+    if (command === 'next-line') {
+      console.log('blur')
+      editorRef.current.blur()
+      dispatch(updateProposition({index: proposition.index+1, autoFocus: true}))
+      return 'handled'
+    } else {
+      return 'not-handled'
+    }
+  }
   function initEditorState() {
     const contentState = ContentState.createFromText(proposition.content)
     return EditorState.createWithContent(contentState)
@@ -14,15 +36,19 @@ export function Proposition({proposition, readOnly}) {
     const content = editorState.getCurrentContent().getPlainText()
     dispatch(updateProposition({id, content}))
   }
-
-  const [editorState, setEditorState] = useState(initEditorState)
-  const dispatch = useDispatch()
+  useEffect(() => {
+    if (proposition.autoFocus) {
+      console.log('useEffect')
+      editorRef.current.focus()
+      dispatch(updateProposition({index: proposition.index, autoFocus: undefined}))
+    }
+  })
 
   return (
     <View>
-      {proposition.index}
       <Editor editorState={editorState} onChange={setEditorState}
-        onBlur={handleBlur} readOnly={readOnly}
+        keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
+        onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
       />
       <Divider/>
     </View>
