@@ -9,24 +9,6 @@ export function Proposition({proposition, readOnly}) {
   const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
 
-  function myKeyBindingFn(e) {
-    const defaultKeyBinding = getDefaultKeyBinding(e)
-    console.log('k', e.keyCode, defaultKeyBinding)
-    if (e.keyCode === 13) {
-      return 'next-line'
-    }
-    return defaultKeyBinding
-  }
-  function handleKeyCommand(command) {
-    if (command === 'next-line') {
-      console.log('blur')
-      editorRef.current.blur()
-      dispatch(updateProposition({index: proposition.index+1, autoFocus: true}))
-      return 'handled'
-    } else {
-      return 'not-handled'
-    }
-  }
   function initEditorState() {
     const contentState = ContentState.createFromText(proposition.content)
     return EditorState.createWithContent(contentState)
@@ -36,11 +18,24 @@ export function Proposition({proposition, readOnly}) {
     const content = editorState.getCurrentContent().getPlainText()
     dispatch(updateProposition({id, content}))
   }
+  function myKeyBindingFn(e) {
+    if (e.keyCode === 13) {
+      return 'next-line'
+    }
+    return getDefaultKeyBinding(e)
+  }
+  function handleKeyCommand(command) {
+    if (command === 'next-line') {
+      editorRef.current.blur()
+      dispatch(updateProposition({index: proposition.index+1, autoFocus: true}))
+      return 'handled'
+    }
+    return 'not-handled'
+  }
   useEffect(() => {
     if (proposition.autoFocus) {
-      console.log('useEffect')
       editorRef.current.focus()
-      dispatch(updateProposition({index: proposition.index, autoFocus: undefined}))
+      dispatch(updateProposition({index: proposition.index, autoFocus: false}))
     }
   })
 
