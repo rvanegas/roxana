@@ -25,5 +25,4 @@ export const propositionsSlice = createSlice({
 
 export const selectPropositions = state => state.propositions
 export const {updateProposition} = propositionsSlice.actions
-
 export default propositionsSlice.reducer
