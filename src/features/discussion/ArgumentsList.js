@@ -32,7 +32,7 @@ export function ArgumentsList() {
     )
     return (
       <React.Fragment key={argument.id}>
-        <View columnSpan={3}><TextField direction="row" alignItems="baseline" label={argument.index} columnSpan={3} placeholder="12 : 24"/></View>
+        <View columnSpan={3}><TextField direction="row" alignItems="baseline" label={argument.index} columnSpan={3} value="12 : 24"/></View>
         {premiseElements}
         {conclusionElement}
       </React.Fragment>
