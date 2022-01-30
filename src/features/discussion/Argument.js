@@ -1,12 +1,27 @@
 import React, {useState} from 'react'
 import {useSelector} from 'react-redux'
-import {View, TextField} from '@aws-amplify/ui-react'
+import {Divider, View} from '@aws-amplify/ui-react'
+import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {selectPropositions} from './propositionsSlice'
 
-export function Argument({argument}) {
+export function Argument({argument, readOnly}) {
   const [argumentCode, setArgumentCode] = useState('')
   const propositions = useSelector(selectPropositions)
   const propositionById = id => propositions.find(proposition => proposition.id === id)
+
+  const editorRef = React.createRef()
+  const [editorState, setEditorState] = useState(initEditorState)
+
+  function initEditorState() {
+    const contentState = ContentState.createFromText(argumentCode)
+    return EditorState.createWithContent(contentState)
+  }
+  function handleBlur() {
+    const id = argument.id
+    const content = editorState.getCurrentContent().getPlainText()
+    console.log('blur', {id, content})
+    // dispatch(updateProposition({id, content}))
+  }
 
   const premiseElements = argument.premiseIds.map(premiseId => {
     const premise = propositionById(premiseId)
@@ -27,12 +42,15 @@ export function Argument({argument}) {
   )
   return (
     <React.Fragment key={argument.id}>
-      <View columnStart={2} columnEnd={-1}>
-        <TextField
-          direction="row" alignItems="baseline"
-          label={argument.index} value={argumentCode}
-          onChange={(e) => setArgumentCode(e.target.value)}
+      <View columnStart={2}>
+        {argument.index}
+      </View>
+      <View>
+        <Editor editorState={editorState} onChange={setEditorState}
+          // keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
+          onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
         />
+        <Divider/>
       </View>
       {premiseElements}
       {conclusionElement}

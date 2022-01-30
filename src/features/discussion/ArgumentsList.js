@@ -13,7 +13,7 @@ export function ArgumentsList() {
   }
 
   const argumentElements = arguments_.map(argument => (
-    <Argument key={argument.id} argument={argument} />
+    <Argument key={argument.id} argument={argument} readOnly={readOnly} />
   ))
 
   return (
