@@ -1,4 +1,4 @@
-import { createSlice, nanoid } from '@reduxjs/toolkit'
+import {createSlice, nanoid} from '@reduxjs/toolkit'
 
 function newProposition(index) {
   const proposition = {id: nanoid(), index, content: ''}
