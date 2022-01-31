@@ -1,18 +1,20 @@
 import React, {useState} from 'react'
-import {useSelector} from 'react-redux'
+import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View} from '@aws-amplify/ui-react'
-import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
+import {Editor, EditorState, ContentState} from 'draft-js'
 import {selectPropositions} from './propositionsSlice'
+import {updateArgument} from './argumentsSlice'
 
 export function Argument({argument, readOnly}) {
   const propositions = useSelector(selectPropositions)
-  const propositionById = id => propositions.find(proposition => proposition.id === id)
-  const propositionByIndex = index => propositions.find(proposition => proposition.index === index)
-
-  const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
   const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.propositionIds)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
+  const dispatch = useDispatch()
+  const editorRef = React.createRef()
+
+  const propositionById = id => propositions.find(proposition => proposition.id === id)
+  const propositionByIndex = index => propositions.find(proposition => proposition.index === index)
 
   function initEditorState() {
     const argumentPropositions = argument.propositionIds
@@ -58,14 +60,8 @@ export function Argument({argument, readOnly}) {
 
   function handleBlur() {
     const id = argument.id
-    const foo = initEditorState()
-    console.log('blur', {
-      id,
-      value: editorState.getCurrentContent().getPlainText(),
-      foo: foo.getCurrentContent().getPlainText()
-    })
-    setEditorState(foo)
-    // dispatch(updateProposition({id, content}))
+    const propositionIds = displayPropositionIds
+    dispatch(updateArgument({id, propositionIds}))
   }
 
   function handleChange(value) {
@@ -73,11 +69,6 @@ export function Argument({argument, readOnly}) {
     parseArgumentCode(content)
     setEditorState(value)
   }
-
-  console.log('d', displayPropositionIds)
-  const numPremises = displayPropositionIds.length
-
-
 
   const conclusion = propositionById(displayPropositionIds[displayPropositionIds.length - 1])
   const conclusionElement = !Boolean(conclusion) ? null : (
@@ -109,7 +100,7 @@ export function Argument({argument, readOnly}) {
           // keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
           onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
         />
-        <Divider style={{borderColor: argumentCodeInvalid ? 'red' : 'black'}}/>
+        <Divider style={argumentCodeInvalid ? {borderColor: 'red'} : null}/>
       </View>
       {premiseElements}
       {conclusionElement}
