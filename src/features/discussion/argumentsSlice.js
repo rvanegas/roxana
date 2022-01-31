@@ -1,7 +1,7 @@
 import {createSlice, nanoid} from '@reduxjs/toolkit'
 
 function newArgument(index) {
-  return {id: nanoid(), index, content: ''}
+  return {id: nanoid(), index, premiseIds: [], conclusionId: null}
 }
 
 export const argumentsSlice = createSlice({

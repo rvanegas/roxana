@@ -25,28 +25,21 @@ export function Argument({argument, readOnly}) {
   }
 
   function parseArgumentCode(argumentCode) {
-    // console.log('ac', argumentCode)
     const invalidPattern = /[^\d\s,:]/
     const separatorPattern = /[\s,:]+/
 
     if (invalidPattern.test(argumentCode)) {
-      // console.log('invalid', argumentCode)
       setArgumentCodeInvalid(true)
       return
     }
-
     const displayPropositionIndexes = argumentCode.split(separatorPattern)
       .map(index => parseInt(index)).filter(Number.isInteger)
-    // console.log('indexes', displayPropositionIndexes)
-
     if (displayPropositionIndexes.length !== (new Set(displayPropositionIndexes)).size) {
       setArgumentCodeInvalid(true)
       return
     }
-
     const displayPropositions = displayPropositionIndexes.map(propositionByIndex)
     if (displayPropositions.indexOf(undefined) !== -1) {
-      // console.log('d', displayPropositions)
       setArgumentCodeInvalid(true)
       return
     }
@@ -58,18 +51,21 @@ export function Argument({argument, readOnly}) {
 
   function handleBlur() {
     const id = argument.id
-    const content = editorState.getCurrentContent().getPlainText()
-    console.log('blur', {id, content})
+    const foo = initEditorState()
+    console.log('blur', {
+      id,
+      value: editorState.getCurrentContent().getPlainText(),
+      foo: foo.getCurrentContent().getPlainText()
+    })
+    setEditorState(foo)
     // dispatch(updateProposition({id, content}))
   }
 
   function handleChange(value) {
     const content = value.getCurrentContent().getPlainText()
-    console.log('change')
     parseArgumentCode(content)
     setEditorState(value)
   }
-
 
   const premiseElements = displayPremiseIds.map(premiseId => {
     const premise = propositionById(premiseId)
@@ -80,6 +76,7 @@ export function Argument({argument, readOnly}) {
       </React.Fragment>
     )
   })
+
   const conclusion = propositionById(displayConclusionId)
   const conclusionElement = (
     <React.Fragment key={conclusion.id}>
@@ -88,6 +85,7 @@ export function Argument({argument, readOnly}) {
       <View>{conclusion.content}</View>
     </React.Fragment>
   )
+
   return (
     <React.Fragment key={argument.id}>
       <View columnStart={2}>
