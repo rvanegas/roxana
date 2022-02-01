@@ -7,7 +7,7 @@ import {updateArgument} from './argumentsSlice'
 
 export function Argument({argument, readOnly}) {
   const propositions = useSelector(selectPropositions)
-  const [editorState, setEditorState] = useState(initEditorState)
+  const [editorState, setEditorState] = useState(initialEditorState)
   const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.propositionIds)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
   const dispatch = useDispatch()
@@ -16,7 +16,7 @@ export function Argument({argument, readOnly}) {
   const propositionById = id => propositions.find(proposition => proposition.id === id)
   const propositionByIndex = index => propositions.find(proposition => proposition.index === index)
 
-  function initEditorState() {
+  function buildArgumentCode() {
     const argumentPropositions = argument.propositionIds
       .map(propositionId => propositionById(propositionId))
     let argumentCode = ''
@@ -29,10 +29,15 @@ export function Argument({argument, readOnly}) {
         .map(proposition => proposition.index).join(' ')
       argumentCode = `${premiseIndexes} ${argumentCode}`
     }
-    const contentState = ContentState.createFromText(argumentCode)
+    return argumentCode
+  }
+
+  function initialEditorState() {
+    const contentState = ContentState.createFromText(buildArgumentCode())
     return EditorState.createWithContent(contentState)
   }
 
+  // parse, validate, and display propositions
   function parseArgumentCode(argumentCode) {
     const invalidPattern = /[^\d\s:]/
     const separatorPattern = /[\s:]+/
@@ -65,9 +70,18 @@ export function Argument({argument, readOnly}) {
   }
 
   function handleChange(value) {
-    const content = value.getCurrentContent().getPlainText()
-    parseArgumentCode(content)
+    const argumentCode = value.getCurrentContent().getPlainText()
+    parseArgumentCode(argumentCode)
     setEditorState(value)
+  }
+
+  // set canonical argumentCode
+  if (!editorState.getSelection().getHasFocus()) {
+    const argumentCode = buildArgumentCode()
+    if (editorState.getCurrentContent().getPlainText() !== argumentCode) {
+      const contentState = ContentState.createFromText(argumentCode)
+      setEditorState(EditorState.createWithContent(contentState))
+    }
   }
 
   const conclusion = propositionById(displayPropositionIds[displayPropositionIds.length - 1])
