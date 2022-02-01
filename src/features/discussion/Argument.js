@@ -73,9 +73,9 @@ export function Argument({argument, readOnly}) {
   const conclusion = propositionById(displayPropositionIds[displayPropositionIds.length - 1])
   const conclusionElement = !Boolean(conclusion) ? null : (
     <React.Fragment key={conclusion.id}>
-      <View style={{justifySelf: 'end'}}>:.</View>
+      <View columnStart={1} style={{justifySelf: 'end'}}>:.</View>
       <View>{conclusion.index}</View>
-      <View>{conclusion.content}</View>
+      <View columnEnd={-2}>{conclusion.content}</View>
     </React.Fragment>
   )
 
@@ -85,7 +85,7 @@ export function Argument({argument, readOnly}) {
     return (
       <React.Fragment key={premise.id}>
         <View columnStart={2}>{premise.index}</View>
-        <View>{premise.content}</View>
+        <View columnEnd={-2}>{premise.content}</View>
       </React.Fragment>
     )
   })
