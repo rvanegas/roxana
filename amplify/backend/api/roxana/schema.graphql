@@ -23,5 +23,6 @@ type Comment @model {
 
 type Proposition @model {
   id: ID!
+  index: Int!
   content: String!
 }
