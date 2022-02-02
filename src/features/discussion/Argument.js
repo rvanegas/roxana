@@ -10,6 +10,10 @@ export function Argument({argument, readOnly}) {
   const [editorState, setEditorState] = useState(initialEditorState)
   const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.propositionIds)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
+  const [placeholder, setPlaceholder] = useState(
+    argument.index === 'A' ?
+    'Type a sequence of proposition numbers. For example, "0 :1".' : null
+  )
   const dispatch = useDispatch()
   const editorRef = React.createRef()
 
@@ -64,6 +68,9 @@ export function Argument({argument, readOnly}) {
   }
 
   function handleBlur() {
+    if (placeholder) {
+      setPlaceholder(null)
+    }
     const id = argument.id
     const propositionIds = displayPropositionIds
     dispatch(updateArgument({id, propositionIds}))
@@ -81,6 +88,7 @@ export function Argument({argument, readOnly}) {
     if (editorState.getCurrentContent().getPlainText() !== argumentCode) {
       const contentState = ContentState.createFromText(argumentCode)
       setEditorState(EditorState.createWithContent(contentState))
+      setArgumentCodeInvalid(false)
     }
   }
 
@@ -113,6 +121,7 @@ export function Argument({argument, readOnly}) {
         <Editor editorState={editorState} onChange={handleChange}
           // keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
           onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
+          placeholder={placeholder}
         />
         <Divider style={argumentCodeInvalid ? {borderColor: 'red'} : null}/>
       </View>
