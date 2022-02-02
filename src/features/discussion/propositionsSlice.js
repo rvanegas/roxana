@@ -1,5 +1,5 @@
 import {API, graphqlOperation} from 'aws-amplify'
-import {createSlice, nanoid} from '@reduxjs/toolkit'
+import {createSlice, createAsyncThunk, nanoid} from '@reduxjs/toolkit'
 // import {createProposition} from './graphql/mutations'
 import {listPropositions} from '../../graphql/queries'
 
@@ -9,32 +9,54 @@ function newProposition(index) {
   return proposition
 }
 
+const initialState = {
+  items: [],
+  status: 'idle',
+  error: null
+}
+
 export const propositionsSlice = createSlice({
   name: 'propositions',
-  initialState: [newProposition(0)],
+  initialState: initialState,
   reducers: {
     updateProposition(state, action) {
-      const proposition = state.find(proposition => action.payload.id === proposition.id)
+      const proposition = state.items.find(proposition => action.payload.id === proposition.id)
       Object.assign(proposition, action.payload)
       if (proposition.autoFocus === false) delete proposition.autoFocus
     },
     focusOnProposition(state, action) {
       const newIndex = action.payload
-      let proposition = state.find(proposition => newIndex === proposition.index)
+      let proposition = state.items.find(proposition => newIndex === proposition.index)
       if (!proposition) {
-        proposition = newProposition(state.length)
-        state.push(proposition)
+        proposition = newProposition(state.items.length)
+        state.items.push(proposition)
       }
       proposition.autoFocus = true
     }
+  },
+  extraReducers(builder) {
+    builder
+      .addCase(fetchPropositions.pending, (state, action) => {
+        state.status = 'loading'
+      })
+      .addCase(fetchPropositions.fulfilled, (state, action) => {
+        state.status = 'succeeded'
+        state.items = state.items.concat(action.payload.listPropositions.items)
+      })
+      .addCase(fetchPropositions.rejected, (state, action) => {
+        state.status = 'failed'
+        state.error = action.error.message
+      })
   }
 })
 
-export async function loadPropositions() {
-  const result = await API.graphql(graphqlOperation(listPropositions))
-  console.log(result)
+export async function syncFetchPropositions() {
+  const response = await API.graphql(graphqlOperation(listPropositions))
+  return response.data
 }
 
-export const selectPropositions = state => state.propositions
+export const fetchPropositions = createAsyncThunk('propositions/fetchPropositions', syncFetchPropositions)
+
+export const selectPropositions = state => state.propositions.items
 export const {updateProposition, focusOnProposition} = propositionsSlice.actions
 export default propositionsSlice.reducer
