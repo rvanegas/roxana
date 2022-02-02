@@ -4,33 +4,27 @@ function newArgument(index) {
   return {id: nanoid(), index, propositionIds: []}
 }
 
-function toAlphaIndex(numberIndex) {
-  const base = 'A'.charCodeAt()
-  const divisor = 'Z'.charCodeAt() - base + 1
-  let alphas = []
-  while (numberIndex >= 0) {
-    const remainder = numberIndex % divisor
-    alphas.unshift(String.fromCharCode(remainder + base))
-    numberIndex = (numberIndex - remainder) / divisor - 1
-  }
-  return alphas.join('')
-}
-
 export const argumentsSlice = createSlice({
   name: 'arguments',
-  initialState: [newArgument(toAlphaIndex(0))],
+  initialState: [newArgument(0)],
   reducers: {
     updateArgument(state, action) {
-      // payload: {id, content}
       const argument = state.find(argument => action.payload.id === argument.id)
       Object.assign(argument, action.payload)
-      if (state[state.length - 1].propositionIds.length > 0) {
-        state.push(newArgument(toAlphaIndex(state.length)))
+      if (argument.autoFocus === false) delete argument.autoFocus
+    },
+    focusOnArgument(state, action) {
+      const newIndex = action.payload
+      let argument = state.find(argument => newIndex === argument.index)
+      if (!argument) {
+        argument = newArgument(state.length)
+        state.push(argument)
       }
+      argument.autoFocus = true
     }
   }
 })
 
 export const selectArguments = state => state.arguments
-export const {updateArgument} = argumentsSlice.actions
+export const {updateArgument, focusOnArgument} = argumentsSlice.actions
 export default argumentsSlice.reducer

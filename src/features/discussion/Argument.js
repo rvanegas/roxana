@@ -1,9 +1,21 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View} from '@aws-amplify/ui-react'
-import {Editor, EditorState, ContentState} from 'draft-js'
+import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {selectPropositions} from './propositionsSlice'
-import {updateArgument} from './argumentsSlice'
+import {updateArgument, focusOnArgument} from './argumentsSlice'
+
+function toAlphaIndex(numberIndex) {
+  const base = 'A'.charCodeAt()
+  const divisor = 'Z'.charCodeAt() - base + 1
+  let alphas = []
+  while (numberIndex >= 0) {
+    const remainder = numberIndex % divisor
+    alphas.unshift(String.fromCharCode(remainder + base))
+    numberIndex = (numberIndex - remainder) / divisor - 1
+  }
+  return alphas.join('')
+}
 
 export function Argument({argument, readOnly}) {
   const propositions = useSelector(selectPropositions)
@@ -11,7 +23,7 @@ export function Argument({argument, readOnly}) {
   const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.propositionIds)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
   const [placeholder, setPlaceholder] = useState(
-    argument.index === 'A' ?
+    argument.index === 0 ?
     'Type a sequence of proposition numbers. For example, "0 :1".' : null
   )
   const dispatch = useDispatch()
@@ -75,12 +87,31 @@ export function Argument({argument, readOnly}) {
     const propositionIds = displayPropositionIds
     dispatch(updateArgument({id, propositionIds}))
   }
-
   function handleChange(value) {
     const argumentCode = value.getCurrentContent().getPlainText()
     parseArgumentCode(argumentCode)
     setEditorState(value)
   }
+  function myKeyBindingFn(e) {
+    if (e.keyCode === 13) {
+      return 'next-line'
+    }
+    return getDefaultKeyBinding(e)
+  }
+  function handleKeyCommand(command) {
+    if (command === 'next-line') {
+      editorRef.current.blur()
+      dispatch(focusOnArgument(argument.index+1))
+      return 'handled'
+    }
+    return 'not-handled'
+  }
+  useEffect(() => {
+    if (argument.autoFocus) {
+      editorRef.current.focus()
+      dispatch(updateArgument({id: argument.id, autoFocus: false}))
+    }
+  })
 
   // set canonical argumentCode
   if (!editorState.getSelection().getHasFocus()) {
@@ -115,11 +146,11 @@ export function Argument({argument, readOnly}) {
   return (
     <React.Fragment key={argument.id}>
       <View columnStart={2}>
-        {argument.index}
+        {toAlphaIndex(argument.index)}
       </View>
       <View>
         <Editor editorState={editorState} onChange={handleChange}
-          // keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
+          keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
           onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
           placeholder={placeholder}
         />
