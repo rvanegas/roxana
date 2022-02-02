@@ -80,12 +80,12 @@ export function Argument({argument, readOnly}) {
   }
 
   function handleBlur() {
-    if (placeholder) {
-      setPlaceholder(null)
-    }
     const id = argument.id
     const propositionIds = displayPropositionIds
     dispatch(updateArgument({id, propositionIds}))
+    if (placeholder && propositionIds.length !== 0) {
+      setPlaceholder(null)
+    }
   }
   function handleChange(value) {
     const argumentCode = value.getCurrentContent().getPlainText()
@@ -158,6 +158,7 @@ export function Argument({argument, readOnly}) {
       </View>
       {premiseElements}
       {conclusionElement}
+      <View style={{paddingBottom: '20px'}} columnSpan={4} />
     </React.Fragment>
   )
 }

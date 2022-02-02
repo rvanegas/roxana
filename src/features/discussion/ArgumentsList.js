@@ -18,7 +18,7 @@ export function ArgumentsList() {
 
   return (
     <React.Fragment key="arguments">
-      <Heading columnStart="1" columnEnd="-1">
+      <Heading style={{paddingTop: '20px'}} columnStart="1" columnEnd="-1">
         Arguments
       </Heading>
       {argumentElements}

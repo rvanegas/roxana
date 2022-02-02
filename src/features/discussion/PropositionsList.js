@@ -21,7 +21,7 @@ export function PropositionsList() {
 
   return (
     <React.Fragment key="propositions">
-      <Heading columnStart="1" columnEnd="-1">
+      <Heading style={{paddingTop: '20px'}} columnStart="1" columnEnd="-1">
         Propositions
       </Heading>
       {propositionEntities}
