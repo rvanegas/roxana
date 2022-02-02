@@ -266,6 +266,7 @@ export const createProposition = /* GraphQL */ `
   ) {
     createProposition(input: $input, condition: $condition) {
       id
+      index
       content
       createdAt
       updatedAt
@@ -279,6 +280,7 @@ export const updateProposition = /* GraphQL */ `
   ) {
     updateProposition(input: $input, condition: $condition) {
       id
+      index
       content
       createdAt
       updatedAt
@@ -292,6 +294,7 @@ export const deleteProposition = /* GraphQL */ `
   ) {
     deleteProposition(input: $input, condition: $condition) {
       id
+      index
       content
       createdAt
       updatedAt
