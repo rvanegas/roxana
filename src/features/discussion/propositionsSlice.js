@@ -1,6 +1,5 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, createAsyncThunk, nanoid} from '@reduxjs/toolkit'
-// import {createProposition} from './graphql/mutations'
 import {listPropositions} from '../../graphql/queries'
 
 function newProposition(index) {
@@ -50,12 +49,12 @@ export const propositionsSlice = createSlice({
   }
 })
 
-export async function syncFetchPropositions() {
-  const response = await API.graphql(graphqlOperation(listPropositions))
-  return response.data
-}
-
-export const fetchPropositions = createAsyncThunk('propositions/fetchPropositions', syncFetchPropositions)
+export const fetchPropositions = createAsyncThunk(
+  'propositions/fetchPropositions', async () => {
+    const response = await API.graphql(graphqlOperation(listPropositions))
+    return response.data
+  }
+)
 
 export const selectPropositions = state => state.propositions.items
 export const {updateProposition, focusOnProposition} = propositionsSlice.actions
