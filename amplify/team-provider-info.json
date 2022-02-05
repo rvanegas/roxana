@@ -20,6 +20,12 @@
           "appId": "d2if2i59kqjcj1",
           "type": "manual"
         }
+      },
+      "function": {
+        "roxtest1": {
+          "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
+          "s3Key": "amplify-builds/roxtest1-6c4c462f52732f44306a-build.zip"
+        }
       }
     }
   }

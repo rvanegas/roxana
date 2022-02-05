@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
-import {selectPropositions, fetchPropositions} from './propositionsSlice'
+import {selectPropositions, fetchPropositions, echoTest} from './propositionsSlice'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
@@ -11,6 +11,7 @@ export function PropositionsList() {
 
   function showMe() {
     dispatch(fetchPropositions())
+    dispatch(echoTest({msg: "foo"}))
   }
 
   const propositionEntities = propositions.map(proposition => (
