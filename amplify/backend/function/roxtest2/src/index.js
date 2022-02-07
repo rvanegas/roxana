@@ -23,6 +23,21 @@ const listPropositions = gql`
   }
 `
 
+const updateProposition = gql`
+  mutation UpdateProposition(
+    $input: UpdatePropositionInput!
+    $condition: ModelPropositionConditionInput
+  ) {
+    updateProposition(input: $input, condition: $condition) {
+      id
+      index
+      content
+      createdAt
+      updatedAt
+    }
+  }
+`
+
 exports.handler = async (event) => {
   try {
     const graphqlData = await axios({
@@ -32,10 +47,16 @@ exports.handler = async (event) => {
         'x-api-key': process.env.API_ROXANA_GRAPHQLAPIKEYOUTPUT
       },
       data: {
-        query: print(listPropositions),
+        query: print(updateProposition),
+        variables: {
+          input: {
+            id: 'ad3aa273-1d9b-4a3f-b028-0b091b7d09d3',
+            content: 'new value'
+          }
+        }
       }
     });
-    return JSON.stringify(graphqlData.data.data.listPropositions)
+    return JSON.stringify(graphqlData)
   } catch (err) {
     console.log('error posting to appsync: ', err);
   }
