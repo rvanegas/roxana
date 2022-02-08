@@ -23,11 +23,12 @@ type Comment @model {
 
 type Proposition @model {
   id: ID!
-  index: Int!
-  content: String!
+  index: Int
+  content: String
 }
 
 type Query {
   echo(msg: String): String @function(name: "roxtest1-dev")
   roxtest2(msg: String): String @function(name: "roxtest2-dev")
+  roxtest4(msg: String): String @function(name: "roxtest4-dev")
 }

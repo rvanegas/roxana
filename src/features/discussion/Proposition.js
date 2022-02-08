@@ -14,7 +14,7 @@ export function Proposition({proposition, readOnly}) {
   )
 
   function initEditorState() {
-    const contentState = ContentState.createFromText(proposition.content)
+    const contentState = ContentState.createFromText(proposition.content || '')
     return EditorState.createWithContent(contentState)
   }
   function handleBlur() {

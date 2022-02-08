@@ -1,14 +1,22 @@
 import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Text, View, Heading} from '@aws-amplify/ui-react'
+import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
-import {selectPropositions, selectPropositionsStatus, fetchPropositions} from './propositionsSlice'
+import {
+  selectPropositions, selectPropositionsStatus,
+  fetchPropositions,
+  updatePropositionAction
+} from './propositionsSlice'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
   const propositions = useSelector(selectPropositions)
   const propositionsStatus = useSelector(selectPropositionsStatus)
   const [readOnly] = useState(false)
+
+  function handleButton() {
+    dispatch(updatePropositionAction())
+  }
 
   useEffect(() => {
     if (propositionsStatus === 'idle') {
@@ -30,6 +38,7 @@ export function PropositionsList() {
   return (
     <React.Fragment key="propositions">
       <Heading style={{paddingTop: '20px'}} columnStart="1" columnEnd="-1">
+        <Button onClick={handleButton}>call trigger</Button>
         <Text>Propositions</Text>
       </Heading>
       {propositionEntities}
