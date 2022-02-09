@@ -2,33 +2,14 @@
 # all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
 input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
 
-type Blog @model {
-  id: ID!
-  name: String!
-  posts: [Post] @hasMany
-}
-
-type Post @model {
-  id: ID!
-  title: String!
-  blog: Blog @belongsTo
-  comments: [Comment] @hasMany
-}
-
-type Comment @model {
-  id: ID!
-  post: Post @belongsTo
-  content: String!
-}
-
 type Proposition @model {
   id: ID!
   index: Int
   content: String
+  discussion: Discussion @belongsTo
 }
 
-type Query {
-  echo(msg: String): String @function(name: "roxtest1-dev")
-  roxtest2(msg: String): String @function(name: "roxtest2-dev")
-  roxtest4(msg: String): String @function(name: "roxtest4-dev")
+type Discussion @model {
+  id: ID!
+  propositions: [Proposition] @hasMany
 }
