@@ -8,8 +8,8 @@ import {
   selectPropositions,
   selectPropositionsStatus,
   fetchPropositions,
-  createProposition,
-  updateProposition
+  updateProposition,
+  focusOnPropositionThunk
 } from './propositionsSlice'
 
 export function PropositionsList() {
@@ -19,7 +19,7 @@ export function PropositionsList() {
   const [readOnly] = useState(false)
 
   function handleButton() {
-    dispatch(createProposition())
+    dispatch(focusOnPropositionThunk(9))
   }
 
   useEffect(() => {
