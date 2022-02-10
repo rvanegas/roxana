@@ -18,24 +18,6 @@ export type AmplifyDependentResourcesAttributes = {
         }
     },
     "function": {
-        "roxtest1": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
-        "roxtest2": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
-        "roxtest4": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
         "RoxanaTrigger": {
             "Name": "string",
             "Arn": "string",

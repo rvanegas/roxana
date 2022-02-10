@@ -5,9 +5,11 @@ import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
 import * as subscriptions from '../../graphql/subscriptions'
 import {
-  selectPropositions, selectPropositionsStatus,
+  selectPropositions,
+  selectPropositionsStatus,
   fetchPropositions,
-  createProposition, updateProposition
+  createProposition,
+  updateProposition
 } from './propositionsSlice'
 
 export function PropositionsList() {
@@ -25,20 +27,13 @@ export function PropositionsList() {
       dispatch(fetchPropositions())
     }
 
-    let subscription
-    subscription = API.graphql(graphqlOperation(subscriptions.onUpdateProposition))
-      .subscribe({
-        next: ({value}) => {
-          console.log('dispatch', value.data)
-          dispatch(updateProposition(value.data.onUpdateProposition))
-        },
-        error: error => console.warn(error)
-      })
+    const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateProposition)).subscribe({
+      next: next => dispatch(updateProposition(next.value.data.onUpdateProposition)),
+      error: error => console.warn(error)
+    })
 
     return function cleanup() {
-      if (subscription) {
-        subscription.unsubscribe()
-      }
+      subscription.unsubscribe()
     }
   }, [dispatch, propositionsStatus])
 

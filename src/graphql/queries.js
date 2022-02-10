@@ -9,6 +9,7 @@ export const getProposition = /* GraphQL */ `
       content
       discussion {
         id
+        nextPropositionIndex
         propositions {
           nextToken
         }
@@ -34,6 +35,7 @@ export const listPropositions = /* GraphQL */ `
         content
         discussion {
           id
+          nextPropositionIndex
           createdAt
           updatedAt
         }
@@ -49,6 +51,7 @@ export const getDiscussion = /* GraphQL */ `
   query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
+      nextPropositionIndex
       propositions {
         items {
           id
@@ -74,6 +77,7 @@ export const listDiscussions = /* GraphQL */ `
     listDiscussions(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        nextPropositionIndex
         propositions {
           nextToken
         }

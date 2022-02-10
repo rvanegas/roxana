@@ -46,7 +46,7 @@ export const propositionsSlice = createSlice({
       })
       .addCase(fetchPropositions.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        state.items = state.items.concat(action.payload.listPropositions.items)
+        state.items = action.payload
       })
       .addCase(fetchPropositions.rejected, (state, action) => {
         state.status = 'failed'
@@ -64,7 +64,8 @@ export const propositionsSlice = createSlice({
 export const fetchPropositions = createAsyncThunk(
   'propositions/fetchPropositions', async () => {
     const response = await API.graphql(graphqlOperation(queries.listPropositions))
-    return response.data
+    response.data.listPropositions.items.sort((a,b) => a.index - b.index)
+    return response.data.listPropositions.items
   }
 )
 
