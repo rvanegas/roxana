@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react'
 import {useDispatch} from 'react-redux'
 import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
-import {updateProposition, focusOnProposition} from './propositionsSlice'
+import {updateProposition, focusOnPropositionThunk} from './propositionsSlice'
 
 export function Proposition({proposition, readOnly}) {
   const dispatch = useDispatch()
@@ -34,7 +34,7 @@ export function Proposition({proposition, readOnly}) {
   function handleKeyCommand(command) {
     if (command === 'next-line') {
       editorRef.current.blur()
-      dispatch(focusOnProposition(proposition.index+1))
+      dispatch(focusOnPropositionThunk(proposition.index+1))
       return 'handled'
     }
     return 'not-handled'
