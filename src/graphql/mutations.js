@@ -1,78 +1,6 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const createProposition = /* GraphQL */ `
-  mutation CreateProposition(
-    $input: CreatePropositionInput!
-    $condition: ModelPropositionConditionInput
-  ) {
-    createProposition(input: $input, condition: $condition) {
-      id
-      index
-      content
-      discussion {
-        id
-        nextPropositionIndex
-        propositions {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionPropositionsId
-    }
-  }
-`;
-export const updateProposition = /* GraphQL */ `
-  mutation UpdateProposition(
-    $input: UpdatePropositionInput!
-    $condition: ModelPropositionConditionInput
-  ) {
-    updateProposition(input: $input, condition: $condition) {
-      id
-      index
-      content
-      discussion {
-        id
-        nextPropositionIndex
-        propositions {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionPropositionsId
-    }
-  }
-`;
-export const deleteProposition = /* GraphQL */ `
-  mutation DeleteProposition(
-    $input: DeletePropositionInput!
-    $condition: ModelPropositionConditionInput
-  ) {
-    deleteProposition(input: $input, condition: $condition) {
-      id
-      index
-      content
-      discussion {
-        id
-        nextPropositionIndex
-        propositions {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionPropositionsId
-    }
-  }
-`;
 export const createDiscussion = /* GraphQL */ `
   mutation CreateDiscussion(
     $input: CreateDiscussionInput!
@@ -80,11 +8,10 @@ export const createDiscussion = /* GraphQL */ `
   ) {
     createDiscussion(input: $input, condition: $condition) {
       id
-      nextPropositionIndex
+      layout
       propositions {
         items {
           id
-          index
           content
           createdAt
           updatedAt
@@ -104,11 +31,10 @@ export const updateDiscussion = /* GraphQL */ `
   ) {
     updateDiscussion(input: $input, condition: $condition) {
       id
-      nextPropositionIndex
+      layout
       propositions {
         items {
           id
-          index
           content
           createdAt
           updatedAt
@@ -128,11 +54,10 @@ export const deleteDiscussion = /* GraphQL */ `
   ) {
     deleteDiscussion(input: $input, condition: $condition) {
       id
-      nextPropositionIndex
+      layout
       propositions {
         items {
           id
-          index
           content
           createdAt
           updatedAt
@@ -142,6 +67,75 @@ export const deleteDiscussion = /* GraphQL */ `
       }
       createdAt
       updatedAt
+    }
+  }
+`;
+export const createProposition = /* GraphQL */ `
+  mutation CreateProposition(
+    $input: CreatePropositionInput!
+    $condition: ModelPropositionConditionInput
+  ) {
+    createProposition(input: $input, condition: $condition) {
+      id
+      content
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionPropositionsId
+    }
+  }
+`;
+export const updateProposition = /* GraphQL */ `
+  mutation UpdateProposition(
+    $input: UpdatePropositionInput!
+    $condition: ModelPropositionConditionInput
+  ) {
+    updateProposition(input: $input, condition: $condition) {
+      id
+      content
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionPropositionsId
+    }
+  }
+`;
+export const deleteProposition = /* GraphQL */ `
+  mutation DeleteProposition(
+    $input: DeletePropositionInput!
+    $condition: ModelPropositionConditionInput
+  ) {
+    deleteProposition(input: $input, condition: $condition) {
+      id
+      content
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionPropositionsId
     }
   }
 `;

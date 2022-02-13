@@ -1,6 +1,6 @@
 projects:
   roxana:
-    schemaPath: amplify/backend/api/roxana/build/schema.graphql
+    schemaPath: src/graphql/schema.json
     includes:
       - src/graphql/**/*.js
     excludes:

@@ -1,61 +1,14 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const getProposition = /* GraphQL */ `
-  query GetProposition($id: ID!) {
-    getProposition(id: $id) {
-      id
-      index
-      content
-      discussion {
-        id
-        nextPropositionIndex
-        propositions {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionPropositionsId
-    }
-  }
-`;
-export const listPropositions = /* GraphQL */ `
-  query ListPropositions(
-    $filter: ModelPropositionFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listPropositions(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        index
-        content
-        discussion {
-          id
-          nextPropositionIndex
-          createdAt
-          updatedAt
-        }
-        createdAt
-        updatedAt
-        discussionPropositionsId
-      }
-      nextToken
-    }
-  }
-`;
 export const getDiscussion = /* GraphQL */ `
   query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
-      nextPropositionIndex
+      layout
       propositions {
         items {
           id
-          index
           content
           createdAt
           updatedAt
@@ -77,12 +30,56 @@ export const listDiscussions = /* GraphQL */ `
     listDiscussions(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        nextPropositionIndex
+        layout
         propositions {
           nextToken
         }
         createdAt
         updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const getProposition = /* GraphQL */ `
+  query GetProposition($id: ID!) {
+    getProposition(id: $id) {
+      id
+      content
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionPropositionsId
+    }
+  }
+`;
+export const listPropositions = /* GraphQL */ `
+  query ListPropositions(
+    $filter: ModelPropositionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPropositions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        content
+        discussion {
+          id
+          layout
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+        discussionPropositionsId
       }
       nextToken
     }

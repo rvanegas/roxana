@@ -20,12 +20,6 @@
           "appId": "d2if2i59kqjcj1",
           "type": "manual"
         }
-      },
-      "function": {
-        "RoxanaTrigger": {
-          "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
-          "s3Key": "amplify-builds/RoxanaTrigger-4250393731306f633237-build.zip"
-        }
       }
     }
   }
