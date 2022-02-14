@@ -10,7 +10,8 @@ import {
 } from './propositionsSlice'
 import {
   selectDiscussion,
-  getDiscussion
+  getDiscussion,
+  getDiscussionUpdate
 } from './discussionsSlice'
 
 const discussionId = 'd172f9ff-8e5b-4229-b803-aee6dc8855a2'
@@ -39,7 +40,7 @@ export function PropositionsList() {
     const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateDiscussion)).subscribe({
       next: next => {
         console.log('next', next)
-        dispatch(getDiscussion(next.value.data.onUpdateDiscussion.id))
+        dispatch(getDiscussionUpdate(next.value.data.onUpdateDiscussion.id))
       },
       error: error => console.error(error)
     })
@@ -55,7 +56,7 @@ export function PropositionsList() {
         {proposition.index}
       </View>
       <View columnStart={3}>
-        <Proposition proposition={proposition} readOnly={readOnly} />
+        <Proposition discussionId={discussionId} proposition={proposition} readOnly={readOnly} />
       </View>
     </React.Fragment>
   ))
