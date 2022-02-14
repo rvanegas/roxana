@@ -3,15 +3,12 @@ import {createSlice, createAsyncThunk, nanoid} from '@reduxjs/toolkit'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 
-const discussionId = 'd172f9ff-8e5b-4229-b803-aee6dc8855a2'
-
 function newProposition(id, index) {
   const proposition = {
     id,
     nanoid: id,
     index,
-    content: '',
-    discussionId
+    content: ''
   }
   if (index === 0) proposition.autoFocus = true
   return proposition
@@ -117,12 +114,12 @@ export const updateDiscussion = createAsyncThunk(
   }
 )
 
-export const getDiscussion2 = /* GraphQL */ `
-  query GetDiscussion($id: ID!) {
+export const getDiscussionPaginated = /* GraphQL */ `
+  query GetDiscussion($id: ID!, $nextToken: String) {
     getDiscussion(id: $id) {
       id
       layout
-      propositions {
+      propositions(nextToken: $nextToken) {
         items {
           id
           content
@@ -138,48 +135,69 @@ export const getDiscussion2 = /* GraphQL */ `
   }
 `
 
-export const getDiscussion = createAsyncThunk(
-  'discussions/getDiscussion', async (_, {dispatch}) => {
-    console.log('getting discussion...')
-    const loadedPropositions = []
-    const propositions = []
-    let nextToken
-    let layout
-    do {
-      const response = await API.graphql(graphqlOperation(getDiscussion2, {id: discussionId}))
-      const discussion = response.data.getDiscussion
-      nextToken = discussion.propositions.nextToken
-      if (!discussion) {
-        throw 'no such discussion'
-      }
-      if (!layout) {
-        try {
-          layout = JSON.parse(discussion.layout)
-        } catch {
-          const discussion = {id: discussion.id, layout: JSON.stringify([])}
-          dispatch(updateDiscussion(discussion))
-          throw 'invalid layout'
-        }
-      }
-      console.log('layout', layout)
-      loadedPropositions.push(...discussion.propositions.items)
-    } while (nextToken)
-
-    try {
-      layout.map(async position => {
-        const proposition = loadedPropositions.find(proposition => proposition.id === position.id)
-        if (proposition) {
-          propositions.push({id: proposition.id, index: position.index, content: proposition.content})
-        } else {
-          const response = await API.graphql(graphqlOperation(queries.getProposition, {id: position.id}))
-          const proposition = response.data.getProposition
-          propositions.push({id: proposition.id, index: position.index, content: proposition.content})
-        }
-      })
-    } catch {
-      throw 'no such proposition'
+async function loadDiscussion(discussionId, resetLayout) {
+  const loadedPropositions = []
+  let nextToken
+  let layout
+  let layoutJSON
+  do {
+    const input = {id: discussionId, nextToken}
+    const response = await API.graphql(graphqlOperation(getDiscussionPaginated, input))
+    const discussion = response.data.getDiscussion
+    nextToken = discussion.propositions.nextToken
+    if (!discussion) {
+      throw new Error('no such discussion')
     }
-    return propositions
+    if (!layout) {
+      try {
+        layoutJSON = discussion.layout
+        layout = JSON.parse(layoutJSON)
+        for (let entry of layout) {
+          if (typeof entry.id !== 'string' || typeof entry.index !== 'number') {
+            throw new Error('invalid entry')
+          }
+        }
+      } catch {
+        console.log('resetLayout call', discussion.layout)
+        await resetLayout([], 'invalid layout, parse error')
+      }
+    }
+    loadedPropositions.push(...discussion.propositions.items)
+  } while (nextToken)
+  return {layoutJSON, layout, loadedPropositions}
+}
+
+async function readLayout(layout, loadedPropositions, resetLayout) {
+  const propositions = []
+  for (let entry of layout) {
+    let proposition = loadedPropositions.find(proposition => proposition.id === entry.id)
+    if (!proposition) {
+      const response = await API.graphql(graphqlOperation(queries.getProposition, {id: entry.id}))
+      proposition = response.data.getProposition
+      if (!proposition) {
+        layout = layout.filter(entryIter => entryIter !== entry)
+        await resetLayout(layout, 'invalid proposition id, fixing layout')
+      }
+    }
+    propositions.push({id: proposition.id, index: entry.index, content: proposition.content})
+  }
+  return propositions
+}
+
+export const getDiscussion = createAsyncThunk(
+  'discussions/getDiscussion', async (discussionId, {dispatch}) => {
+    async function resetLayout(layout, message) {
+      console.log('resetLayout called')
+      const discussion = {id: discussionId, layout: JSON.stringify(layout)}
+      dispatch(updateDiscussion(discussion))
+      // discussion will reload in response to update event picked up by discussion subscription
+      console.error('system error: ', message)
+      throw new Error(message)
+    }
+    console.log('getting discussion...')
+    const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, resetLayout)
+    const propositions = await readLayout(layout, loadedPropositions, resetLayout)
+    return {layoutJSON, propositions}
   }
 )
 
