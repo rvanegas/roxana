@@ -16,6 +16,16 @@ export const getDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      layoutStates {
+        items {
+          id
+          layout
+          createdAt
+          updatedAt
+          discussionLayoutStatesId
+        }
+        nextToken
+      }
       createdAt
       updatedAt
     }
@@ -34,8 +44,58 @@ export const listDiscussions = /* GraphQL */ `
         propositions {
           nextToken
         }
+        layoutStates {
+          nextToken
+        }
         createdAt
         updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const getLayoutState = /* GraphQL */ `
+  query GetLayoutState($id: ID!) {
+    getLayoutState(id: $id) {
+      id
+      layout
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        layoutStates {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionLayoutStatesId
+    }
+  }
+`;
+export const listLayoutStates = /* GraphQL */ `
+  query ListLayoutStates(
+    $filter: ModelLayoutStateFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listLayoutStates(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        layout
+        discussion {
+          id
+          layout
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+        discussionLayoutStatesId
       }
       nextToken
     }
@@ -50,6 +110,9 @@ export const getProposition = /* GraphQL */ `
         id
         layout
         propositions {
+          nextToken
+        }
+        layoutStates {
           nextToken
         }
         createdAt

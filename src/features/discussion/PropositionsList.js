@@ -4,6 +4,7 @@ import {useSelector, useDispatch} from 'react-redux'
 import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
 import * as subscriptions from '../../graphql/subscriptions'
+import * as mutations from '../../graphql/mutations'
 import {
   selectPropositions,
   selectPropositionsStatus,
@@ -12,6 +13,9 @@ import {
   focusOnPropositionThunk,
   clearPropositionsThunk
 } from './propositionsSlice'
+import {
+  getDiscussion
+} from './discussionsSlice'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
@@ -21,7 +25,7 @@ export function PropositionsList() {
   const propositionsEmpty = propositions.length === 0
 
   function handleButton() {
-    dispatch(clearPropositionsThunk())
+    dispatch(getDiscussion())
   }
 
   useEffect(() => {
@@ -33,10 +37,10 @@ export function PropositionsList() {
       dispatch(focusOnPropositionThunk(0))
     }
 
-    const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateProposition)).subscribe({
+    const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateDiscussion)).subscribe({
       next: next => {
         console.log('next', next)
-        dispatch(updateProposition(next.value.data.onUpdateProposition))
+        dispatch(getDiscussion(next.value.data.onUpdateDiscussion))
       },
       error: error => console.warn(error)
     })
@@ -60,7 +64,7 @@ export function PropositionsList() {
   return (
     <React.Fragment key="propositions">
       <Heading style={{paddingTop: '20px'}} columnStart="1" columnEnd="-1">
-        <Button onClick={handleButton}>clear</Button>
+        <Button onClick={handleButton}>get</Button>
         <Text>Propositions</Text>
       </Heading>
       {propositionEntities}

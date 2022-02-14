@@ -16,6 +16,16 @@ export const onCreateDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      layoutStates {
+        items {
+          id
+          layout
+          createdAt
+          updatedAt
+          discussionLayoutStatesId
+        }
+        nextToken
+      }
       createdAt
       updatedAt
     }
@@ -33,6 +43,16 @@ export const onUpdateDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionPropositionsId
+        }
+        nextToken
+      }
+      layoutStates {
+        items {
+          id
+          layout
+          createdAt
+          updatedAt
+          discussionLayoutStatesId
         }
         nextToken
       }
@@ -56,8 +76,87 @@ export const onDeleteDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      layoutStates {
+        items {
+          id
+          layout
+          createdAt
+          updatedAt
+          discussionLayoutStatesId
+        }
+        nextToken
+      }
       createdAt
       updatedAt
+    }
+  }
+`;
+export const onCreateLayoutState = /* GraphQL */ `
+  subscription OnCreateLayoutState {
+    onCreateLayoutState {
+      id
+      layout
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        layoutStates {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionLayoutStatesId
+    }
+  }
+`;
+export const onUpdateLayoutState = /* GraphQL */ `
+  subscription OnUpdateLayoutState {
+    onUpdateLayoutState {
+      id
+      layout
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        layoutStates {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionLayoutStatesId
+    }
+  }
+`;
+export const onDeleteLayoutState = /* GraphQL */ `
+  subscription OnDeleteLayoutState {
+    onDeleteLayoutState {
+      id
+      layout
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        layoutStates {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionLayoutStatesId
     }
   }
 `;
@@ -70,6 +169,9 @@ export const onCreateProposition = /* GraphQL */ `
         id
         layout
         propositions {
+          nextToken
+        }
+        layoutStates {
           nextToken
         }
         createdAt
@@ -92,6 +194,9 @@ export const onUpdateProposition = /* GraphQL */ `
         propositions {
           nextToken
         }
+        layoutStates {
+          nextToken
+        }
         createdAt
         updatedAt
       }
@@ -110,6 +215,9 @@ export const onDeleteProposition = /* GraphQL */ `
         id
         layout
         propositions {
+          nextToken
+        }
+        layoutStates {
           nextToken
         }
         createdAt
