@@ -3,6 +3,7 @@ import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
+import * as custom from '../../graphql/custom'
 import * as subscriptions from '../../graphql/subscriptions'
 import {
   focusOnPropositionThunk,
@@ -37,10 +38,11 @@ export function PropositionsList() {
       // dispatch(focusOnPropositionThunk(0))
     }
 
-    const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateDiscussion)).subscribe({
+    const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateDiscussion))
+    .subscribe({
       next: next => {
         console.log('next', next)
-        dispatch(getDiscussionUpdate(next.value.data.onUpdateDiscussion.id))
+        dispatch(getDiscussionUpdate(next.value.data.onUpdateDiscussion))
       },
       error: error => console.error(error)
     })
