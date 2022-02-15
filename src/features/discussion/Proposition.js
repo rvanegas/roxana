@@ -7,7 +7,7 @@ import {
   focusOnPropositionThunk
 } from './propositionsSlice'
 import {
-  replaceProposition,
+  replaceIfChangedProposition,
   selectDiscussion,
   getDiscussion
 } from './discussionsSlice'
@@ -16,8 +16,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
   const dispatch = useDispatch()
   const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
-  const [placeholder, setPlaceholder] = useState(
-    proposition.index === 0 ?
+  const [placeholder, setPlaceholder] = useState(() => proposition.index === 0 ?
     'Type a proposition. For example, "Socrates is a man."' : null
   )
 
@@ -28,7 +27,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleBlur() {
     const propositionId = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
-    dispatch(replaceProposition({propositionId, discussionId, content}))
+    dispatch(replaceIfChangedProposition({propositionId, discussionId, content}))
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
     }
