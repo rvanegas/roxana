@@ -9,7 +9,8 @@ const initialState = {
   propositions: [],
   arguments: [],
   layout: '',
-  status: 'idle',
+  eventQueue: [],
+  status: 'init',
   error: null
 }
 
@@ -17,8 +18,10 @@ export const discussionsSlice = createSlice({
   name: 'discussions',
   initialState: initialState,
   reducers: {
-    addNanoProposition(state, action) {
-      state.propositions.push(action.payload)
+    addProposition(state, action) {
+      const id = action.payload
+      const proposition = {id, nanoid: id, content: '', index: state.propositions.length}
+      state.propositions.push(proposition)
     },
     updateProposition(state, action) {
       const key = action.payload.nanoid ? 'nanoid' : 'id'
@@ -28,6 +31,22 @@ export const discussionsSlice = createSlice({
         if (proposition.autoFocus === false) delete proposition.autoFocus
       }
     },
+    setStatus(state, action) {
+      console.log('setStatus', action.payload)
+      state.status = action.payload
+    },
+    eventEnqueue(state, action) {
+      console.log('eventEnqueue', action.payload)
+      state.eventQueue.push(action.payload)
+    },
+    eventDequeue(state, action) {
+      console.log('eventDequeue', JSON.stringify(state.eventQueue))
+      state.eventQueue.shift()
+    },
+
+    // updateDiscussionLayout(state, action) {
+
+    // },
 //     clearPropositions(state, action) {
 //       Object.assign(state, initialState)
 //       state.status = 'clearing'
@@ -42,7 +61,7 @@ export const discussionsSlice = createSlice({
         state.status = 'loading'
       })
       .addCase(getDiscussion.fulfilled, (state, action) => {
-        state.status = 'succeeded'
+        state.status = 'idle'
         console.log('getDiscussion fulfilled', action.payload)
         Object.assign(state, action.payload)
       })
@@ -76,9 +95,13 @@ export const discussionsSlice = createSlice({
 
 const updateDiscussion = createAsyncThunk(
   'discussions/updatedDiscussion', async (discussion) => {
+    // return async (dispatch, getState) => {
+    // const state = getState()
     // console.log('updating...')
+    // const input = {input: {id, layout}}
     const input = {input: discussion}
-    // console.log('input', input)
+    // const condition = {condition: {layout: {eq: state.discussions.layout}}}
+    // console.log('input', input, condition)
     const response = await API.graphql(graphqlOperation(mutations.updateDiscussion, input))
     return response
   }
@@ -118,27 +141,44 @@ async function loadDiscussion(discussionId, isReload, resetLayout) {
   return {layoutJSON, layout, loadedPropositions}
 }
 
-async function readLayout(layout, loadedPropositions, resetLayout) {
-  const propositions = []
+async function readLayout(layout, propositions, loadedPropositions, resetLayout) {
+  try {
   for (let pos = 0; pos < layout.length; pos++) {
     const entry = layout[pos]
+    // console.log('readLayout 0', pos)
+    if (propositions.some(p => p.id === entry.id)) {
+      // console.log('readLayout 1a', entry.id)
+      continue;
+    }
+    // console.log('readLayout 1b', entry.id)
     let proposition = loadedPropositions.find(p => p.id === entry.id)
     if (!proposition) {
+      // console.log('readLayout 2', entry.id)
       const response = await API.graphql(graphqlOperation(queries.getProposition, {id: entry.id}))
       proposition = response.data.getProposition
       if (!proposition) {
+        // console.log('readLayout 3', entry.id)
         layout.splice(pos, 1)
         await resetLayout(layout, 'invalid proposition id, fixing layout')
       }
     }
-    const notUnique = propositions.some(p => p.id === proposition.id)
+    const notUnique = propositions.some(e => e.id === proposition.id)
     if (notUnique) {
+      // console.log('readLayout 4a', entry.id)
       layout.splice(pos, 1)
       await resetLayout(layout, 'non-unique proposition id, fixing layout')
     }
-    propositions.push({id: proposition.id, index: entry.index, content: proposition.content})
+    // console.log('readLayout 4b', entry.id)
+    const newProposition = {id: proposition.id, index: entry.index, content: proposition.content}
+    propositions.push(newProposition)
+    // console.log('readLayout 5', newProposition)
   }
   return propositions
+  }
+  catch (e) {
+    console.error(e)
+    throw e
+  }
 }
 
 export const getDiscussion = createAsyncThunk(
@@ -151,14 +191,22 @@ export const getDiscussion = createAsyncThunk(
       console.error('system error: ', message)
       throw new Error(message)
     }
-    // console.log('getting discussion...', discussionId)
+    console.log('getting discussion...', discussionId)
     const state = getState()
     const isReload = state.discussions.discussionId === discussionId
+    // console.log('getDiscussion 0', isReload)
+    const propositions = state.discussions.propositions.slice()
+    // console.log('getDiscussion 1', isReload)
     const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, isReload, resetLayout)
-    const propositions = await readLayout(layout, loadedPropositions, resetLayout)
+    // console.log('getDiscussion 2', loadedPropositions.length)
+    await readLayout(layout, propositions, loadedPropositions, resetLayout)
+    // console.log('getDiscussion 3', propositions.length)
     return {layout: layoutJSON, propositions, discussionId}
   }
 )
+
+// loaded
+// state
 
 // called from subscription in PropositionList
 export function getDiscussionUpdate(discussion) {
@@ -188,13 +236,11 @@ async function createProposition(proposition) {
 // delete
 
 export function replaceIfChangedProposition(propositionId, discussionId, content) {
-  console.log('not found 0', JSON.stringify(propositionId))
   return async (dispatch, getState) => {
     // console.log('replaceIfChangedProposition...', propositionId, discussionId, content)
     const state = getState()
     const proposition = state.discussions.propositions.find(p => p.id === propositionId)
-    console.log('not found 1', state.discussions.propositions)
-    console.log('not found 2', JSON.stringify(propositionId))
+    console.log('top', JSON.stringify(propositionId))
     if (!proposition) {
       throw new Error('proposition not found')
     }
@@ -206,6 +252,7 @@ export function replaceIfChangedProposition(propositionId, discussionId, content
     const newProposition = await createProposition({content, discussionPropositionsId: discussionId})
     const layout = JSON.parse(state.discussions.layout)
     const pos = layout.findIndex(p => p.id === propositionId)
+    console.log('layoutpos', layout[pos], state.discussions.layout, pos)
     const newEntry = {id: newProposition.id, index: layout[pos].index}
     // console.log('old layout', state.discussions.layout, JSON.stringify(layout))
     layout.splice(pos, 1, newEntry)
@@ -215,25 +262,32 @@ export function replaceIfChangedProposition(propositionId, discussionId, content
   }
 }
 
-async function addProposition({discussionId, layout: layoutJSON}, dispatch) {
-  const layout = JSON.parse(layoutJSON)
-  const newPropositionNanoid = nanoid()
-  dispatch(addNanoProposition({id: newPropositionNanoid, nanoid: newPropositionNanoid, content: '', index: layout.length}))
-  const newProposition = await createProposition({content: '', discussionPropositionsId: discussionId})
-  dispatch(updateProposition({id: newProposition.id, nanoid: newPropositionNanoid}))
-  const newEntry = {id: newProposition.id, index: layout.length}
-  layout.push(newEntry)
-  const discussion = {id: discussionId, layout: JSON.stringify(layout)}
-  dispatch(updateDiscussion(discussion))
-  return newProposition.id
+function createNewProposition(propositionNanoid) {
+  return async (dispatch, getState) => {
+    const {discussionId, layout: layoutJSON} = getState().discussions
+    const newProposition = await createProposition({content: '', discussionPropositionsId: discussionId})
+    dispatch(updateProposition({id: newProposition.id, nanoid: propositionNanoid}))
+    const layout = JSON.parse(layoutJSON)
+    const newEntry = {id: newProposition.id, index: layout.length}
+    layout.push(newEntry)
+    const discussion = {id: discussionId, layout: JSON.stringify(layout)}
+    await dispatch(updateDiscussion(discussion))
+  }
 }
 
 export function focusOnProposition(newIndex) {
+  const {addProposition} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
     let proposition = state.discussions.propositions.find(p => p.index === newIndex)
-    const propositionId = proposition ? proposition.id : await addProposition(state.discussions, dispatch)
-    dispatch(updateProposition({id: propositionId, autoFocus: true}))
+    if (proposition) {
+      dispatch(updateProposition({id: proposition.id, autoFocus: true}))
+    } else {
+      const propositionNanoid = nanoid()
+      dispatch(addProposition(propositionNanoid))
+      dispatch(updateProposition({id: propositionNanoid, autoFocus: true}))
+      await dispatch(createNewPropositionAction(propositionNanoid))
+    }
   }
 }
 
@@ -251,7 +305,61 @@ export function focusOnProposition(newIndex) {
 //   }
 // }
 
+function consoleHandler(payload) {
+  return async dispatch => {
+    console.log('handling1', payload)
+    await new Promise(res => setTimeout(res, 1000))
+    console.log('handling2', payload)
+  }
+}
+
+const eventHandlerFunctions = {
+  replaceIfChangedProposition,
+  updateDiscussion,
+  getDiscussion,
+  createNewProposition,
+  consoleHandler,
+}
+
+function enqueueEvent(action) {
+  const {setStatus, eventEnqueue, eventDequeue} = discussionsSlice.actions
+  if (!action.handler) throw new Error('unknown handler', action.handler)
+  return async (dispatch, getState) => {
+    dispatch(eventEnqueue(action))
+    console.log('enqueued', action)
+    const status = getState().discussions.status
+    if (status === 'idle' || status === 'init') {
+      dispatch(setStatus('updating'))
+      let event
+      for (;;) {
+        event = getState().discussions.eventQueue[0]
+        if (!event) break;
+        console.log('start', JSON.stringify(event))
+        const handler = eventHandlerFunctions[event.handler]
+        await dispatch(handler(event.payload))
+        console.log('finish', event)
+        dispatch(eventDequeue())
+      }
+      dispatch(setStatus('idle'))
+    }
+  }
+}
+
+export function getDiscussionAction(discussionId) {
+  const action = {handler: 'getDiscussion', payload: discussionId}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+
+export function consoleHandlerAction(message) {
+  const action = {handler: 'consoleHandler', payload: message}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+
+export function createNewPropositionAction(propositionNanoid) {
+  const action = {handler: 'createNewProposition', payload: propositionNanoid}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+
 export const selectDiscussion = state => state.discussions
-// export const selectPropositionsStatus = state => state.propositions.status
-export const {updateProposition, addNanoProposition} = discussionsSlice.actions
+export const {updateProposition} = discussionsSlice.actions
 export default discussionsSlice.reducer

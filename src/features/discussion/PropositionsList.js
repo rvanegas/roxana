@@ -12,10 +12,13 @@ import {
 import {
   selectDiscussion,
   getDiscussion,
-  getDiscussionUpdate
+  focusOnProposition,
+  getDiscussionAction,
+  getDiscussionUpdate,
+  consoleHandlerAction
 } from './discussionsSlice'
 
-const discussionId = 'd172f9ff-8e5b-4229-b803-aee6dc8855a2'
+const discussionId = 'b4d10035-d214-4c49-a9b1-862384d2b96e'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
@@ -26,19 +29,23 @@ export function PropositionsList() {
   const propositionsEmpty = propositions.length === 0
 
   function handleButton() {
-    dispatch(getDiscussion(discussionId))
+    console.log('button')
   }
 
   useEffect(() => {
-    if (discussionStatus === 'idle') {
-      console.log('idle')
-      dispatch(getDiscussion(discussionId))
-    } else if (discussionStatus === 'succeeded' && propositionsEmpty) {
+    if (discussionStatus === 'init') {
+      console.log('init')
+      dispatch(getDiscussionAction(discussionId))
+      // dispatch(consoleHandlerAction('bar1'))
+      // dispatch(consoleHandlerAction('bar2'))
+      // dispatch(consoleHandlerAction('bar3'))
+      // dispatch(consoleHandlerAction('bar4'))
+    } else if (discussionStatus === 'idle' && propositionsEmpty) {
+      dispatch(focusOnProposition(0))
       console.log('succeeded')
-      // dispatch(focusOnPropositionThunk(0))
     }
 
-    const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateDiscussion))
+    const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
     .subscribe({
       next: next => {
         console.log('next', next)
@@ -53,7 +60,7 @@ export function PropositionsList() {
   }, [dispatch, discussionStatus, propositionsEmpty])
 
   const propositionEntities = propositions.map(proposition => (
-    <React.Fragment key={proposition.id}>
+    <React.Fragment key={proposition.nanoid ? proposition.nanoid : proposition.id}>
       <View columnStart={2}>
         {proposition.index}
       </View>
