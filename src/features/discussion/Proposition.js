@@ -5,9 +5,7 @@ import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   updateProposition,
   focusOnProposition,
-  replaceIfChangedProposition,
-  selectDiscussion,
-  getDiscussion
+  replaceIfChangedPropositionAction,
 } from './discussionsSlice'
 
 export function Proposition({discussionId, proposition, readOnly}) {
@@ -26,7 +24,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
     const propositionId = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
     console.log('handle blur', propositionId)
-    dispatch(replaceIfChangedProposition(propositionId, discussionId, content))
+    dispatch(replaceIfChangedPropositionAction({propositionId, discussionId, content}))
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
     }
