@@ -53,7 +53,7 @@ export function PropositionsList() {
   }, [dispatch, discussionStatus, propositionsEmpty])
 
   const propositionEntities = propositions.map(proposition => (
-    <React.Fragment key={proposition.nanoid ? proposition.nanoid : proposition.id}>
+    <React.Fragment key={proposition.key}>
       <View columnStart={2}>
         {proposition.index}
       </View>

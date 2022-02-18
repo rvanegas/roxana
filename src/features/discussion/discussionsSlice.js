@@ -20,12 +20,12 @@ export const discussionsSlice = createSlice({
   reducers: {
     addProposition(state, action) {
       const id = action.payload
-      const proposition = {id, nanoid: id, content: '', index: state.propositions.length}
+      const proposition = {id, key: id, content: '', index: state.propositions.length}
+      console.log('adding', proposition, action)
       state.propositions.push(proposition)
     },
     updateProposition(state, action) {
-      const key = action.payload.nanoid ? 'nanoid' : 'id'
-      const proposition = state.propositions.find(p => p[key] === action.payload[key])
+      const proposition = state.propositions.find(p => p.id === action.payload.id)
       if (proposition) {
         Object.assign(proposition, action.payload)
         if (proposition.autoFocus === false) delete proposition.autoFocus
@@ -52,19 +52,19 @@ export const discussionsSlice = createSlice({
 
 const update = discussionsSlice.actions.update
 
-function logLayouts({layout, propositions}) {
-  const layoutIds = JSON.stringify(JSON.parse(layout).map(e => e.id))
-  const propIds = JSON.stringify(propositions.filter(p => !p.nanoid).map(p => p.id))
-  const eqs = layoutIds === propIds
-  console.log('ids equality', eqs)
-  if (!eqs) {
-    console.log('ids', layoutIds, propIds)
-  }
-}
+// function logLayouts({layout, propositions}) {
+//   const layoutIds = JSON.stringify(JSON.parse(layout).map(e => e.id))
+//   const propIds = JSON.stringify(propositions.filter(p => !p.nanoid).map(p => p.id))
+//   const eqs = layoutIds === propIds
+//   console.log('ids equality', eqs)
+//   if (!eqs) {
+//     console.log('ids', layoutIds, propIds)
+//   }
+// }
 
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
-    logLayouts(getState().discussions)
+    // logLayouts(getState().discussions)
     const variables = {input: {id: discussionId, layout}, condition: {layout: {eq: getState().discussions.layout}}}
     await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
     dispatch(update({discussionId, layout}))
@@ -123,10 +123,15 @@ async function readLayout(layout, currentPropositions, loadedPropositions, reset
       if (!proposition) await removeProposition(pos, 'invalid proposition id, fixing layout')
       const notUnique = currentPropositions.some(p => p.id === proposition.id)
       if (notUnique) await removeProposition(pos, 'non-unique proposition id, fixing layout')
-      const newProposition = {id: proposition.id, index: layoutEntry.index, content: proposition.content}
+      const newProposition = {
+        id: proposition.id,
+        key: proposition.key || nanoid(),
+        index: layoutEntry.index,
+        content: proposition.content
+      }
       newPropositions.push(newProposition)
     }
-    newPropositions.push(...currentPropositions.filter(p => p.nanoid))
+    newPropositions.push(...currentPropositions.filter(p => p.key !== p.id))
     return newPropositions
   }
   catch (e) {
@@ -168,38 +173,32 @@ async function createProposition(proposition) {
   }
 }
 
-export function replaceIfChangedProposition({propositionId, discussionId, content}) {
+export function replaceProposition({propositionId, discussionId, content}) {
   return async (dispatch, getState) => {
-    // console.log('replaceIfChangedProposition...', propositionId, discussionId, content)
+    console.log('replace')
     const state = getState()
     const proposition = state.discussions.propositions.find(p => p.id === propositionId)
-    // console.log('top', JSON.stringify(propositionId))
-    if (!proposition) {
-      throw new Error('proposition not found')
-    }
-    if (proposition.content === content) {
-      // console.log('unchanged.')
-      return
-    }
-    // console.log('replacing.')
-    const newProposition = await createProposition({content, discussionPropositionsId: discussionId})
+    console.log('replace', propositionId, state.discussions.propositions)
+    if (!proposition) throw new Error('proposition not found')
+    console.log('creating')
+    const newDbProposition = await createProposition({content, discussionPropositionsId: discussionId})
+    console.log('created', newDbProposition)
     //---
     for (;;) {
       try {
         const state = getState()
         const layout = JSON.parse(state.discussions.layout)
         const propositions = state.discussions.propositions.slice()
-        const pos = layout.findIndex(p => p.id === propositionId)
-        // console.log('layoutpos', layout[pos], state.discussions.layout, pos)
-        const newEntry = {id: newProposition.id, index: layout[pos].index}
-        console.log('old layout', layout.slice())
+        const pos = propositions.findIndex(p => p.id === propositionId)
+        const newEntry = {id: newDbProposition.id, key: nanoid(), index: propositions[pos].index}
+        const newProposition = {content}
+        Object.assign(newProposition, newEntry)
+        console.log('new', pos, newEntry, newProposition, layout.length, propositions.length)
         layout.splice(pos, 1, newEntry)
         propositions.splice(pos, 1, newProposition)
-        console.log('new layout', layout.slice())
-        // const discussion = {id: discussionId, layout: }
         await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(layout)))
         dispatch(update({propositions}))
-        logLayouts(getState().discussions)
+        // logLayouts(getState().discussions)
         return
       } catch(error) {
         const errorType = error.errors ? error.errors[0].errorType : null
@@ -211,45 +210,51 @@ export function replaceIfChangedProposition({propositionId, discussionId, conten
   }
 }
 
-function createNewProposition(propositionNanoid) {
-  return async (dispatch, getState) => {
-    const {discussionId} = getState().discussions
-    const newProposition = await createProposition({content: '', discussionPropositionsId: discussionId})
-    dispatch(updateProposition({id: newProposition.id, nanoid: propositionNanoid}))
-    //---
-    for (;;) {
-      try {
-        console.log('trying...')
-        const layoutJSON = getState().discussions.layout
-        const layout = JSON.parse(layoutJSON)
-        const newEntry = {id: newProposition.id, index: layout.length}
-        layout.push(newEntry)
-        // const discussion = {id: discussionId, layout: JSON.stringify(layout)}
-        await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(layout)))
-        console.log('worked')
-        return
-      } catch (error) {
-        const errorType = error.errors ? error.errors[0].errorType : null
-        if (errorType !== 'DynamoDB:ConditionalCheckFailedException') {
-          throw error
-        }
-      }
-    }
-  }
-}
+// function createNewProposition(propositionNanoid) {
+//   return async (dispatch, getState) => {
+//     const {discussionId} = getState().discussions
+//     const newProposition = await createProposition({content: '', discussionPropositionsId: discussionId})
+//     dispatch(updateProposition({id: newProposition.id, nanoid: propositionNanoid}))
+//     //---
+//     for (;;) {
+//       try {
+//         console.log('trying...')
+//         const layoutJSON = getState().discussions.layout
+//         const layout = JSON.parse(layoutJSON)
+//         const newEntry = {id: newProposition.id, index: layout.length}
+//         layout.push(newEntry)
+//         // const discussion = {id: discussionId, layout: JSON.stringify(layout)}
+//         await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(layout)))
+//         console.log('worked')
+//         return
+//       } catch (error) {
+//         const errorType = error.errors ? error.errors[0].errorType : null
+//         if (errorType !== 'DynamoDB:ConditionalCheckFailedException') {
+//           throw error
+//         }
+//       }
+//     }
+//   }
+// }
 
 export function focusOnProposition(newIndex) {
   const {addProposition} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
+    const discussionId = state.discussions.discussionId
     let proposition = state.discussions.propositions.find(p => p.index === newIndex)
     if (proposition) {
       dispatch(updateProposition({id: proposition.id, autoFocus: true}))
     } else {
-      const propositionNanoid = nanoid()
-      dispatch(addProposition(propositionNanoid))
-      dispatch(updateProposition({id: propositionNanoid, autoFocus: true}))
-      await dispatch(createNewPropositionAction(propositionNanoid))
+      const propositionId = nanoid()
+      console.log('after add0', getState().discussions.layout)
+      dispatch(addProposition(propositionId))
+      console.log('after add1', getState().discussions.layout)
+      dispatch(updateProposition({id: propositionId, autoFocus: true}))
+      console.log('after add2', getState().discussions.layout)
+      // await dispatch(createNewPropositionAction(propositionNanoid))
+      await dispatch(replacePropositionAction({propositionId, discussionId, content: ''}))
+      console.log('after add3', getState().discussions.layout)
     }
   }
 }
@@ -276,10 +281,10 @@ function consoleHandler(payload) {
 }
 
 const eventHandlerFunctions = {
-  replaceIfChangedProposition,
+  replaceProposition,
   updateDiscussionLayout,
   getDiscussion,
-  createNewProposition,
+  // createNewProposition,
   consoleHandler,
 }
 
@@ -317,13 +322,13 @@ export function consoleHandlerAction(message) {
   return dispatch => dispatch(enqueueEvent(action))
 }
 
-export function createNewPropositionAction(propositionNanoid) {
-  const action = {handler: 'createNewProposition', payload: propositionNanoid}
-  return dispatch => dispatch(enqueueEvent(action))
-}
+// export function createNewPropositionAction(propositionNanoid) {
+//   const action = {handler: 'createNewProposition', payload: propositionNanoid}
+//   return dispatch => dispatch(enqueueEvent(action))
+// }
 
-export function replaceIfChangedPropositionAction(propositionNanoid) {
-  const action = {handler: 'replaceIfChangedProposition', payload: propositionNanoid}
+export function replacePropositionAction(value) {
+  const action = {handler: 'replaceProposition', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 
