@@ -23,7 +23,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleBlur() {
     const propositionId = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
-    console.log('handle blur', propositionId)
+    // console.log('handle blur', propositionId)
     dispatch(replaceIfChangedPropositionAction({propositionId, discussionId, content}))
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
@@ -38,7 +38,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleKeyCommand(command) {
     if (command === 'next-line') {
       editorRef.current.blur()
-      console.log('handle key', proposition.id)
+      // console.log('handle key', proposition.id)
       dispatch(focusOnProposition(proposition.index+1))
       return 'handled'
     }

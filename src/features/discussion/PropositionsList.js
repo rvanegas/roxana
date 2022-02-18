@@ -4,21 +4,14 @@ import {useSelector, useDispatch} from 'react-redux'
 import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
 import * as custom from '../../graphql/custom'
-import * as subscriptions from '../../graphql/subscriptions'
-import {
-  focusOnPropositionThunk,
-  clearPropositionsThunk
-} from './propositionsSlice'
 import {
   selectDiscussion,
-  getDiscussion,
   focusOnProposition,
   getDiscussionAction,
-  getDiscussionUpdate,
   consoleHandlerAction
 } from './discussionsSlice'
 
-const discussionId = 'b4d10035-d214-4c49-a9b1-862384d2b96e'
+const discussionId = '11570713-3341-47d7-b9ce-d4834c53cbfe'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
@@ -35,8 +28,8 @@ export function PropositionsList() {
   useEffect(() => {
     if (discussionStatus === 'init') {
       console.log('init')
-      dispatch(getDiscussionAction(discussionId))
-      // dispatch(consoleHandlerAction('bar1'))
+      dispatch(getDiscussionAction({discussionId}))
+      dispatch(consoleHandlerAction('bar1'))
       // dispatch(consoleHandlerAction('bar2'))
       // dispatch(consoleHandlerAction('bar3'))
       // dispatch(consoleHandlerAction('bar4'))
@@ -49,7 +42,7 @@ export function PropositionsList() {
     .subscribe({
       next: next => {
         console.log('next', next)
-        dispatch(getDiscussionUpdate(next.value.data.onUpdateDiscussion))
+        dispatch(getDiscussionAction(next.value.data.onUpdateDiscussion))
       },
       error: error => console.error(error)
     })
