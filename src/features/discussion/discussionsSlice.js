@@ -58,9 +58,20 @@ const {update, updateProposition} = discussionsSlice.actions
 
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
-    const variables = {input: {id: discussionId, layout}, condition: {layout: {eq: getState().discussions.layout}}}
-    await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-    dispatch(update({discussionId, layout}))
+    try {
+      const variables = {input: {id: discussionId, layout}, condition: {layout: {eq: getState().discussions.layout}}}
+      await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
+      dispatch(update({discussionId, layout}))
+    }
+    catch (e) {
+      const errorType = e.errors ? e.errors[0].errorType : null
+      if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
+        throw new Error('unexpected layout')
+      }
+      else {
+        throw e
+      }
+    }
   }
 }
 
@@ -179,10 +190,8 @@ function replaceProposition({propositionId, discussionId, content}) {
     const newPropositionId = newProposition.id
     for (;;) {
       try {
-        const state = getState()
-        const propositions = state.discussions.propositions
         const layout = JSON.stringify(
-          JSON.parse(state.discussions.layout).map(entry =>
+          JSON.parse(getState().discussions.layout).map(entry =>
             entry.id === propositionId ? {id: newPropositionId, index: entry.index} : entry
           )
         )
@@ -191,9 +200,11 @@ function replaceProposition({propositionId, discussionId, content}) {
         break
       }
       catch (e) {
-        const errorType = e.errors ? e.errors[0].errorType : null
-        if (errorType !== 'DynamoDB:ConditionalCheckFailedException') {
+        if (e.message !== 'unexpected layout') {
           throw e
+        }
+        else {
+          console.log('try again')
         }
       }
     }
