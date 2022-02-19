@@ -8,10 +8,9 @@ import {
   selectDiscussion,
   focusOnProposition,
   getDiscussionAction,
-  consoleHandlerAction
 } from './discussionsSlice'
 
-const discussionId = '11570713-3341-47d7-b9ce-d4834c53cbfe'
+const discussionId = '0b649179-0e26-426f-a69d-f4f2b68162b0'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
@@ -27,29 +26,16 @@ export function PropositionsList() {
 
   useEffect(() => {
     if (discussionStatus === 'init') {
-      console.log('init')
-      dispatch(getDiscussionAction({discussionId}))
-      dispatch(consoleHandlerAction('bar1'))
-      // dispatch(consoleHandlerAction('bar2'))
-      // dispatch(consoleHandlerAction('bar3'))
-      // dispatch(consoleHandlerAction('bar4'))
+      dispatch(getDiscussionAction({id: discussionId}))
     } else if (discussionStatus === 'idle' && propositionsEmpty) {
       dispatch(focusOnProposition(0))
-      console.log('succeeded')
     }
-
     const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
     .subscribe({
-      next: next => {
-        console.log('next', next)
-        dispatch(getDiscussionAction(next.value.data.onUpdateDiscussion))
-      },
-      error: error => console.error(error)
+      next: next => dispatch(getDiscussionAction(next.value.data.onUpdateDiscussion)),
+      error: error => console.error(error),
     })
-
-    return function cleanup() {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [dispatch, discussionStatus, propositionsEmpty])
 
   const propositionEntities = propositions.map(proposition => (
