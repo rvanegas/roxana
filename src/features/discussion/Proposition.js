@@ -3,7 +3,7 @@ import {useDispatch} from 'react-redux'
 import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
-  updateProposition,
+  updatePropositionFocus,
   focusOnProposition,
   replacePropositionAction,
 } from './discussionsSlice'
@@ -49,7 +49,10 @@ export function Proposition({discussionId, proposition, readOnly}) {
   useEffect(() => {
     if (proposition.autoFocus) {
       editorRef.current.focus()
-      dispatch(updateProposition({id: proposition.id, autoFocus: false}))
+      // console.log(editorRef)
+      // window.myref = editorRef
+      // editorRef.current.scrollIntoView()
+      dispatch(updatePropositionFocus({id: proposition.id, autoFocus: false}))
     }
   })
 

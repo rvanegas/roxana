@@ -23,11 +23,20 @@ const discussionsSlice = createSlice({
       const proposition = {id, key: id, content: '', index: state.propositions.length}
       state.propositions.push(proposition)
     },
-    updateProposition(state, action) {
-      const proposition = state.propositions.find(p => p.id === action.payload.id)
+    updatePropositionFocus(state, action) {
+      const {id, autoFocus} = action.payload
+      const proposition = state.propositions.find(p => p.id === id)
       if (proposition) {
-        Object.assign(proposition, action.payload)
+        proposition.autoFocus = autoFocus
         if (proposition.autoFocus === false) delete proposition.autoFocus
+      }
+    },
+    updateProposition(state, action) {
+      const {newProposition, newId} = action.payload
+      const proposition = state.propositions.find(p => p.id === newProposition.id)
+      if (proposition) {
+        Object.assign(proposition, newProposition)
+        Object.assign(proposition, {id: newId})
       }
     },
     setStatus(state, action) {
@@ -45,7 +54,7 @@ const discussionsSlice = createSlice({
   }
 })
 
-const {update} = discussionsSlice.actions
+const {update, updateProposition} = discussionsSlice.actions
 
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
@@ -163,27 +172,28 @@ function replaceProposition({propositionId, discussionId, content}) {
   return async (dispatch, getState) => {
     const state = getState()
     const proposition = state.discussions.propositions.find(p => p.id === propositionId)
-    if (!proposition) throw new Error('proposition not found')
-    const newDbProposition = await createProposition({content, discussionPropositionsId: discussionId})
+    if (!proposition) {
+      throw new Error('proposition not found')
+    }
+    const newProposition = await createProposition({content, discussionPropositionsId: discussionId})
+    const newPropositionId = newProposition.id
     for (;;) {
       try {
         const state = getState()
-        const layout = JSON.parse(state.discussions.layout)
-        const propositions = state.discussions.propositions.slice()
-        const pos = propositions.findIndex(p => p.id === propositionId)
-        const newEntry = {id: newDbProposition.id, key: nanoid(), index: propositions[pos].index}
-        const newProposition = {content}
-        Object.assign(newProposition, newEntry)
-        layout.splice(pos, 1, newEntry)
-        propositions.splice(pos, 1, newProposition)
-        await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(layout)))
-        dispatch(update({propositions}))
-        return
+        const propositions = state.discussions.propositions
+        const layout = JSON.stringify(
+          JSON.parse(state.discussions.layout).map(entry =>
+            entry.id === propositionId ? {id: newPropositionId, index: entry.index} : entry
+          )
+        )
+        await dispatch(updateDiscussionLayout(discussionId, layout))
+        dispatch(updateProposition({newProposition: {id: propositionId, content}, newId: newPropositionId}))
+        break
       }
-      catch(error) {
-        const errorType = error.errors ? error.errors[0].errorType : null
+      catch (e) {
+        const errorType = e.errors ? e.errors[0].errorType : null
         if (errorType !== 'DynamoDB:ConditionalCheckFailedException') {
-          throw error
+          throw e
         }
       }
     }
@@ -232,17 +242,17 @@ export function focusOnProposition(newIndex) {
     const discussionId = state.discussions.discussionId
     let proposition = state.discussions.propositions.find(p => p.index === newIndex)
     if (proposition) {
-      dispatch(updateProposition({id: proposition.id, autoFocus: true}))
+      dispatch(updatePropositionFocus({id: proposition.id, autoFocus: true}))
     }
     else {
       const propositionId = nanoid()
       dispatch(addProposition(propositionId))
-      dispatch(updateProposition({id: propositionId, autoFocus: true}))
+      dispatch(updatePropositionFocus({id: propositionId, autoFocus: true}))
       await dispatch(replacePropositionAction({propositionId, discussionId, content: ''}))
     }
   }
 }
 
 export const selectDiscussion = state => state.discussions
-export const {updateProposition} = discussionsSlice.actions
+export const {updatePropositionFocus} = discussionsSlice.actions
 export default discussionsSlice.reducer
