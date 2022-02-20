@@ -5,7 +5,7 @@ import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
 import * as custom from '../../graphql/custom'
 import {
-  selectDiscussion,
+  selectDiscussions,
   focusOnProposition,
   getDiscussionAction,
 } from './discussionsSlice'
@@ -14,7 +14,7 @@ const discussionId = 'e911c95f-0481-4dd3-b0d4-f5b8574bb725'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
-  const discussion = useSelector(selectDiscussion)
+  const discussion = useSelector(selectDiscussions)
   const propositions = discussion.propositions
   const discussionStatus = discussion.status
   const [readOnly] = useState(false)
