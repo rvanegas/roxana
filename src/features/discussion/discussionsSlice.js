@@ -51,7 +51,10 @@ const {update} = discussionsSlice.actions
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
     try {
-      const variables = {input: {id: discussionId, layout}, condition: {layout: {eq: getState().discussions.layout}}}
+      const variables = {
+        input: {id: discussionId, layout},
+        condition: {layout: {eq: getState().discussions.layout}},
+      }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       dispatch(update({discussionId, layout}))
     }
@@ -83,7 +86,7 @@ async function loadDiscussion(discussionId, isReload, resetLayout) {
       }
     }
     catch {
-      await resetLayout([], 'invalid layout, parse error')
+      await resetLayout(layoutJSON, [], 'invalid layout, parse error')
     }
   }
 
@@ -103,14 +106,14 @@ async function loadDiscussion(discussionId, isReload, resetLayout) {
   return {layoutJSON, layout, loadedPropositions}
 }
 
-async function readLayout(layout, currentPropositions, loadedPropositions, resetLayout) {
+async function readLayout(layoutJSON, layout, currentPropositions, loadedPropositions, resetLayout) {
   async function getProposition(id) {
     const response = await API.graphql(graphqlOperation(queries.getProposition, {id}))
     return response.data.getProposition
   }
   async function removeProposition(pos, message) {
     layout.splice(pos, 1)
-    await resetLayout(layout, message)
+    await resetLayout(layoutJSON, layout, message)
   }
   const newPropositions = []
   try {
@@ -141,8 +144,9 @@ async function readLayout(layout, currentPropositions, loadedPropositions, reset
 
 function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
   return async (dispatch, getState) => {
-    async function resetLayout(layout, message) {
-      dispatch(updateDiscussionLayout(discussionId, JSON.stringify(layout)))
+    async function resetLayout(oldLayout, newLayout, message) {
+      await dispatch(update({layout: oldLayout}))
+      await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(newLayout)))
       // discussion will reload in response to update event picked up by discussion subscription
       console.error('system error: ', message)
       throw new Error(message)
@@ -155,7 +159,7 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
     const isReload = state.discussions.discussionId === discussionId
     const propositions = state.discussions.propositions.slice()
     const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, isReload, resetLayout)
-    const newPropositions = await readLayout(layout, propositions, loadedPropositions, resetLayout)
+    const newPropositions = await readLayout(layoutJSON, layout, propositions, loadedPropositions, resetLayout)
     await dispatch(update({layout: layoutJSON, propositions: newPropositions, discussionId}))
   }
 }
@@ -175,22 +179,18 @@ function replaceProposition({key, discussionId, content}) {
   return async (dispatch, getState) => {
     const state = getState()
     const proposition = state.discussions.propositions.find(p => p.key === key)
-    console.log('replace', key, content)
     if (!proposition) {
-      console.log('not found', key, state.discussions.propositions.slice())
+      console.error('not found', key, state.discussions.propositions.slice())
       throw new Error('proposition not found')
     }
     const newProposition = await createProposition({content, discussionPropositionsId: discussionId})
     const newPropositionId = newProposition.id
     for (;;) {
       try {
-        const layout = JSON.stringify(
-          JSON.parse(getState().discussions.layout).map(entry =>
-            entry.id === propositionId ? {id: newPropositionId, index: entry.index} : entry
-          )
-        )
-        await dispatch(updateDiscussionLayout(discussionId, layout))
         dispatch(updateProposition({key, content, id: newPropositionId}))
+        const layoutPropositions = getState().discussions.propositions.filter(p => p.key !== p.id)
+        const layout = JSON.stringify(layoutPropositions.map(p => ({index: p.index, id: p.id})))
+        await dispatch(updateDiscussionLayout(discussionId, layout))
         break
       }
       catch (e) {
@@ -198,7 +198,7 @@ function replaceProposition({key, discussionId, content}) {
           throw e
         }
         else {
-          console.log('try again')
+          console.warn('try again')
         }
       }
     }
@@ -247,7 +247,7 @@ export function focusOnProposition(newIndex) {
     const discussionId = state.discussions.discussionId
     let proposition = state.discussions.propositions.find(p => p.index === newIndex)
     if (proposition) {
-      dispatch(updateProposition({id: proposition.id, autoFocus: true}))
+      dispatch(updateProposition({key: proposition.key, autoFocus: true}))
     }
     else {
       const key = nanoid()

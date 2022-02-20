@@ -21,11 +21,9 @@ export function Proposition({discussionId, proposition, readOnly}) {
     return EditorState.createWithContent(contentState)
   }
   function handleBlur() {
-    const propositionId = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
-    // console.log('handle blur', propositionId)
     if (proposition.content !== content) {
-      dispatch(replacePropositionAction({propositionId, discussionId, content}))
+      dispatch(replacePropositionAction({key: proposition.key, discussionId, content}))
     }
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
@@ -40,7 +38,6 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleKeyCommand(command) {
     if (command === 'next-line') {
       editorRef.current.blur()
-      // console.log('handle key', proposition.id)
       dispatch(focusOnProposition(proposition.index+1))
       return 'handled'
     }
@@ -49,9 +46,6 @@ export function Proposition({discussionId, proposition, readOnly}) {
   useEffect(() => {
     if (proposition.autoFocus) {
       editorRef.current.focus()
-      // console.log(editorRef)
-      // window.myref = editorRef
-      // editorRef.current.scrollIntoView()
       dispatch(updateProposition({key: proposition.key, autoFocus: false}))
     }
   })
