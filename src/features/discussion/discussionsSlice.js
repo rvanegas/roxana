@@ -28,7 +28,8 @@ const discussionsSlice = createSlice({
       const proposition = state.propositions.find(p => p.key === newProposition.key)
       if (proposition) {
         if (proposition.key === proposition.id) {
-          if (state.propositions.filter(p => p.index === proposition.index).length > 1) {
+          const numWithIndex = state.propositions.filter(p => p.index === proposition.index).length
+          if (numWithIndex > 1) {
             newProposition.index = nextIndex(state.propositions)
           }
         }
