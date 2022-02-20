@@ -116,30 +116,24 @@ async function readLayout(layoutJSON, layout, currentPropositions, loadedProposi
     await resetLayout(layoutJSON, layout, message)
   }
   const newPropositions = []
-  try {
-    for (let pos = 0; pos < layout.length; pos++) {
-      const layoutEntry = layout[pos]
-      let proposition = currentPropositions.find(p => p.id === layoutEntry.id)
-        || loadedPropositions.find(p => p.id === layoutEntry.id)
-        || await getProposition(layoutEntry.id)
-      if (!proposition) await removeProposition(pos, 'invalid proposition id, fixing layout')
-      const notUnique = newPropositions.some(p => p.id === proposition.id)
-      if (notUnique) await removeProposition(pos, 'non-unique proposition id, fixing layout')
-      const newProposition = {
-        id: proposition.id,
-        key: proposition.key || nanoid(),
-        index: layoutEntry.index,
-        content: proposition.content
-      }
-      newPropositions.push(newProposition)
+  for (let pos = 0; pos < layout.length; pos++) {
+    const layoutEntry = layout[pos]
+    let proposition = currentPropositions.find(p => p.id === layoutEntry.id)
+      || loadedPropositions.find(p => p.id === layoutEntry.id)
+      || await getProposition(layoutEntry.id)
+    if (!proposition) await removeProposition(pos, 'invalid proposition id, fixing layout')
+    const notUnique = newPropositions.some(p => p.id === proposition.id)
+    if (notUnique) await removeProposition(pos, 'non-unique proposition id, fixing layout')
+    const newProposition = {
+      id: proposition.id,
+      key: proposition.key || nanoid(),
+      index: layoutEntry.index,
+      content: proposition.content
     }
-    newPropositions.push(...currentPropositions.filter(p => p.key === p.id))
-    return newPropositions
+    newPropositions.push(newProposition)
   }
-  catch (e) {
-    console.error(e)
-    throw e
-  }
+  newPropositions.push(...currentPropositions.filter(p => p.key === p.id))
+  return newPropositions
 }
 
 function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
