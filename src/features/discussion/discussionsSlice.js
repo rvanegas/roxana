@@ -70,102 +70,90 @@ function updateDiscussionLayout(discussionId, layout) {
   }
 }
 
-async function loadDiscussion(discussionId, isReload, resetLayout) {
-  let discussion
-  let layout
-  let layoutJSON
-
-  async function getLayout() {
-    try {
-      layoutJSON = discussion.layout
-      layout = JSON.parse(layoutJSON)
-      for (let entry of layout) {
-        if (typeof entry.id !== 'string' || typeof entry.index !== 'number') {
-          throw new Error('invalid entry')
-        }
-      }
-    }
-    catch {
-      await resetLayout(layoutJSON, [], 'invalid layout, parse error')
-    }
-  }
-
-  const loadedPropositions = []
-  const limit = isReload ? 1 : 100
-  let nextToken
-
-  do {
-    const input = {id: discussionId, limit, nextToken}
-    const response = await API.graphql(graphqlOperation(custom.getDiscussionPaginated, input))
-    discussion = response.data.getDiscussion
-    nextToken = discussion.propositions.nextToken
-    if (!discussion) throw new Error('no such discussion')
-    if (!layout) await getLayout()
-    loadedPropositions.push(...discussion.propositions.items)
-  } while (nextToken && !isReload)
-  return {layoutJSON, layout, loadedPropositions}
-}
-
-async function readLayout(layoutJSON, layout, currentPropositions, loadedPropositions, resetLayout) {
-  async function getProposition(id) {
-    const response = await API.graphql(graphqlOperation(queries.getProposition, {id}))
-    return response.data.getProposition
-  }
-  async function removeProposition(pos, message) {
-    layout.splice(pos, 1)
-    await resetLayout(layoutJSON, layout, message)
-  }
-  const newPropositions = []
-  for (let pos = 0; pos < layout.length; pos++) {
-    const layoutEntry = layout[pos]
-    let proposition = currentPropositions.find(p => p.id === layoutEntry.id)
-      || loadedPropositions.find(p => p.id === layoutEntry.id)
-      || await getProposition(layoutEntry.id)
-    if (!proposition) await removeProposition(pos, 'invalid proposition id, fixing layout')
-    const notUnique = newPropositions.some(p => p.id === proposition.id)
-    if (notUnique) await removeProposition(pos, 'non-unique proposition id, fixing layout')
-    const newProposition = {
-      id: proposition.id,
-      key: proposition.key || nanoid(),
-      index: layoutEntry.index,
-      content: proposition.content
-    }
-    newPropositions.push(newProposition)
-  }
-  newPropositions.push(...currentPropositions.filter(p => p.key === p.id))
-  return newPropositions
-}
-
 function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
   return async (dispatch, getState) => {
-    async function resetLayout(oldLayout, newLayout, message) {
-      await dispatch(update({layout: oldLayout}))
+    const loadedPropositions = []
+    const newPropositions = []
+    let discussion
+    let layout
+
+    async function resetLayout(newLayout, message) {
+      await dispatch(update({layout: discussion.layout}))
       await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(newLayout)))
       // discussion will reload in response to update event picked up by discussion subscription
       console.error('system error: ', message)
       throw new Error(message)
     }
+
+    async function parseLayout() {
+      try {
+        layout = JSON.parse(discussion.layout)
+        for (let entry of layout) {
+          if (typeof entry.id !== 'string' || typeof entry.index !== 'number') {
+            throw new Error('invalid entry')
+          }
+        }
+      }
+      catch {
+        await resetLayout([], 'invalid layout, parse error')
+      }
+    }
+
+    async function loadDiscussion() {
+      const isReload = state.discussions.discussionId === discussionId
+      const limit = isReload ? 1 : 100
+      let nextToken
+      do {
+        const input = {id: discussionId, limit, nextToken}
+        const response = await API.graphql(graphqlOperation(custom.getDiscussionPaginated, input))
+        discussion = response.data.getDiscussion
+        nextToken = discussion.propositions.nextToken
+        if (!discussion) throw new Error('no such discussion')
+        if (!layout) await parseLayout()
+        loadedPropositions.push(...discussion.propositions.items)
+      } while (nextToken && !isReload)
+    }
+
+    async function getProposition(id) {
+      const response = await API.graphql(graphqlOperation(queries.getProposition, {id}))
+      return response.data.getProposition
+    }
+
+    async function removeProposition(pos, message) {
+      layout.splice(pos, 1)
+      await resetLayout(layout, message)
+    }
+
+    async function readLayout() {
+      const currentPropositions = state.discussions.propositions
+      for (let pos = 0; pos < layout.length; pos++) {
+        const layoutEntry = layout[pos]
+        let proposition = currentPropositions.find(p => p.id === layoutEntry.id)
+          || loadedPropositions.find(p => p.id === layoutEntry.id)
+          || await getProposition(layoutEntry.id)
+        if (!proposition) await removeProposition(pos, 'invalid proposition id, fixing layout')
+        const notUnique = newPropositions.some(p => p.id === proposition.id)
+        if (notUnique) await removeProposition(pos, 'non-unique proposition id, fixing layout')
+        const newProposition = {
+          id: proposition.id,
+          key: proposition.key || nanoid(),
+          index: layoutEntry.index,
+          content: proposition.content
+        }
+        newPropositions.push(newProposition)
+      }
+      newPropositions.push(...currentPropositions.filter(p => p.key === p.id))
+    }
+
     const state = getState()
     const eqDiscussion = discussionId === state.discussions.discussionId
     const eqLayout = subscriptionLayout === state.discussions.layout
     if (!eqDiscussion && state.discussions.discussionId) throw new Error('not implemented')
     if (eqLayout) return
-    const isReload = state.discussions.discussionId === discussionId
-    const propositions = state.discussions.propositions.slice()
-    const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, isReload, resetLayout)
-    const newPropositions = await readLayout(layoutJSON, layout, propositions, loadedPropositions, resetLayout)
-    await dispatch(update({layout: layoutJSON, propositions: newPropositions, discussionId}))
-  }
-}
 
-async function createProposition(proposition) {
-  try {
-    const input = {input: proposition}
-    const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
-    return response.data.createProposition
-  }
-  catch {
-    throw new Error('network down')
+    await loadDiscussion()
+    await readLayout()
+    await dispatch(update({layout: discussion.layout, propositions: newPropositions, discussionId}))
   }
 }
 
@@ -177,8 +165,9 @@ function replaceProposition({key, discussionId, content}) {
       console.error('not found', key, state.discussions.propositions.slice())
       throw new Error('proposition not found')
     }
-    const newProposition = await createProposition({content, discussionPropositionsId: discussionId})
-    const newPropositionId = newProposition.id
+    const input = {input: {content, discussionPropositionsId: discussionId}}
+    const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
+    const newPropositionId = response.data.createProposition.id
     for (;;) {
       try {
         dispatch(updateProposition({key, content, id: newPropositionId}))
