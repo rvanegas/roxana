@@ -5,7 +5,7 @@ import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   updateSentence,
   focusOnNextProposition,
-  replacePropositionAction,
+  replaceSentenceAction,
 } from './discussionsSlice'
 
 export function Proposition({discussionId, proposition, readOnly}) {
@@ -23,7 +23,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleBlur() {
     const content = editorState.getCurrentContent().getPlainText()
     if (proposition.content !== content) {
-      dispatch(replacePropositionAction({key: proposition.key, discussionId, content}))
+      dispatch(replaceSentenceAction({key: proposition.key, section: 'propositions', discussionId, content}))
     }
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
