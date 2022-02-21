@@ -94,10 +94,12 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
 
     async function resetLayout(newLayout, message) {
       await dispatch(update({layout: discussion.layout}))
+      console.log('newLayout', newLayout)
       await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(newLayout)))
       // discussion will reload in response to update event picked up by discussion subscription
       console.error('system error: ', message)
-      throw new Error(message)
+      dispatch(getDiscussionAction({id: discussionId}))
+      throw new Error('resetLayout')
     }
 
     async function parseLayout() {
@@ -122,16 +124,16 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
         const input = {id: discussionId, limit, nextToken}
         const response = await API.graphql(graphqlOperation(custom.getDiscussionPaginated, input))
         discussion = response.data.getDiscussion
-        nextToken = discussion.propositions.nextToken
+        nextToken = discussion.sentences.nextToken
         if (!discussion) throw new Error('no such discussion')
         if (!layout) await parseLayout()
-        loadedSentences.push(...discussion.propositions.items)
+        loadedSentences.push(...discussion.sentences.items)
       } while (nextToken && !isReload)
     }
 
     async function getSentence(id) {
-      const response = await API.graphql(graphqlOperation(queries.getProposition, {id}))
-      return response.data.getProposition
+      const response = await API.graphql(graphqlOperation(queries.getSentence, {id}))
+      return response.data.getSentence
     }
 
     async function removeSentence(pos, message) {
@@ -166,10 +168,15 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
     if (!eqDiscussion && state.discussions.discussionId) throw new Error('not implemented')
     if (eqLayout) return
 
-    await loadDiscussion()
-    await readLayout('propositions')
-    // await readLayout('arguments')
-    await dispatch(update({layout: discussion.layout, propositions: newSentences, discussionId}))
+    try {
+      await loadDiscussion()
+      await readLayout('propositions')
+      // await readLayout('arguments')
+      await dispatch(update({layout: discussion.layout, propositions: newSentences, discussionId}))
+    }
+    catch (e) {
+      if (e.message !== 'resetLayout') throw e
+    }
   }
 }
 
@@ -182,9 +189,9 @@ function replaceSentence({key, section, discussionId, content}) {
       console.error('not found', key, state.discussions.sentences.slice())
       throw new Error('sentence not found')
     }
-    const input = {input: {content, discussionPropositionsId: discussionId}}
-    const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
-    const newSentenceId = response.data.createProposition.id
+    const input = {input: {content, discussionSentencesId: discussionId}}
+    const response = await API.graphql(graphqlOperation(mutations.createSentence, input))
+    const newSentenceId = response.data.createSentence.id
     try {
       const index = nextUniqueIndex(sentence, sentences)
       const newSentence = {key, index, content, id: newSentenceId}

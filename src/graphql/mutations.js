@@ -9,13 +9,13 @@ export const createDiscussion = /* GraphQL */ `
     createDiscussion(input: $input, condition: $condition) {
       id
       layout
-      propositions {
+      sentences {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }
@@ -42,13 +42,13 @@ export const updateDiscussion = /* GraphQL */ `
     updateDiscussion(input: $input, condition: $condition) {
       id
       layout
-      propositions {
+      sentences {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }
@@ -75,13 +75,13 @@ export const deleteDiscussion = /* GraphQL */ `
     deleteDiscussion(input: $input, condition: $condition) {
       id
       layout
-      propositions {
+      sentences {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }
@@ -111,7 +111,7 @@ export const createLayoutState = /* GraphQL */ `
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -137,7 +137,7 @@ export const updateLayoutState = /* GraphQL */ `
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -163,7 +163,7 @@ export const deleteLayoutState = /* GraphQL */ `
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -178,18 +178,18 @@ export const deleteLayoutState = /* GraphQL */ `
     }
   }
 `;
-export const createProposition = /* GraphQL */ `
-  mutation CreateProposition(
-    $input: CreatePropositionInput!
-    $condition: ModelPropositionConditionInput
+export const createSentence = /* GraphQL */ `
+  mutation CreateSentence(
+    $input: CreateSentenceInput!
+    $condition: ModelSentenceConditionInput
   ) {
-    createProposition(input: $input, condition: $condition) {
+    createSentence(input: $input, condition: $condition) {
       id
       content
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -200,22 +200,22 @@ export const createProposition = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionPropositionsId
+      discussionSentencesId
     }
   }
 `;
-export const updateProposition = /* GraphQL */ `
-  mutation UpdateProposition(
-    $input: UpdatePropositionInput!
-    $condition: ModelPropositionConditionInput
+export const updateSentence = /* GraphQL */ `
+  mutation UpdateSentence(
+    $input: UpdateSentenceInput!
+    $condition: ModelSentenceConditionInput
   ) {
-    updateProposition(input: $input, condition: $condition) {
+    updateSentence(input: $input, condition: $condition) {
       id
       content
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -226,22 +226,22 @@ export const updateProposition = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionPropositionsId
+      discussionSentencesId
     }
   }
 `;
-export const deleteProposition = /* GraphQL */ `
-  mutation DeleteProposition(
-    $input: DeletePropositionInput!
-    $condition: ModelPropositionConditionInput
+export const deleteSentence = /* GraphQL */ `
+  mutation DeleteSentence(
+    $input: DeleteSentenceInput!
+    $condition: ModelSentenceConditionInput
   ) {
-    deleteProposition(input: $input, condition: $condition) {
+    deleteSentence(input: $input, condition: $condition) {
       id
       content
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -252,7 +252,7 @@ export const deleteProposition = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionPropositionsId
+      discussionSentencesId
     }
   }
 `;

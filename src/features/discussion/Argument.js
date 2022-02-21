@@ -6,6 +6,7 @@ import {selectDiscussions} from './discussionsSlice'
 import {updateArgument, focusOnArgument} from './argumentsSlice'
 
 function toAlphaIndex(numberIndex) {
+  numberIndex--
   const base = 'A'.charCodeAt()
   const divisor = 'Z'.charCodeAt() - base + 1
   let alphas = []

@@ -5,7 +5,7 @@ input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONL
 type Discussion @model {
   id: ID!
   layout: String!
-  propositions: [Proposition!] @hasMany
+  sentences: [Sentence!] @hasMany
   layoutStates: [LayoutState!] @hasMany
 }
 
@@ -15,7 +15,7 @@ type LayoutState @model {
   discussion: Discussion! @belongsTo
 }
 
-type Proposition @model {
+type Sentence @model {
   id: ID!
   content: String!                           # immutable
   discussion: Discussion! @belongsTo         # original
