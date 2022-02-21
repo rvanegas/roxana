@@ -14,21 +14,27 @@ const initialState = {
   error: null
 }
 
+// do this in TS
+// function validateSection(section) {
+//   if (section !== 'arguments' && section !== 'propositions') throw new Error('invalid section')
+// }
+
 const discussionsSlice = createSlice({
   name: 'discussions',
   initialState: initialState,
   reducers: {
-    addProposition(state, action) {
-      const key = action.payload
-      const proposition = {key, content: '', index: nextIndex(state.propositions)}
-      state.propositions.push(proposition)
+    addSentence(state, action) {
+      const {section, key} = action.payload
+      // validateSection(section)
+      const sentence = {key, content: '', index: nextIndex(state[section])}
+      state[section].push(sentence)
     },
-    updateProposition(state, action) {
-      const newProposition = action.payload
-      const proposition = state.propositions.find(p => p.key === newProposition.key)
-      if (proposition) {
-        Object.assign(proposition, newProposition)
-        if (proposition.autoFocus === false) delete proposition.autoFocus
+    updateSentence(state, action) {
+      const {section, newSentence} = action.payload
+      const sentence = state[section].find(p => p.key === newSentence.key)
+      if (sentence) {
+        Object.assign(sentence, newSentence)
+        if (sentence.autoFocus === false) delete sentence.autoFocus
       }
     },
     setStatus(state, action) {
@@ -186,7 +192,7 @@ function replaceProposition({key, discussionId, content}) {
       if (!proposition.id) layoutPropositions.push(newProposition)
       const layout = JSON.stringify(layoutPropositions.map(p => ({index: p.index, id: p.id})))
       await dispatch(updateDiscussionLayout(discussionId, layout))
-      dispatch(updateProposition(newProposition))
+      dispatch(updateSentence({section: 'propositions', newSentence: newProposition}))
     }
     catch (e) {
       if (e.message !== 'unexpected layout') {
@@ -236,24 +242,24 @@ export function replacePropositionAction(value) {
 }
 
 export function focusOnNextProposition(currentKey) {
-  const {addProposition} = discussionsSlice.actions
+  const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
     const discussionId = state.discussions.discussionId
     let nextPos = currentKey ? state.discussions.propositions.findIndex(p => p.key === currentKey) + 1 : 0
     let proposition = state.discussions.propositions[nextPos]
     if (proposition) {
-      dispatch(updateProposition({key: proposition.key, autoFocus: true}))
+      dispatch(updateSentence({section: 'propositions', newSentence: {key: proposition.key, autoFocus: true}}))
     }
     else {
       const key = nanoid()
-      dispatch(addProposition(key))
-      dispatch(updateProposition({key, autoFocus: true}))
+      dispatch(addSentence({section: 'propositions', key}))
+      dispatch(updateSentence({section: 'propositions', newSentence: {key, autoFocus: true}}))
       await dispatch(replacePropositionAction({key, discussionId, content: ''}))
     }
   }
 }
 
 export const selectDiscussions = state => state.discussions
-export const {updateProposition} = discussionsSlice.actions
+export const {updateSentence} = discussionsSlice.actions
 export default discussionsSlice.reducer
