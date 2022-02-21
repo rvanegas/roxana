@@ -6,8 +6,8 @@
     "gqlSchemaPath": "/Users/rodvandur/src/roxana/amplify/backend/api/roxana/schema.graphql",
     "defaultAuthType": {
       "mode": "API_KEY",
-      "expirationTime": 7,
-      "apiKeyExpirationDate": "2022-02-20T08:05:57.940Z",
+      "expirationTime": 365,
+      "apiKeyExpirationDate": "2023-02-21T07:44:40.022Z",
       "keyDescription": ""
     },
     "additionalAuthTypes": [
@@ -15,6 +15,7 @@
         "mode": "AMAZON_COGNITO_USER_POOLS",
         "cognitoUserPoolId": "authroxana31481408"
       }
-    ]
+    ],
+    "conflictResolution": {}
   }
 }
