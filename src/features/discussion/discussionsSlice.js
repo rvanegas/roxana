@@ -193,7 +193,7 @@ function replaceSentence({key, section, discussionId, content}) {
       if (!sentence.id) layoutSentences.push(newSentence)
       const layout = JSON.stringify(layoutSentences.map(s => ({index: s.index, id: s.id})))
       await dispatch(updateDiscussionLayout(discussionId, layout))
-      dispatch(updateSentence({section: 'propositions', newSentence: newSentence}))
+      dispatch(updateSentence({section, newSentence: newSentence}))
     }
     catch (e) {
       if (e.message !== 'unexpected layout') {
