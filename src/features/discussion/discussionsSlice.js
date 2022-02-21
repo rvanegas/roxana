@@ -242,21 +242,21 @@ export function replaceSentenceAction(value) {
   return dispatch => dispatch(enqueueEvent(action))
 }
 
-export function focusOnNextProposition(currentKey) {
+export function focusOnNextSentence(section, currentKey) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
     const discussionId = state.discussions.discussionId
-    let nextPos = currentKey ? state.discussions.propositions.findIndex(p => p.key === currentKey) + 1 : 0
-    let proposition = state.discussions.propositions[nextPos]
-    if (proposition) {
-      dispatch(updateSentence({section: 'propositions', newSentence: {key: proposition.key, autoFocus: true}}))
+    let nextPos = currentKey ? state.discussions[section].findIndex(p => p.key === currentKey) + 1 : 0
+    let sentence = state.discussions[section][nextPos]
+    if (sentence) {
+      dispatch(updateSentence({section, newSentence: {key: sentence.key, autoFocus: true}}))
     }
     else {
       const key = nanoid()
-      dispatch(addSentence({section: 'propositions', key}))
-      dispatch(updateSentence({section: 'propositions', newSentence: {key, autoFocus: true}}))
-      await dispatch(replaceSentenceAction({key, section: 'propositions', discussionId, content: ''}))
+      dispatch(addSentence({section, key}))
+      dispatch(updateSentence({section, newSentence: {key, autoFocus: true}}))
+      await dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
     }
   }
 }

@@ -4,7 +4,7 @@ import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   updateSentence,
-  focusOnNextProposition,
+  focusOnNextSentence,
   replaceSentenceAction,
 } from './discussionsSlice'
 
@@ -38,7 +38,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleKeyCommand(command) {
     if (command === 'next-line') {
       editorRef.current.blur()
-      dispatch(focusOnNextProposition(proposition.key))
+      dispatch(focusOnNextSentence('propositions', proposition.key))
       return 'handled'
     }
     return 'not-handled'
