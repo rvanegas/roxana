@@ -6,7 +6,7 @@ import {Proposition} from './Proposition'
 import * as custom from '../../graphql/custom'
 import {
   selectDiscussions,
-  focusOnProposition,
+  focusOnNextProposition,
   getDiscussionAction,
 } from './discussionsSlice'
 
@@ -28,7 +28,7 @@ export function PropositionsList() {
     if (discussionStatus === 'init') {
       dispatch(getDiscussionAction({id: discussionId}))
     } else if (discussionStatus === 'idle' && propositionsEmpty) {
-      dispatch(focusOnProposition(0))
+      dispatch(focusOnNextProposition())
     }
     const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
     .subscribe({
