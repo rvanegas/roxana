@@ -88,13 +88,12 @@ function updateDiscussionLayout(discussionId, layout) {
 function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
   return async (dispatch, getState) => {
     const loadedSentences = []
-    const newSentences = []
+    const newDiscussionSentences = {}
     let discussion
     let layout
 
     async function resetLayout(newLayout, message) {
       await dispatch(update({layout: discussion.layout}))
-      console.log('newLayout', newLayout)
       await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(newLayout)))
       // discussion will reload in response to update event picked up by discussion subscription
       console.error('system error: ', message)
@@ -105,14 +104,14 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
     async function parseLayout() {
       try {
         layout = JSON.parse(discussion.layout)
-        for (let entry of layout) {
+        for (let entry of layout.propositions.concat(layout.arguments)) {
           if (typeof entry.id !== 'string' || typeof entry.index !== 'number') {
             throw new Error('invalid entry')
           }
         }
       }
       catch {
-        await resetLayout([], 'invalid layout, parse error')
+        await resetLayout({propositions: [], arguments: []}, 'invalid layout, parse error')
       }
     }
 
@@ -136,21 +135,22 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
       return response.data.getSentence
     }
 
-    async function removeSentence(pos, message) {
-      layout.splice(pos, 1)
+    async function removeSentence(section, pos, message) {
+      layout[section].splice(pos, 1)
       await resetLayout(layout, message)
     }
 
     async function readLayout(section) {
+      const newSentences = []
       const currentSentences = state.discussions[section]
-      for (let pos = 0; pos < layout.length; pos++) {
-        const layoutEntry = layout[pos]
+      for (let pos = 0; pos < layout[section].length; pos++) {
+        const layoutEntry = layout[section][pos]
         let sentence = currentSentences.find(s => s.id === layoutEntry.id)
           || loadedSentences.find(s => s.id === layoutEntry.id)
           || await getSentence(layoutEntry.id)
-        if (!sentence) await removeSentence(pos, 'invalid sentence id, fixing layout')
+        if (!sentence) await removeSentence(section, pos, 'invalid sentence id, fixing layout')
         const notUnique = newSentences.some(s => s.id === sentence.id)
-        if (notUnique) await removeSentence(pos, 'non-unique sentence id, fixing layout')
+        if (notUnique) await removeSentence(section, pos, 'non-unique sentence id, fixing layout')
         const newSentence = {
           id: sentence.id,
           key: sentence.key || nanoid(),
@@ -160,6 +160,7 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
         newSentences.push(newSentence)
       }
       newSentences.push(...currentSentences.filter(p => !p.id))
+      newDiscussionSentences[section] = newSentences
     }
 
     const state = getState()
@@ -171,8 +172,13 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
     try {
       await loadDiscussion()
       await readLayout('propositions')
-      // await readLayout('arguments')
-      await dispatch(update({layout: discussion.layout, propositions: newSentences, discussionId}))
+      await readLayout('arguments')
+      await dispatch(update({
+        discussionId,
+        layout: discussion.layout,
+        propositions: newDiscussionSentences.propositions,
+        arguments: newDiscussionSentences.arguments
+      }))
     }
     catch (e) {
       if (e.message !== 'resetLayout') throw e
@@ -183,10 +189,14 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
 function replaceSentence({key, section, discussionId, content}) {
   return async (dispatch, getState) => {
     const state = getState()
-    const sentences = state.discussions[section]
+    let discussionSentences = {
+      propositions: state.discussions.propositions,
+      arguments: state.discussions.arguments,
+    }
+    const sentences = discussionSentences[section]
     const sentence = sentences.find(s => s.key === key)
     if (!sentence) {
-      console.error('not found', key, state.discussions.sentences.slice())
+      console.error('not found', key, section, discussionSentences)
       throw new Error('sentence not found')
     }
     const input = {input: {content, discussionSentencesId: discussionId}}
@@ -195,10 +205,18 @@ function replaceSentence({key, section, discussionId, content}) {
     try {
       const index = nextUniqueIndex(sentence, sentences)
       const newSentence = {key, index, content, id: newSentenceId}
-      const layoutSentences = sentences.filter(s => s.id)
-        .map(s => s.key === sentence.key ? newSentence : s)
-      if (!sentence.id) layoutSentences.push(newSentence)
-      const layout = JSON.stringify(layoutSentences.map(s => ({index: s.index, id: s.id})))
+      const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
+      discussionSentences[section] = layoutSentences
+      discussionSentences = {
+        propositions: discussionSentences.propositions.filter(s => s.id),
+        arguments: discussionSentences.arguments.filter(s => s.id),
+      }
+      // if (!sentence.id) layoutSentences.push(newSentence)
+      const makeLayoutEntry = sentence => ({index: sentence.index, id: sentence.id})
+      const layout = JSON.stringify({
+        propositions: discussionSentences.propositions.map(makeLayoutEntry),
+        arguments: discussionSentences.arguments.map(makeLayoutEntry)
+      })
       await dispatch(updateDiscussionLayout(discussionId, layout))
       dispatch(updateSentence({section, newSentence: newSentence}))
     }
