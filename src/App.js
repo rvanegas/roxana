@@ -8,6 +8,8 @@ import {ArgumentsList} from './features/discussion/ArgumentsList'
 import {theme} from './theme'
 // import DragTest from './DragTest'
 
+const discussionId = 'a1283cfc-61fa-4e4e-a93d-c82cd9d7350a'
+
 function App() {
   return (
     <AmplifyProvider theme={theme}>
@@ -33,8 +35,8 @@ function App() {
                 templateColumns="1rem 2rem 1fr 3rem"
                 gap="var(--amplify-space-small)"
               >
-                <PropositionsList />
-                <ArgumentsList />
+                <PropositionsList discussionId={discussionId} />
+                <ArgumentsList discussionId={discussionId} />
               </Grid>
             </View>
           </View>

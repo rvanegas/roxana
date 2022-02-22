@@ -10,9 +10,7 @@ import {
   getDiscussionAction,
 } from './discussionsSlice'
 
-const discussionId = 'a1283cfc-61fa-4e4e-a93d-c82cd9d7350a'
-
-export function PropositionsList() {
+export function PropositionsList({discussionId}) {
   const dispatch = useDispatch()
   const discussion = useSelector(selectDiscussions)
   const propositions = discussion.propositions
@@ -26,17 +24,20 @@ export function PropositionsList() {
 
   useEffect(() => {
     if (discussionStatus === 'init') {
-      dispatch(getDiscussionAction({id: discussionId}))
+      dispatch(getDiscussionAction({discussionId}))
     } else if (discussionStatus === 'idle' && propositionsEmpty) {
       dispatch(focusOnNextSentence('propositions'))
     }
     const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
     .subscribe({
-      next: next => dispatch(getDiscussionAction(next.value.data.onUpdateDiscussion)),
+      next: next => {
+        const {id: discussionId, layout} = next.value.data.onUpdateDiscussion
+        dispatch(getDiscussionAction({discussionId, layout}))
+      },
       error: error => console.error(error),
     })
     return () => subscription.unsubscribe()
-  }, [dispatch, discussionStatus, propositionsEmpty])
+  }, [dispatch, discussionId, discussionStatus, propositionsEmpty])
 
   const propositionEntities = propositions.map(proposition => (
     <React.Fragment key={proposition.key}>

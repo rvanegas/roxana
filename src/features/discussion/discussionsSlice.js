@@ -87,7 +87,7 @@ function updateDiscussionLayout(discussionId, layout) {
   }
 }
 
-function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
+function getDiscussion({discussionId, layout: subscriptionLayout}) {
   return async (dispatch, getState) => {
     const loadedSentences = []
     const newDiscussionSentences = {}
@@ -99,7 +99,7 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
       await dispatch(updateDiscussionLayout(discussionId, JSON.stringify(newLayout)))
       // discussion will reload in response to update event picked up by discussion subscription
       console.error('system error: ', message)
-      dispatch(getDiscussionAction({id: discussionId}))
+      dispatch(getDiscussionAction({discussionId}))
       throw new Error('resetLayout')
     }
 
@@ -183,7 +183,7 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
       }))
     }
     catch (e) {
-      if (e.message !== 'resetLayout') throw e
+      // if (e.message !== 'resetLayout') throw e
     }
   }
 }

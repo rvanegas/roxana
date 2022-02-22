@@ -2,8 +2,12 @@ import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
-import {selectDiscussions} from './discussionsSlice'
-import {updateArgument, focusOnArgument} from './argumentsSlice'
+import {
+  selectDiscussions,
+  focusOnNextSentence,
+  updateSentence,
+  replaceSentenceAction
+} from './discussionsSlice'
 
 function toAlphaIndex(numberIndex) {
   numberIndex--
@@ -18,33 +22,32 @@ function toAlphaIndex(numberIndex) {
   return alphas.join('')
 }
 
-export function Argument({argument, readOnly}) {
+export function Argument({argument, discussionId, readOnly}) {
+  console.log('argument')
+  const propositionById = id => propositions.find(p => p.id === id)
+  const propositionByIndex = index => propositions.find(p => p.index === index)
+
+  const editorRef = React.createRef()
+  const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
+  const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.content.split(' '))
   const [editorState, setEditorState] = useState(initialEditorState)
-  const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.propositionIds)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
   const [placeholder, setPlaceholder] = useState(
     argument.index === 0 ?
     'Type a sequence of proposition numbers. For example, "0 :1".' : null
   )
-  const dispatch = useDispatch()
-  const editorRef = React.createRef()
-
-  const propositionById = id => propositions.find(proposition => proposition.id === id)
-  const propositionByIndex = index => propositions.find(proposition => proposition.index === index)
 
   function buildArgumentCode() {
-    const argumentPropositions = argument.propositionIds
-      .map(propositionId => propositionById(propositionId))
+    const displayPropositions = displayPropositionIds.map(id => propositionById(id))
     let argumentCode = ''
-    if (argumentPropositions.length !== 0) {
-      const conclusionIndex = argumentPropositions.pop().index
+    if (displayPropositions.length > 0) {
+      const conclusionIndex = displayPropositions.pop().index
       argumentCode = `:${conclusionIndex}`
     }
-    if (argumentPropositions.length !== 0) {
-      const premiseIndexes = argumentPropositions
-        .map(proposition => proposition.index).join(' ')
+    if (displayPropositions.length > 0) {
+      const premiseIndexes = displayPropositions.map(p => p.index).join(' ')
       argumentCode = `${premiseIndexes} ${argumentCode}`
     }
     return argumentCode
@@ -55,8 +58,9 @@ export function Argument({argument, readOnly}) {
     return EditorState.createWithContent(contentState)
   }
 
+  // "1 :2" => ["abc", "def"] into useState, not store
   // parse, validate, and display propositions
-  function parseArgumentCode(argumentCode) {
+  function setDisplayFromArgumentCode(argumentCode) {
     const invalidPattern = /[^\d\s:]/
     const separatorPattern = /[\s:]+/
 
@@ -75,55 +79,72 @@ export function Argument({argument, readOnly}) {
       setArgumentCodeInvalid(true)
       return
     }
-    const displayPropositionIds = displayPropositions
-      .map(displayProposition => displayProposition.id)
+    const displayPropositionIds = displayPropositions.map(p => p.id)
     setArgumentCodeInvalid(false)
     setDisplayPropositionIds(displayPropositionIds)
   }
 
+  // ["abc", "def"] => store
   function handleBlur() {
-    const id = argument.id
-    const propositionIds = displayPropositionIds
-    dispatch(updateArgument({id, propositionIds}))
-    if (placeholder && propositionIds.length !== 0) {
-      setPlaceholder(null)
-    }
-  }
-  function handleChange(value) {
-    const argumentCode = value.getCurrentContent().getPlainText()
-    parseArgumentCode(argumentCode)
-    setEditorState(value)
-  }
-  function myKeyBindingFn(e) {
-    if (e.keyCode === 13) {
-      return 'next-line'
-    }
-    return getDefaultKeyBinding(e)
-  }
-  function handleKeyCommand(command) {
-    if (command === 'next-line') {
-      editorRef.current.blur()
-      dispatch(focusOnArgument(argument.index+1))
-      return 'handled'
-    }
-    return 'not-handled'
-  }
-  useEffect(() => {
-    if (argument.autoFocus) {
-      editorRef.current.focus()
-      dispatch(updateArgument({id: argument.id, autoFocus: false}))
-    }
-  })
-
-  // set canonical argumentCode
-  if (!editorState.getSelection().getHasFocus()) {
+    // set canonical argumentCode
     const argumentCode = buildArgumentCode()
     if (editorState.getCurrentContent().getPlainText() !== argumentCode) {
       const contentState = ContentState.createFromText(argumentCode)
       setEditorState(EditorState.createWithContent(contentState))
       setArgumentCodeInvalid(false)
     }
+    const key = argument.key
+    const content = argumentCode
+    const section = 'arguments'
+    dispatch(replaceSentenceAction({key, section, discussionId, content}))
+    if (placeholder && Boolean(content)) {
+      setPlaceholder(null)
+    }
   }
+
+  function handleChange(value) {
+    const argumentCode = value.getCurrentContent().getPlainText()
+    setDisplayFromArgumentCode(argumentCode)
+    setEditorState(value)
+  }
+
+  // function handleBlur() {
+  //   const id = argument.id
+  //   const propositionIds = displayPropositionIds
+  //   dispatch(updateArgument({id, propositionIds}))
+  //   if (placeholder && propositionIds.length !== 0) {
+  //     setPlaceholder(null)
+  //   }
+  // }
+  // function handleChange(value) {
+  //   const argumentCode = value.getCurrentContent().getPlainText()
+  //   parseArgumentCode(argumentCode)
+  //   setEditorState(value)
+  // }
+
+
+  function myKeyBindingFn(e) {
+    if (e.keyCode === 13) {
+      return 'next-line'
+    }
+    return getDefaultKeyBinding(e)
+  }
+
+  function handleKeyCommand(command) {
+    if (command === 'next-line') {
+      editorRef.current.blur()
+      dispatch(focusOnNextSentence('arguments', argument.key))
+      return 'handled'
+    }
+    return 'not-handled'
+  }
+
+  useEffect(() => {
+    if (argument.autoFocus) {
+      editorRef.current.focus()
+      dispatch(updateSentence({id: argument.id, autoFocus: false}))
+    }
+  })
 
   const conclusion = propositionById(displayPropositionIds[displayPropositionIds.length - 1])
   const conclusionElement = !Boolean(conclusion) ? null : (
