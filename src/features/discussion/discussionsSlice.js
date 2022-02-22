@@ -73,13 +73,15 @@ function updateDiscussionLayout(discussionId, layout) {
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       dispatch(update({discussionId, layout}))
     }
-    catch (e) {
-      const errorType = e.errors ? e.errors[0].errorType : null
+    catch (exception) {
+      const errorType = exception.errors ? exception.errors[0].errorType : null
       if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
-        throw new Error('unexpected layout')
+        const newException = new Error()
+        newException.name = 'UnexpectedLayout'
+        throw newException
       }
       else {
-        throw e
+        throw exception
       }
     }
   }
@@ -188,21 +190,21 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
 
 function replaceSentence({key, section, discussionId, content}) {
   return async (dispatch, getState) => {
-    const state = getState()
-    let discussionSentences = {
-      propositions: state.discussions.propositions,
-      arguments: state.discussions.arguments,
-    }
-    const sentences = discussionSentences[section]
-    const sentence = sentences.find(s => s.key === key)
-    if (!sentence) {
-      console.error('not found', key, section, discussionSentences)
-      throw new Error('sentence not found')
-    }
-    const input = {input: {content, discussionSentencesId: discussionId}}
-    const response = await API.graphql(graphqlOperation(mutations.createSentence, input))
-    const newSentenceId = response.data.createSentence.id
     try {
+      const state = getState()
+      let discussionSentences = {
+        propositions: state.discussions.propositions,
+        arguments: state.discussions.arguments,
+      }
+      const sentences = discussionSentences[section]
+      const sentence = sentences.find(s => s.key === key)
+      if (!sentence) {
+        console.error('not found', key, section, discussionSentences)
+        throw new Error('sentence not found')
+      }
+      const input = {input: {content, discussionSentencesId: discussionId}}
+      const response = await API.graphql(graphqlOperation(mutations.createSentence, input))
+      const newSentenceId = response.data.createSentence.id
       const index = nextUniqueIndex(sentence, sentences)
       const newSentence = {key, index, content, id: newSentenceId}
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
@@ -220,13 +222,13 @@ function replaceSentence({key, section, discussionId, content}) {
       await dispatch(updateDiscussionLayout(discussionId, layout))
       dispatch(updateSentence({section, newSentence: newSentence}))
     }
-    catch (e) {
-      if (e.message !== 'unexpected layout') {
-        throw e
-      }
-      else {
+    catch (exception) {
+      if (exception.name === 'UnexpectedLayout') {
         console.warn('try again')
         dispatch(replaceSentenceAction({key, section, discussionId, content}))
+      }
+      else {
+        throw exception
       }
     }
   }
