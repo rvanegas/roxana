@@ -4,13 +4,10 @@ import {Heading} from '@aws-amplify/ui-react'
 import {selectDiscussions} from './discussionsSlice'
 import {Argument} from './Argument'
 
-export function ArgumentsList(discussionId) {
+export function ArgumentsList() {
   const [readOnly] = useState(false)
   const discussions = useSelector(selectDiscussions)
-
-  if (!discussions.arguments) {
-    return null;
-  }
+  const discussionId = discussions.discussionId
 
   const argumentElements = discussions.arguments.map(argument => (
     <Argument key={argument.key} discussionId={discussionId} argument={argument} readOnly={readOnly} />

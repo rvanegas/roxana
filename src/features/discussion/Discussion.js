@@ -18,13 +18,14 @@ export function Discussion() {
   const discussions = useSelector(selectDiscussions)
   const discussionStatus = discussions.status
   const propositionsEmpty = discussions.propositions.length === 0
+  const argumentsEmpty = discussions.arguments.length === 0
 
   useEffect(() => {
     if (discussionStatus === 'init') {
       dispatch(getDiscussionAction({discussionId}))
-    } else if (discussionStatus === 'idle' && propositionsEmpty) {
-      dispatch(focusOnNextSentence('propositions'))
-      dispatch(focusOnNextSentence('arguments'))
+    } else if (discussionStatus === 'idle') {
+      if (argumentsEmpty) dispatch(focusOnNextSentence('arguments'))
+      if (propositionsEmpty) dispatch(focusOnNextSentence('propositions'))
     }
     const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
     .subscribe({
@@ -35,7 +36,7 @@ export function Discussion() {
       error: error => console.error(error),
     })
     return () => subscription.unsubscribe()
-  }, [dispatch, discussionStatus, propositionsEmpty])
+  }, [dispatch, discussionStatus, argumentsEmpty, propositionsEmpty])
 
   return (
     <Grid
