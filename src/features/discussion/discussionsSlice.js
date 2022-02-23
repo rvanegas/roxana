@@ -234,7 +234,27 @@ function replaceSentence({key, section, discussionId, content}) {
   }
 }
 
+export function initializeDiscussion({discussionId, layout}) {
+  return async (dispatch, getState) => {
+    async function initializeSection(section) {
+      const state = getState()
+      console.log(state.discussions)
+      const {addSentence} = discussionsSlice.actions
+      if (state.discussions[section].length === 0) {
+        const key = nanoid()
+        dispatch(addSentence({section, key}))
+        await dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
+      }
+    }
+    await dispatch(getDiscussionAction({discussionId, layout}))
+    await initializeSection('propositions')
+    await initializeSection('arguments')
+  }
+}
+
+
 const eventHandlerFunctions = {
+  initializeDiscussion,
   getDiscussion,
   replaceSentence,
 }
@@ -260,6 +280,10 @@ function enqueueEvent(action) {
   }
 }
 
+export function initializeDiscussionAction(discussion) {
+  const action = {handler: 'initializeDiscussion', payload: discussion}
+  return dispatch => dispatch(enqueueEvent(action))
+}
 export function getDiscussionAction(discussion) {
   const action = {handler: 'getDiscussion', payload: discussion}
   return dispatch => dispatch(enqueueEvent(action))
@@ -270,20 +294,12 @@ export function replaceSentenceAction(value) {
 }
 
 export function focusOnNextSentence(section, currentKey) {
-  const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
-    const discussionId = state.discussions.discussionId
     let nextPos = currentKey ? state.discussions[section].findIndex(p => p.key === currentKey) + 1 : 0
     let sentence = state.discussions[section][nextPos]
     if (sentence) {
       dispatch(updateSentence({section, newSentence: {key: sentence.key, autoFocus: true}}))
-    }
-    else {
-      const key = nanoid()
-      dispatch(addSentence({section, key}))
-      dispatch(updateSentence({section, newSentence: {key, autoFocus: true}}))
-      await dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
     }
   }
 }
