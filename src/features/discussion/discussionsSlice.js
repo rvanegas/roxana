@@ -5,7 +5,7 @@ import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 
 const initialState = {
-  discussionId: '',
+  discussionId: null,
   propositions: [],
   arguments: [],
   layout: '',
