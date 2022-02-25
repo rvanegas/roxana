@@ -41,13 +41,13 @@ const discussionsSlice = createSlice({
       state[section].push(sentence)
     },
     updateSentence(state, action) {
-      // if (action.payload.newSentence.autoFocus)
-      //   console.log('update focus', action.payload)
       const {section, newSentence} = action.payload
       const sentence = state[section].find(p => p.key === newSentence.key)
       if (sentence) {
         Object.assign(sentence, newSentence)
-        if (sentence.autoFocus === false) delete sentence.autoFocus
+        if (sentence.autoFocus === false) {
+          delete sentence.autoFocus
+        }
       }
     },
     setFocus(state, action) {
@@ -94,7 +94,6 @@ function updateDiscussionLayout(discussionId, layout) {
     catch (exception) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
       if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
-        // console.log('layouts', layoutOld, layout)
         const newException = new Error()
         newException.name = 'UnexpectedLayout'
         throw newException
@@ -146,8 +145,12 @@ function getDiscussion({discussionId, layout: subscriptionLayout}) {
         const response = await API.graphql(graphqlOperation(custom.getDiscussionPaginated, input))
         discussion = response.data.getDiscussion
         nextToken = discussion.sentences.nextToken
-        if (!discussion) throw new Error('no such discussion')
-        if (!layout) await parseLayout()
+        if (!discussion) {
+          throw new Error('no such discussion')
+        }
+        if (!layout) {
+          await parseLayout()
+        }
         loadedSentences.push(...discussion.sentences.items)
       } while (nextToken && !isReload)
     }
@@ -170,9 +173,13 @@ function getDiscussion({discussionId, layout: subscriptionLayout}) {
         let sentence = currentSentences.find(s => s.id === layoutEntry.id)
           || loadedSentences.find(s => s.id === layoutEntry.id)
           || await getSentence(layoutEntry.id)
-        if (!sentence) await removeSentence(section, pos, 'invalid sentence id, fixing layout')
+        if (!sentence) {
+          await removeSentence(section, pos, 'invalid sentence id, fixing layout')
+        }
         const notUnique = newSentences.some(s => s.id === sentence.id)
-        if (notUnique) await removeSentence(section, pos, 'non-unique sentence id, fixing layout')
+        if (notUnique) {
+          await removeSentence(section, pos, 'non-unique sentence id, fixing layout')
+        }
         const newSentence = {
           id: sentence.id,
           key: sentence.key || nanoid(),
@@ -188,8 +195,12 @@ function getDiscussion({discussionId, layout: subscriptionLayout}) {
     const state = getState()
     const eqDiscussion = discussionId === state.discussions.discussionId
     const eqLayout = subscriptionLayout === state.discussions.layout
-    if (!eqDiscussion && state.discussions.discussionId) throw new Error('not implemented')
-    if (eqLayout) return
+    if (!eqDiscussion && state.discussions.discussionId) {
+      throw new Error('not implemented')
+    }
+    if (eqLayout) {
+      return
+    }
 
     try {
       await loadDiscussion()
@@ -202,8 +213,10 @@ function getDiscussion({discussionId, layout: subscriptionLayout}) {
         arguments: newDiscussionSentences.arguments
       }))
     }
-    catch (e) {
-      // if (e.message !== 'resetLayout') throw e
+    catch (exception) {
+      if (exception.message !== 'resetLayout') {
+        throw exception
+      }
     }
   }
 }
@@ -297,7 +310,9 @@ const eventHandlerFunctions = {
 
 function enqueueEvent(action) {
   const {setStatus, eventEnqueue, eventDequeue} = discussionsSlice.actions
-  if (!action.handler) throw new Error('unknown handler', action.handler)
+  if (!action.handler) {
+    throw new Error('unknown handler', action.handler)
+  }
   return async (dispatch, getState) => {
     dispatch(eventEnqueue(action))
     const status = getState().discussions.status
@@ -306,7 +321,9 @@ function enqueueEvent(action) {
       let event
       for (;;) {
         event = getState().discussions.eventQueue[0]
-        if (!event) break
+        if (!event) {
+          break
+        }
         const handler = eventHandlerFunctions[event.handler]
         await dispatch(handler(event.payload))
         dispatch(eventDequeue())
