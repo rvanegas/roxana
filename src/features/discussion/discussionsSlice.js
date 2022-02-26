@@ -1,16 +1,12 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, nanoid} from '@reduxjs/toolkit'
+import Cookies from 'universal-cookie';
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
-// import {sleep} from '../../app/util'
+import * as util from '../../app/util'
 
-import Cookies from 'universal-cookie';
 const cookies = new Cookies();
-
-// cookies.set('myCat', 'Pacman', { path: '/' });
-// console.log(cookies.get('myCat')); // Pacman
-
 
 const initialState = {
   eventQueue: [],
@@ -21,9 +17,6 @@ const initialState = {
   arguments: [],
   layout: '',
 }
-
-// cookies.set('roxanaDiscussionId', '22fac86c-13a1-4df6-87e7-732f06e5e53d')
-console.log('cookie:', cookies.get('roxanaDiscussionId'))
 
 // do this in TS
 // function validateSection(section) {
@@ -107,7 +100,6 @@ function updateDiscussionLayout(discussionId, layout) {
 
 function getDiscussion({discussionId, layout: subscriptionLayout}) {
   return async (dispatch, getState) => {
-    // console.log('get')
     const loadedSentences = []
     const newDiscussionSentences = {}
     let discussion
@@ -137,7 +129,7 @@ function getDiscussion({discussionId, layout: subscriptionLayout}) {
     }
 
     async function loadDiscussion() {
-      const isReload = state.discussions.discussionId === discussionId
+      const isReload = state.discussions.propositions.length > 0
       const limit = isReload ? 1 : 100
       let nextToken
       do {
@@ -170,7 +162,7 @@ function getDiscussion({discussionId, layout: subscriptionLayout}) {
       const currentSentences = state.discussions[section]
       for (let pos = 0; pos < layout[section].length; pos++) {
         const layoutEntry = layout[section][pos]
-        let sentence = currentSentences.find(s => s.id === layoutEntry.id)
+        const sentence = currentSentences.find(s => s.id === layoutEntry.id)
           || loadedSentences.find(s => s.id === layoutEntry.id)
           || await getSentence(layoutEntry.id)
         if (!sentence) {

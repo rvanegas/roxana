@@ -9,6 +9,7 @@
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^7.2.1",
     "aws-amplify": "^3.0.25",
+    "crypto-random-string": "^4.0.0",
     "draft-js": "^0.11.7",
     "react": "^17.0.2",
     "react-dnd": "^14.0.5",
