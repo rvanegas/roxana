@@ -60,12 +60,20 @@ const discussionsSlice = createSlice({
       state.eventQueue.shift()
     },
     updateSentences(state, action) {
-      const {layout, newSentences} = action.payload
+      function mergeInNewSentences(section) {
+        const unsavedSentences = state[section].filter(s => !s.id)
+        const base = nextIndex(newSentences[section])
+        const reindexedUnsavedSentences = unsavedSentences.map((sentence, i) => {
+          sentence.index = base + i;
+          return sentence
+        })
+        state[section] = newSentences[section].concat(reindexedUnsavedSentences)
+      }
+      const {layout, version, newSentences} = action.payload
       state.layout = layout
-      const unsavedPropositions = state.propositions.filter(s => !s.id)
-      const unsavedArguments = state.arguments.filter(s => !s.id)
-      state.propositions = newSentences.propositions.concat(unsavedPropositions)
-      state.arguments = newSentences.arguments.concat(unsavedArguments)
+      state.version = version
+      mergeInNewSentences('propositions')
+      mergeInNewSentences('arguments')
     },
     update(state, action) {
       Object.assign(state, action.payload)
@@ -218,6 +226,7 @@ function initializeDiscussion({discussionId}) {
   return async (dispatch, getState) => {
     if (!discussionId) {
       discussionId = util.discussionIdFromQuery()
+      cookies.set(cookieKey, discussionId)
     }
     if (!discussionId) {
       discussionId = cookies.get(cookieKey)
