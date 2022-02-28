@@ -10,10 +10,10 @@ export function generateShortId() {
   return cryptoRandomString({length: 6, type: 'distinguishable'}).toLowerCase();
 }
 
-export function discussionIdFromQuery() {
+export function discussionIdFromUrl() {
   return parse(window.location.href, true).query.d
 }
 
-export function redirectToDiscussionIdQuery(discussionId) {
+export function redirectToDiscussionId(discussionId) {
   window.location.search = `?d=${discussionId}`
 }
