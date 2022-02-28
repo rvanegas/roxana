@@ -218,16 +218,18 @@ function initializeDiscussion({discussionId}) {
   return async (dispatch, getState) => {
     if (!discussionId) {
       discussionId = window.location.pathname.substring(1)
-      dispatch(update({discussionId, version: 0, propositions: [], arguments: []}))
     }
     if (!discussionId) {
       discussionId = cookies.get(cookieKey)
-      window.location.pathname = `/${discussionId}`
-    }
-    if (!discussionId) {
-      dispatch(createNewDiscussionAction())
+      if (discussionId) {
+        window.location.pathname = `/${discussionId}`
+      }
+      else {
+        await dispatch(createNewDiscussionAction())
+      }
       return
     }
+    dispatch(update({discussionId, version: 0, propositions: [], arguments: []}))
     await dispatch(getDiscussion({discussionId}))
     if (getState().discussions.propositions.length === 0) {
       await dispatch(addNewSentence('propositions'))
@@ -248,9 +250,7 @@ function createNewDiscussion() {
     const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
     const discussionId = response.data.createDiscussion.id
     cookies.set(cookieKey, discussionId)
-    window.location.pathname = '/'
-    dispatch(update({layout, discussionId, version, propositions: [], arguments: []}))
-    dispatch(initializeDiscussionAction({discussionId}))
+    window.location.pathname = `/${discussionId}`
   }
 }
 
