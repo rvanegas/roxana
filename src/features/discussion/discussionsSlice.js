@@ -390,6 +390,10 @@ export function focusOnSentence(section, position) {
   }
 }
 
+export function propositionIdsFromArgument(argument) {
+  return argument.content ? argument.content.split(' ') : []
+}
+
 export const selectDiscussions = state => state.discussions
 export const {unsetFocus} = discussionsSlice.actions
 export default discussionsSlice.reducer

@@ -1,15 +1,21 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {useSelector} from 'react-redux'
 import {Text, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
 import {
   selectDiscussions,
+  propositionIdsFromArgument,
 } from './discussionsSlice'
 
 export function PropositionsList() {
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
-  const [readOnly] = useState(false)
+  const arguments_ = discussions.arguments || []
+  // can be memoized
+  const propositionIds = arguments_.map(a => propositionIdsFromArgument(a)).flat()
+  function isReadOnly(proposition) {
+    return propositionIds.some(id => id === proposition.id)
+  }
 
   const propositionEntities = !propositions ? null : propositions.map((proposition, position) => (
     <React.Fragment key={proposition.key}>
@@ -17,7 +23,9 @@ export function PropositionsList() {
         {proposition.index}
       </View>
       <View columnStart={3}>
-        <Proposition position={position} discussionId={discussions.discussionId} proposition={proposition} readOnly={readOnly} />
+        <Proposition position={position} discussionId={discussions.discussionId}
+          proposition={proposition} readOnly={isReadOnly(proposition)}
+        />
       </View>
     </React.Fragment>
   ))
