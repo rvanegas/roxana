@@ -217,12 +217,12 @@ function getDiscussion({discussionId, layout, version}) {
 function initializeDiscussion({discussionId}) {
   return async (dispatch, getState) => {
     if (!discussionId) {
-      discussionId = window.location.pathname.substring(1)
+      discussionId = util.discussionIdFromQuery()
     }
     if (!discussionId) {
       discussionId = cookies.get(cookieKey)
       if (discussionId) {
-        window.location.pathname = `/${discussionId}`
+        util.redirectToDiscussionIdQuery(discussionId)
       }
       else {
         await dispatch(createNewDiscussionAction())
@@ -250,7 +250,7 @@ function createNewDiscussion() {
     const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
     const discussionId = response.data.createDiscussion.id
     cookies.set(cookieKey, discussionId)
-    window.location.pathname = `/${discussionId}`
+    util.redirectToDiscussionIdQuery(discussionId)
   }
 }
 
