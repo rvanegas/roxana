@@ -4,19 +4,29 @@ input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONL
 
 type Discussion @model {
   id: ID!
+  shortId: String! @index(name: "byShortId")
   layout: String!
-  sentences: [Sentence!] @hasMany
+  version: Int!
   layoutStates: [LayoutState!] @hasMany
+
+  sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])
+  currentSentences: [Sentence!] @hasMany(indexName: "byCurrentDiscussion", fields: ["id"])
 }
 
 type LayoutState @model {
   id: ID!
-  layout: String!                            # immutable
+  layout: String!  # immutable
+  version: Int!
   discussion: Discussion! @belongsTo
 }
 
 type Sentence @model {
   id: ID!
-  content: String!                           # immutable
-  discussion: Discussion! @belongsTo         # original
+  content: String!  # immutable
+
+  discussionId: ID! @index(name: "byDiscussion")
+  discussion: Discussion! @belongsTo(fields: ["discussionId"])
+
+  currentDiscussionId: ID! @index(name: "byCurrentDiscussion")
+  currentDiscussion: Discussion! @belongsTo(fields: ["currentDiscussionId"])
 }

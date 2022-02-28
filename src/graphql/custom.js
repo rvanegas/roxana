@@ -1,17 +1,19 @@
-export const getDiscussionPaginated = /* GraphQL */ `
-  query GetDiscussion($id: ID!, $limit: Int, $nextToken: String) {
+export const getDiscussionSimple = /* GraphQL */ `
+  query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
+      shortId
       layout
-      sentences(limit: $limit, nextToken: $nextToken) {
+      version
+      currentSentences {
         items {
           id
           content
+          discussionId
+          currentDiscussionId
           createdAt
           updatedAt
-          discussionSentencesId
         }
-        nextToken
       }
       createdAt
       updatedAt
@@ -23,6 +25,7 @@ export const onUpdateDiscussionLayout = /* GraphQL */ `
     onUpdateDiscussion {
       id
       layout
+      version
       createdAt
       updatedAt
     }

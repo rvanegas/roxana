@@ -5,24 +5,39 @@ export const onCreateDiscussion = /* GraphQL */ `
   subscription OnCreateDiscussion {
     onCreateDiscussion {
       id
+      shortId
       layout
-      sentences {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionSentencesId
-        }
-        nextToken
-      }
+      version
       layoutStates {
         items {
           id
           layout
+          version
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      currentSentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -35,24 +50,39 @@ export const onUpdateDiscussion = /* GraphQL */ `
   subscription OnUpdateDiscussion {
     onUpdateDiscussion {
       id
+      shortId
       layout
-      sentences {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionSentencesId
-        }
-        nextToken
-      }
+      version
       layoutStates {
         items {
           id
           layout
+          version
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      currentSentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -65,24 +95,39 @@ export const onDeleteDiscussion = /* GraphQL */ `
   subscription OnDeleteDiscussion {
     onDeleteDiscussion {
       id
+      shortId
       layout
-      sentences {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionSentencesId
-        }
-        nextToken
-      }
+      version
       layoutStates {
         items {
           id
           layout
+          version
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      currentSentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -96,13 +141,19 @@ export const onCreateLayoutState = /* GraphQL */ `
     onCreateLayoutState {
       id
       layout
+      version
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -119,13 +170,19 @@ export const onUpdateLayoutState = /* GraphQL */ `
     onUpdateLayoutState {
       id
       layout
+      version
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -142,13 +199,19 @@ export const onDeleteLayoutState = /* GraphQL */ `
     onDeleteLayoutState {
       id
       layout
+      version
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -165,13 +228,37 @@ export const onCreateSentence = /* GraphQL */ `
     onCreateSentence {
       id
       content
+      discussionId
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      currentDiscussionId
+      currentDiscussion {
+        id
+        shortId
+        layout
+        version
         layoutStates {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
           nextToken
         }
         createdAt
@@ -179,7 +266,6 @@ export const onCreateSentence = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionSentencesId
     }
   }
 `;
@@ -188,13 +274,37 @@ export const onUpdateSentence = /* GraphQL */ `
     onUpdateSentence {
       id
       content
+      discussionId
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      currentDiscussionId
+      currentDiscussion {
+        id
+        shortId
+        layout
+        version
         layoutStates {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
           nextToken
         }
         createdAt
@@ -202,7 +312,6 @@ export const onUpdateSentence = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionSentencesId
     }
   }
 `;
@@ -211,13 +320,37 @@ export const onDeleteSentence = /* GraphQL */ `
     onDeleteSentence {
       id
       content
+      discussionId
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      currentDiscussionId
+      currentDiscussion {
+        id
+        shortId
+        layout
+        version
         layoutStates {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
           nextToken
         }
         createdAt
@@ -225,7 +358,6 @@ export const onDeleteSentence = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionSentencesId
     }
   }
 `;

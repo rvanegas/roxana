@@ -6,7 +6,7 @@ import {PropositionsList} from './PropositionsList'
 import {ArgumentsList} from './ArgumentsList'
 import * as custom from '../../graphql/custom'
 import {
-  newDiscussionAction,
+  createNewDiscussionAction,
   initializeDiscussionAction,
   getDiscussionAction,
   selectDiscussions,
@@ -15,30 +15,28 @@ import {
 export function Discussion() {
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
-  const discussionStatus = discussions.status
+  const discussionStatusInit = discussions.status === 'init'
   const discussionId = discussions.discussionId
 
   function handleButton() {
-    console.log('newDiscussion')
-    dispatch(newDiscussionAction())
+    dispatch(createNewDiscussionAction())
   }
 
   useEffect(() => {
+    if (discussionStatusInit) {
+      dispatch(initializeDiscussionAction({discussionId}))
+    }
     if (discussionId) {
-      if (discussionStatus === 'init') {
-        dispatch(initializeDiscussionAction({discussionId}))
-      }
-      const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
-      .subscribe({
+      const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)).subscribe({
         next: next => {
-          const {id: discussionId, layout} = next.value.data.onUpdateDiscussion
-          dispatch(getDiscussionAction({discussionId, layout}))
+          const {id: discussionId, layout, version} = next.value.data.onUpdateDiscussion
+          dispatch(getDiscussionAction({discussionId, layout, version}))
         },
         error: error => console.error(error),
       })
       return () => subscription.unsubscribe()
     }
-  }, [dispatch, discussionStatus, discussionId])
+  }, [dispatch, discussionStatusInit, discussionId])
 
   return (
     <Grid

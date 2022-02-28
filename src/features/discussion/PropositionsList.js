@@ -11,7 +11,7 @@ export function PropositionsList() {
   const propositions = discussions.propositions
   const [readOnly] = useState(false)
 
-  const propositionEntities = propositions.map((proposition, position) => (
+  const propositionEntities = !propositions ? null : propositions.map((proposition, position) => (
     <React.Fragment key={proposition.key}>
       <View columnStart={2}>
         {proposition.index}
