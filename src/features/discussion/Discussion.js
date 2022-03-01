@@ -43,7 +43,7 @@ export function Discussion() {
       templateColumns="1rem 2rem 1fr 3rem"
       gap="var(--amplify-space-small)"
     >
-      <Button columnSpan={2} onClick={handleButton}>create</Button>
+      <Button columnSpan={2} onClick={handleButton}>New</Button>
       <PropositionsList />
       <ArgumentsList />
     </Grid>
