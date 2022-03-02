@@ -320,9 +320,11 @@ function replaceSentence({key, section, discussionId, content}) {
 // fold into slice
 function addNewSentence(section, andFocus) {
   return async (dispatch, getState) => {
+    const discussionId = getState().discussions.discussionId
     const {addSentence} = discussionsSlice.actions
     const key = nanoid()
     await dispatch(addSentence({section, key}))
+    dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
   }
 }
 

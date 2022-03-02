@@ -11,7 +11,9 @@ export function ArgumentsList() {
   const arguments_ = discussions.arguments
 
   const argumentElements = !arguments_ ? null : arguments_.map((argument, position) => (
-    <Argument position={position} key={argument.key} discussionId={discussionId} argument={argument} readOnly={readOnly} />
+    <Argument position={position} key={argument.key} discussionId={discussionId}
+      argument={argument} readOnly={readOnly}
+    />
   ))
 
   return (

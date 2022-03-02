@@ -12,9 +12,8 @@ export function Proposition({position, discussionId, proposition, readOnly}) {
   const dispatch = useDispatch()
   const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
-  const [placeholder, setPlaceholder] = useState(() => proposition.index === 1 ?
+  const placeholder = proposition.index === 1 ?
     'Type a proposition. For example, "Socrates is a man."' : null
-  )
 
   function initEditorState() {
     const contentState = ContentState.createFromText(proposition.content)
@@ -24,9 +23,6 @@ export function Proposition({position, discussionId, proposition, readOnly}) {
     const content = editorState.getCurrentContent().getPlainText()
     if (proposition.content !== content) {
       dispatch(replaceSentenceAction({key: proposition.key, section: 'propositions', discussionId, content}))
-    }
-    if (placeholder && Boolean(content)) {
-      setPlaceholder(null)
     }
   }
   function myKeyBindingFn(e) {
