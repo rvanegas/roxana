@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {API, graphqlOperation} from 'aws-amplify'
-import {Button, Grid} from '@aws-amplify/ui-react'
+import {Button, Grid, Text} from '@aws-amplify/ui-react'
 import {PropositionsList} from './PropositionsList'
 import {ArgumentsList} from './ArgumentsList'
 import * as custom from '../../graphql/custom'
@@ -15,6 +15,7 @@ import {
 export function Discussion() {
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
+  const isSyncing = discussions.eventQueue.length !== 0
   const discussionStatusInit = discussions.status === 'init'
   const discussionId = discussions.discussionId
 
@@ -44,6 +45,9 @@ export function Discussion() {
       gap="var(--amplify-space-small)"
     >
       <Button columnSpan={2} onClick={handleButton}>New</Button>
+      <Text alignSelf="center" style={{justifySelf: 'start'}}>
+        {isSyncing && 'syncing...'}
+      </Text>
       <PropositionsList />
       <ArgumentsList />
     </Grid>
