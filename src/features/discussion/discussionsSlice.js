@@ -4,7 +4,12 @@ import Cookies from 'universal-cookie';
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
-import * as util from '../../app/util'
+import {
+  discussionIdFromUrl,
+  redirectToDiscussionId,
+  generateDiscussionId,
+  incrementDiscussionIdLength
+} from '../../app/util'
 
 const cookies = new Cookies();
 const cookieKey = 'roxanaDiscussionId'
@@ -225,7 +230,7 @@ function getDiscussion({discussionId, layout, version}) {
 function initializeDiscussion({discussionId}) {
   return async (dispatch, getState) => {
     if (!discussionId) {
-      discussionId = util.discussionIdFromUrl()
+      discussionId = discussionIdFromUrl()
       if (discussionId) {
         cookies.set(cookieKey, discussionId)
       }
@@ -233,7 +238,7 @@ function initializeDiscussion({discussionId}) {
     if (!discussionId) {
       discussionId = cookies.get(cookieKey)
       if (discussionId) {
-        util.redirectToDiscussionId(discussionId)
+        redirectToDiscussionId(discussionId)
       }
       else {
         await dispatch(createNewDiscussionAction())
@@ -261,13 +266,28 @@ function initializeDiscussion({discussionId}) {
 function createNewDiscussion() {
   return async (dispatch) => {
     const layout = JSON.stringify({propositions: [], arguments: []})
-    const shortId = util.generateShortId()
     const version = 1
-    const variables = {input: {shortId, layout, version}}
-    const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
-    const discussionId = response.data.createDiscussion.id
-    cookies.set(cookieKey, discussionId)
-    util.redirectToDiscussionId(discussionId)
+    const variables = {input: {layout, version}}
+    for (;;) {
+      try {
+        variables.input.id = generateDiscussionId()
+        const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
+        const discussionId = response.data.createDiscussion.id
+        cookies.set(cookieKey, discussionId)
+        redirectToDiscussionId(discussionId)
+        break
+      }
+      catch (exception) {
+        const errorType = exception.errors ? exception.errors[0].errorType : null
+        if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
+          // console.log('failed create, retrying...')
+          incrementDiscussionIdLength()
+        }
+        else {
+          throw exception
+        }
+      }
+    }
   }
 }
 
@@ -286,8 +306,8 @@ function replaceSentence({key, section, discussionId, content}) {
         console.error('not found', key, section, discussionSentences)
         throw new Error('sentence not found')
       }
-      const input = {input: {content, discussionId, currentDiscussionId: discussionId}}
-      const response = await API.graphql(graphqlOperation(mutations.createSentence, input))
+      const variables = {input: {content, discussionId, currentDiscussionId: discussionId}}
+      const response = await API.graphql(graphqlOperation(mutations.createSentence, variables))
       const newSentenceId = response.data.createSentence.id
       const index = nextUniqueIndex(sentence, sentences)
       const newSentence = {key, index, content, id: newSentenceId}
@@ -323,7 +343,7 @@ function addNewSentence(section, andFocus) {
     const discussionId = getState().discussions.discussionId
     const {addSentence} = discussionsSlice.actions
     const key = nanoid()
-    await dispatch(addSentence({section, key}))
+    dispatch(addSentence({section, key}))
     dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
   }
 }

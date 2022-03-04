@@ -6,8 +6,12 @@ export async function sleep(ms) {
   await new Promise(res => setTimeout(res, ms))
 }
 
-export function generateShortId() {
-  return cryptoRandomString({length: 6, type: 'distinguishable'}).toLowerCase();
+var discussionIdLength = 3
+export function incrementDiscussionIdLength() {
+  discussionIdLength++
+}
+export function generateDiscussionId() {
+  return cryptoRandomString({length: discussionIdLength, type: 'distinguishable'}).toLowerCase();
 }
 
 export function discussionIdFromUrl() {

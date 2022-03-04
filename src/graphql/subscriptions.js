@@ -5,7 +5,6 @@ export const onCreateDiscussion = /* GraphQL */ `
   subscription OnCreateDiscussion {
     onCreateDiscussion {
       id
-      shortId
       layout
       version
       layoutStates {
@@ -16,6 +15,16 @@ export const onCreateDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -50,7 +59,6 @@ export const onUpdateDiscussion = /* GraphQL */ `
   subscription OnUpdateDiscussion {
     onUpdateDiscussion {
       id
-      shortId
       layout
       version
       layoutStates {
@@ -61,6 +69,16 @@ export const onUpdateDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -95,7 +113,6 @@ export const onDeleteDiscussion = /* GraphQL */ `
   subscription OnDeleteDiscussion {
     onDeleteDiscussion {
       id
-      shortId
       layout
       version
       layoutStates {
@@ -106,6 +123,16 @@ export const onDeleteDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -144,10 +171,12 @@ export const onCreateLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -173,10 +202,12 @@ export const onUpdateLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -202,10 +233,12 @@ export const onDeleteLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -231,10 +264,12 @@ export const onCreateSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -249,10 +284,12 @@ export const onCreateSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -277,10 +314,12 @@ export const onUpdateSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -295,10 +334,12 @@ export const onUpdateSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -323,10 +364,12 @@ export const onDeleteSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -341,16 +384,189 @@ export const onDeleteSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
           nextToken
         }
         currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onCreateUser = /* GraphQL */ `
+  subscription OnCreateUser {
+    onCreateUser {
+      username
+      discussions {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateUser = /* GraphQL */ `
+  subscription OnUpdateUser {
+    onUpdateUser {
+      username
+      discussions {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteUser = /* GraphQL */ `
+  subscription OnDeleteUser {
+    onDeleteUser {
+      username
+      discussions {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onCreateDiscussionUsers = /* GraphQL */ `
+  subscription OnCreateDiscussionUsers {
+    onCreateDiscussionUsers {
+      id
+      discussionID
+      userID
+      discussion {
+        id
+        layout
+        version
+        layoutStates {
+          nextToken
+        }
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      user {
+        username
+        discussions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateDiscussionUsers = /* GraphQL */ `
+  subscription OnUpdateDiscussionUsers {
+    onUpdateDiscussionUsers {
+      id
+      discussionID
+      userID
+      discussion {
+        id
+        layout
+        version
+        layoutStates {
+          nextToken
+        }
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      user {
+        username
+        discussions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteDiscussionUsers = /* GraphQL */ `
+  subscription OnDeleteDiscussionUsers {
+    onDeleteDiscussionUsers {
+      id
+      discussionID
+      userID
+      discussion {
+        id
+        layout
+        version
+        layoutStates {
+          nextToken
+        }
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      user {
+        username
+        discussions {
           nextToken
         }
         createdAt

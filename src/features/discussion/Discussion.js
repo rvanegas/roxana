@@ -5,6 +5,7 @@ import {Button, Grid, Text} from '@aws-amplify/ui-react'
 import {PropositionsList} from './PropositionsList'
 import {ArgumentsList} from './ArgumentsList'
 import * as custom from '../../graphql/custom'
+
 import {
   createNewDiscussionAction,
   initializeDiscussionAction,
