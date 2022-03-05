@@ -49,7 +49,7 @@ export function Proposition({position, discussionId, proposition, readOnly}) {
 
   const gray = null // `${proposition.content} [${proposition.key}] [${proposition.id}]`
   return (
-    <React.Fragment key={proposition.key}>
+    <React.Fragment>
       <View columnSpan={2}>
         <Button variation="link" size="small">y</Button>
         <Button variation="link" size="small">n</Button>

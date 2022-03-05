@@ -24,7 +24,7 @@ export function PropositionsList() {
   // console.log('username', currentUser.username)
 
   const propositionEntities = !propositions ? null : propositions.map((proposition, position) => (
-    <Proposition position={position} discussionId={discussions.discussionId}
+    <Proposition key={proposition.key} position={position} discussionId={discussions.discussionId}
       proposition={proposition} readOnly={isReadOnly(proposition)}
     />
   ))
