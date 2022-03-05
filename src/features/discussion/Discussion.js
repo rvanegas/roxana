@@ -42,7 +42,7 @@ export function Discussion() {
 
   return (
     <Grid
-      templateColumns="1rem 2rem 1fr 3rem"
+      templateColumns="2rem 2rem 1fr 3rem"
       gap="var(--amplify-space-small)"
     >
       <Button columnSpan={2} onClick={handleButton}>New</Button>

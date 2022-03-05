@@ -1,15 +1,17 @@
-import React, {useContext} from 'react'
+import React from 'react'
+// import React, {useContext} from 'react'
 import {useSelector} from 'react-redux'
-import {Text, View, Heading} from '@aws-amplify/ui-react'
+import {Text, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
-import {CurrentUserContext} from '../user/User'
+// import {CurrentUserContext} from '../user/User'
+import '@aws-amplify/ui-react/styles.css'
 import {
   selectDiscussions,
   propositionIdsFromArgument,
 } from './discussionsSlice'
 
 export function PropositionsList() {
-  const currentUser = useContext(CurrentUserContext)
+  // const currentUser = useContext(CurrentUserContext)
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
   const arguments_ = discussions.arguments || []
@@ -22,16 +24,9 @@ export function PropositionsList() {
   // console.log('username', currentUser.username)
 
   const propositionEntities = !propositions ? null : propositions.map((proposition, position) => (
-    <React.Fragment key={proposition.key}>
-      <View columnStart={2}>
-        {proposition.index}
-      </View>
-      <View columnStart={3}>
-        <Proposition position={position} discussionId={discussions.discussionId}
-          proposition={proposition} readOnly={isReadOnly(proposition)}
-        />
-      </View>
-    </React.Fragment>
+    <Proposition position={position} discussionId={discussions.discussionId}
+      proposition={proposition} readOnly={isReadOnly(proposition)}
+    />
   ))
 
   return (

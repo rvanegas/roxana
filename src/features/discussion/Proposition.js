@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {useDispatch} from 'react-redux'
-import {View, Divider, Text} from '@aws-amplify/ui-react'
+import {Button, View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   unsetFocus,
@@ -39,6 +39,7 @@ export function Proposition({position, discussionId, proposition, readOnly}) {
     }
     return 'not-handled'
   }
+
   useEffect(() => {
     if (proposition.autoFocus) {
       editorRef.current.focus()
@@ -48,14 +49,28 @@ export function Proposition({position, discussionId, proposition, readOnly}) {
 
   const gray = null // `${proposition.content} [${proposition.key}] [${proposition.id}]`
   return (
-    <View>
-      <Text color="lightgray">{gray}</Text>
-      <Editor editorState={editorState} onChange={setEditorState}
-        keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
-        onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
-        placeholder={placeholder}
-      />
-      <Divider/>
-    </View>
+    <React.Fragment key={proposition.key}>
+      <View columnSpan={2}>
+        <Button variation="link" size="small">y</Button>
+        <Button variation="link" size="small">n</Button>
+      </View>
+      <View columnSpan={2}>
+        <Text alignSelf="center" style={{justifySelf: 'start', lineHeight: '40px'}}>
+          draft
+        </Text>
+      </View>
+      <View columnStart={2}>
+        {proposition.index}
+      </View>
+      <View columnStart={3}>
+        <Text color="lightgray">{gray}</Text>
+        <Editor editorState={editorState} onChange={setEditorState}
+          keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
+          onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
+          placeholder={placeholder}
+        />
+        <Divider/>
+      </View>
+    </React.Fragment>
   )
 }
