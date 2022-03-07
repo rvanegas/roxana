@@ -1,6 +1,6 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, nanoid} from '@reduxjs/toolkit'
-import Cookies from 'universal-cookie';
+import Cookies from 'universal-cookie'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
@@ -11,7 +11,7 @@ import {
   incrementDiscussionIdLength
 } from '../../app/util'
 
-const cookies = new Cookies();
+const cookies = new Cookies()
 const cookieKey = 'roxanaDiscussionId'
 
 const initialState = {
