@@ -8,12 +8,13 @@ import {
   replaceSentenceAction,
 } from './discussionsSlice'
 
-export function Proposition({position, discussionId, proposition, readOnly}) {
+export function Proposition({position, discussionId, proposition}) {
   const dispatch = useDispatch()
   const editorRef = React.createRef() as {current: {blur(): void, focus(): void}}
   const [editorState, setEditorState] = useState(initEditorState)
   const placeholder = proposition.index === 1 ?
     'Type a proposition. For example, "Socrates is a man."' : null
+  const readOnly = false
 
   function initEditorState() {
     const contentState = ContentState.createFromText(proposition.content)
