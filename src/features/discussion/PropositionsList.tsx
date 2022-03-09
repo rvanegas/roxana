@@ -1,19 +1,15 @@
 import React from 'react'
-// import React, {useContext} from 'react'
 import {useSelector} from 'react-redux'
 import {Text, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
-// import {CurrentUserContext} from '../user/User'
 import '@aws-amplify/ui-react/styles.css'
 import {
   selectDiscussions,
 } from './discussionsSlice'
 
 export function PropositionsList() {
-  // const currentUser = useContext(CurrentUserContext)
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
-  // console.log('username', currentUser.username)
 
   const propositionEntities = !propositions ? null : propositions.map((proposition, position) => (
     <Proposition key={proposition.key} position={position} discussionId={discussions.discussionId}

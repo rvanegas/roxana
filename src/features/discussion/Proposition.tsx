@@ -1,7 +1,8 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useContext} from 'react'
 import {useDispatch} from 'react-redux'
 import {Button, View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
+import {CurrentUserContext} from '../user/User'
 import {
   unsetFocus,
   focusOnSentence,
@@ -14,7 +15,9 @@ export function Proposition({position, discussionId, proposition}) {
   const [editorState, setEditorState] = useState(initEditorState)
   const placeholder = proposition.index === 1 ?
     'Type a proposition. For example, "Socrates is a man."' : null
-  const readOnly = false
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser.username
+  const readOnly = proposition.status === 'draft' && proposition.owner !== username
 
   function initEditorState() {
     const contentState = ContentState.createFromText(proposition.content)
