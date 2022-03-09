@@ -13,11 +13,11 @@ Hub.listen('auth', async (data) => {
   }
 })
 
-export const CurrentUserContext = React.createContext()
+export const CurrentUserContext = React.createContext(null)
 
 export async function initializeUserFromAuth(username) {
   console.log('initializeUserFromAuth', username)
-  const response = await API.graphql(graphqlOperation(queries.getUser, {username}))
+  const response = await API.graphql(graphqlOperation(queries.getUser, {username})) as any
   console.log('getUser', response)
   if (!response.data.getUser) {
     const response = await API.graphql(graphqlOperation(mutations.createUser, {input: {username}}))
