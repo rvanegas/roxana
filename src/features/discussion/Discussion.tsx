@@ -29,7 +29,9 @@ export function Discussion() {
       dispatch(initializeDiscussionAction({discussionId}))
     }
     if (discussionId) {
-      const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)).subscribe({
+      const request = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)) as unknown
+      const requestTyped = request as {subscribe(any)}
+      const subscription = requestTyped.subscribe({
         next: next => {
           const {id: discussionId, layout, version} = next.value.data.onUpdateDiscussion
           dispatch(getDiscussionAction({discussionId, layout, version}))
