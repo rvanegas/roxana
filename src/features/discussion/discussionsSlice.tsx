@@ -49,6 +49,7 @@ const initialState: State = {
   status: 'init',
   error: undefined,
   discussionId: undefined,
+  username: undefined,
   version: undefined,
   propositions: [],
   arguments: [],
@@ -58,9 +59,23 @@ const discussionsSlice = createSlice({
   name: 'discussions',
   initialState: initialState,
   reducers: {
+    initialize(state, action) {
+      const discussionId: string = action.payload
+      Object.assign(state, {discussionId, version: 0, propositions: [], arguments: []})
+    },
+    incrementVersion(state, action) {
+      const version: number = action.payload
+      if (state.version && version !== state.version + 1) {
+        throw new Error('bad version increment')
+      }
+      state.version = version
+    },
     addSentence(state, action) {
       const {section, key}: {section: Section, key: string} = action.payload
-      const sentence: Sentence = {key, content: '', index: nextIndex(state[section]), status: 'draft', owner: state.username}
+      const sentence: Sentence = {
+        key, content: '', index: nextIndex(state[section]),
+        status: 'draft', owner: state.username
+      }
       state[section].push(sentence)
     },
     updateSentence(state, action) {
@@ -106,14 +121,9 @@ const discussionsSlice = createSlice({
       state.version = version
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
-    },
-    update(state, action) {
-      Object.assign(state, action.payload)
     }
   }
 })
-
-const {update} = discussionsSlice.actions
 
 function nextIndex(sentences: Sentence[]): number {
   return sentences.reduce((max, p) => Math.max(max, p.index), 0) + 1
@@ -125,6 +135,7 @@ function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
 }
 
 function updateDiscussionLayout({layout, isReset}) {
+  const {incrementVersion} = discussionsSlice.actions
   return async (dispatch, getState) => {
     try {
       const state = getState()
@@ -136,7 +147,7 @@ function updateDiscussionLayout({layout, isReset}) {
         version: {layout: {eq: {oldVersion}}},
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-      dispatch(update({version}))
+      dispatch(incrementVersion(version))
     }
     catch (exception: any) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
@@ -159,6 +170,7 @@ interface GetDiscussionInput {
 }
 
 function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
+  const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const newSentences = {propositions: [], arguments: []}
     let currentSentences = [] as Sentence[]
@@ -258,7 +270,6 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
       await parseLayout()
       await readLayout('propositions')
       await readLayout('arguments')
-      const {updateSentences} = discussionsSlice.actions
       dispatch(updateSentences({version, newSentences}))
     }
     catch (exception: any) {
@@ -270,6 +281,7 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
 }
 
 function initializeDiscussion({discussionId}) {
+  const {initialize} = discussionsSlice.actions
   return async (dispatch, getState) => {
     if (!discussionId) {
       discussionId = discussionIdFromUrl()
@@ -288,7 +300,7 @@ function initializeDiscussion({discussionId}) {
       return
     }
     try {
-      dispatch(update({discussionId, version: 0, propositions: [], arguments: []}))
+      dispatch(initialize(discussionId))
       await dispatch(getDiscussion({discussionId}))
     }
     catch {
@@ -334,8 +346,8 @@ function createNewDiscussion() {
 }
 
 function replaceSentence({key, section, discussionId, content}) {
+  const {updateSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const {updateSentence} = discussionsSlice.actions
     try {
       const state = getState()
       let discussionSentences = {
@@ -381,9 +393,9 @@ function replaceSentence({key, section, discussionId, content}) {
 }
 
 function addNewSentence(section : Section) {
+  const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const discussionId = getState().discussions.discussionId
-    const {addSentence} = discussionsSlice.actions
     const key = nanoid()
     dispatch(addSentence({section, key}))
     dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
@@ -439,7 +451,7 @@ export function replaceSentenceAction(value) {
   return dispatch => dispatch(enqueueEvent(action))
 }
 
-export function focusOnSentence(section, position) {
+export function focusOnSentence(section: Section, position: number) {
   const {setFocus} = discussionsSlice.actions
   return async (dispatch, getState) => {
     let state = getState()
