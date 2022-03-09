@@ -15,68 +15,76 @@ const cookies = new Cookies()
 const cookieKey = 'roxanaDiscussionId'
 
 interface Event {
-  handler,
-  payload
+  handler: string
+  payload: any
 }
 
 interface Sentence {
-  id,
-  index,
-  key,
-  content,
+  key: string
+  index: number
+  id?: string
+  content: string
+  autoFocus?: boolean
 }
 
-const initialState = {
+type Section = 'propositions' | 'arguments'
+
+interface State {
+  eventQueue: Event[]
+  status: string
+  error?: string
+  discussionId?: string
+  version?: number
+  propositions: Sentence[]
+  arguments: Sentence[]
+}
+
+const initialState: State = {
   eventQueue: [] as Event[],
   status: 'init',
-  error: null,
-  discussionId: null,
-  version: null,
-  propositions: null,
-  arguments: null,
+  error: undefined,
+  discussionId: undefined,
+  version: undefined,
+  propositions: [],
+  arguments: [],
 }
-
-// do this in TS
-// function validateSection(section) {
-//   if (section !== 'arguments' && section !== 'propositions') throw new Error('invalid section')
-// }
 
 const discussionsSlice = createSlice({
   name: 'discussions',
   initialState: initialState,
   reducers: {
     addSentence(state, action) {
-      const {section, key} = action.payload
-      // validateSection(section)
+      const {section, key}: {section: Section, key: string} = action.payload
       const sentence = {key, content: '', index: nextIndex(state[section])}
       state[section].push(sentence)
     },
     updateSentence(state, action) {
-      const {section, newSentence} = action.payload
+      const {section, newSentence}: {section: Section, newSentence: Sentence} = action.payload
       const sentence = state[section].find(p => p.key === newSentence.key)
       if (sentence) {
         Object.assign(sentence, newSentence)
       }
     },
     setFocus(state, action) {
-      const {section, position} = action.payload
+      const {section, position}: {section: Section, position: number} = action.payload
       state[section][position].autoFocus = true
     },
     unsetFocus(state, action) {
-      const {section, position} = action.payload
+      const {section, position}: {section: Section, position: number} = action.payload
       delete state[section][position].autoFocus
     },
     setStatus(state, action) {
       state.status = action.payload
     },
     eventEnqueue(state, action) {
-      state.eventQueue.push(action.payload)
+      const event: Event = action.payload
+      state.eventQueue.push(event)
     },
     eventDequeue(state, action) {
       state.eventQueue.shift()
     },
     updateSentences(state, action) {
-      function mergeInNewSentences(section) {
+      function mergeInNewSentences(section: Section) {
         const unsavedSentences = state[section].filter(s => !s.id)
         const base = nextIndex(newSentences[section])
         const reindexedUnsavedSentences = unsavedSentences.map((sentence, i) => {
@@ -85,7 +93,7 @@ const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {version, newSentences} = action.payload
+      const {version, newSentences}: {version: number, newSentences: Sentence[]} = action.payload
       state.version = version
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
@@ -98,11 +106,11 @@ const discussionsSlice = createSlice({
 
 const {update} = discussionsSlice.actions
 
-function nextIndex(sentences) {
+function nextIndex(sentences: Sentence[]): number {
   return sentences.reduce((max, p) => Math.max(max, p.index), 0) + 1
 }
 
-function nextUniqueIndex(sentence, sentences) {
+function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
   const indexUnique = sentences.filter(p => p.index === sentence.index).length === 1
   return indexUnique ? sentence.index : nextIndex(sentences)
 }
@@ -147,7 +155,6 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
     let currentSentences = [] as Sentence[]
     let discussion
     let layoutEntries
-
 
     async function resetLayout(message) {
       await dispatch(updateDiscussionLayout({layout: JSON.stringify(layoutEntries), isReset: true}))
@@ -357,7 +364,7 @@ function replaceSentence({key, section, discussionId, content}) {
   }
 }
 
-function addNewSentence(section) {
+function addNewSentence(section : Section) {
   return async (dispatch, getState) => {
     const discussionId = getState().discussions.discussionId
     const {addSentence} = discussionsSlice.actions
