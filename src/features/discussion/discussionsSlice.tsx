@@ -19,12 +19,16 @@ interface Event {
   payload: any
 }
 
+type SentenceStatus = 'draft' | 'editable' | 'readOnly' | 'referenced'
+
 interface Sentence {
   key: string
   index: number
   id?: string
   content: string
   autoFocus?: boolean
+  status: SentenceStatus
+  owner?: string
 }
 
 type Section = 'propositions' | 'arguments'
@@ -34,6 +38,7 @@ interface State {
   status: string
   error?: string
   discussionId?: string
+  username?: string
   version?: number
   propositions: Sentence[]
   arguments: Sentence[]
@@ -55,7 +60,7 @@ const discussionsSlice = createSlice({
   reducers: {
     addSentence(state, action) {
       const {section, key}: {section: Section, key: string} = action.payload
-      const sentence = {key, content: '', index: nextIndex(state[section])}
+      const sentence: Sentence = {key, content: '', index: nextIndex(state[section]), status: 'draft', owner: state.username}
       state[section].push(sentence)
     },
     updateSentence(state, action) {
@@ -75,6 +80,10 @@ const discussionsSlice = createSlice({
     },
     setStatus(state, action) {
       state.status = action.payload
+    },
+    setUsername(state, action) {
+      const username: string = action.payload
+      state.username = username
     },
     eventEnqueue(state, action) {
       const event: Event = action.payload
@@ -171,7 +180,11 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
         }
         layoutEntries = JSON.parse(layout)
         for (let entry of layoutEntries.propositions.concat(layoutEntries.arguments)) {
-          if (typeof entry.id !== 'string' || typeof entry.index !== 'number') {
+          const invalidEntry = typeof entry.id !== 'string'
+            || typeof entry.index !== 'number'
+            || typeof entry.status !== 'string'
+            || (entry.status === 'draft' && typeof entry.owner !== 'string')
+          if (invalidEntry) {
             throw new Error('invalid entry')
           }
         }
@@ -222,7 +235,9 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
           id: sentence.id,
           key: sentence.key || nanoid(),
           index: layoutEntry.index,
-          content: sentence.content
+          content: sentence.content,
+          status: layoutEntry.status,
+          owner: layoutEntry.owner
         }
         newSentences[section].push(newSentence)
       }
@@ -337,14 +352,15 @@ function replaceSentence({key, section, discussionId, content}) {
       const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as any
       const newSentenceId = response.data.createSentence.id
       const index = nextUniqueIndex(sentence, sentences)
-      const newSentence = {key, index, content, id: newSentenceId}
+      const {status, owner} = sentence
+      const newSentence = {key, index, content, id: newSentenceId, status, owner}
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
       discussionSentences[section] = layoutSentences
       discussionSentences = {
         propositions: discussionSentences.propositions.filter(s => s.id),
         arguments: discussionSentences.arguments.filter(s => s.id),
       }
-      const makeLayoutEntry = sentence => ({index: sentence.index, id: sentence.id})
+      const makeLayoutEntry = sentence => ({index: sentence.index, id: sentence.id, status, owner})
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
@@ -443,5 +459,5 @@ export function propositionIdsFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus} = discussionsSlice.actions
+export const {unsetFocus, setUsername} = discussionsSlice.actions
 export default discussionsSlice.reducer

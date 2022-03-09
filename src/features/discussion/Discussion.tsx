@@ -1,9 +1,10 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {API, graphqlOperation} from 'aws-amplify'
 import {Button, Grid, Text} from '@aws-amplify/ui-react'
 import {PropositionsList} from './PropositionsList'
 import {ArgumentsList} from './ArgumentsList'
+import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
 
 import {
@@ -11,10 +12,13 @@ import {
   initializeDiscussionAction,
   getDiscussionAction,
   selectDiscussions,
+  setUsername,
 } from './discussionsSlice'
 
 export function Discussion() {
   const dispatch = useDispatch()
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser.username
   const discussions = useSelector(selectDiscussions)
   const isSyncing = discussions.eventQueue.length !== 0
   const discussionStatusInit = discussions.status === 'init'
@@ -26,12 +30,12 @@ export function Discussion() {
 
   useEffect(() => {
     if (discussionStatusInit) {
+      dispatch(setUsername(username))
       dispatch(initializeDiscussionAction({discussionId}))
     }
     if (discussionId) {
-      const request = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)) as unknown
-      const requestTyped = request as {subscribe(any)}
-      const subscription = requestTyped.subscribe({
+      const request = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)) as unknown as {subscribe(any)}
+      const subscription = request.subscribe({
         next: next => {
           const {id: discussionId, layout, version} = next.value.data.onUpdateDiscussion
           dispatch(getDiscussionAction({discussionId, layout, version}))
@@ -40,7 +44,7 @@ export function Discussion() {
       })
       return () => subscription.unsubscribe()
     }
-  }, [dispatch, discussionStatusInit, discussionId])
+  }, [dispatch, discussionStatusInit, discussionId, username])
 
   return (
     <Grid
