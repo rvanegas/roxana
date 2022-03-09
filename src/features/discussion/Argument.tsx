@@ -14,7 +14,7 @@ export function Argument({position, argument, discussionId, readOnly}) {
   const propositionById = id => propositions.find(p => p.id === id)
   const propositionByIndex = index => propositions.find(p => p.index === index)
   const propositionIds = propositionIdsFromArgument(argument)
-  const editorRef = React.createRef()
+  const editorRef = React.createRef() as {current: {blur(): void, focus(): void}}
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
@@ -28,9 +28,9 @@ export function Argument({position, argument, discussionId, readOnly}) {
 
   function toAlphaIndex(numberIndex) {
     numberIndex--
-    const base = 'A'.charCodeAt()
-    const divisor = 'Z'.charCodeAt() - base + 1
-    let alphas = []
+    const base = 'A'.charCodeAt(0)
+    const divisor = 'Z'.charCodeAt(0) - base + 1
+    let alphas = [] as string[]
     while (numberIndex >= 0) {
       const remainder = numberIndex % divisor
       alphas.unshift(String.fromCharCode(remainder + base))
@@ -168,7 +168,7 @@ export function Argument({position, argument, discussionId, readOnly}) {
           onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
           placeholder={placeholder}
         />
-        <Divider style={argumentCodeInvalid ? {borderColor: 'red'} : null}/>
+        <Divider style={argumentCodeInvalid ? {borderColor: 'red'} : undefined}/>
       </View>
       {premiseElements}
       {conclusionElements}
