@@ -1,8 +1,9 @@
 import React, {useState, useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Button, Text, Divider, View} from '@aws-amplify/ui-react'
+import {Divider, View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
+import {SentenceMeta} from './SentenceMeta'
 import {
   selectDiscussions,
   focusOnSentence,
@@ -161,22 +162,9 @@ export function Argument({position, argument, discussionId}) {
     )
   })
 
-  let statusLine = `status: ${argument.status}`
-  if (argument.owner) {
-    statusLine += `, owner: ${argument.owner}`
-  }
-
   return (
-    <React.Fragment key={argument.id}>
-      <View columnSpan={2}>
-        <Button variation="link" size="small">y</Button>
-        <Button variation="link" size="small">n</Button>
-      </View>
-      <View columnSpan={2}>
-        <Text alignSelf="center" style={{justifySelf: 'start', lineHeight: '40px'}}>
-          {statusLine}
-        </Text>
-      </View>
+    <React.Fragment key={argument.key}>
+      <SentenceMeta sentence={argument} />
       <View columnStart={2}>
         {toAlphaIndex(argument.index)}
       </View>

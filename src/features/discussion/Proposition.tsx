@@ -1,8 +1,9 @@
 import React, {useState, useEffect, useContext} from 'react'
 import {useDispatch} from 'react-redux'
-import {Button, View, Divider, Text} from '@aws-amplify/ui-react'
+import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
+import {SentenceMeta} from './SentenceMeta'
 import {
   unsetFocus,
   focusOnSentence,
@@ -51,23 +52,10 @@ export function Proposition({position, discussionId, proposition}) {
     }
   })
 
-  let statusLine = `status: ${proposition.status}`
-  if (proposition.owner) {
-    statusLine += `, owner: ${proposition.owner}`
-  }
-
   const gray = null // `${proposition.content} [${proposition.key}] [${proposition.id}]`
   return (
     <React.Fragment>
-      <View columnSpan={2}>
-        <Button variation="link" size="small">y</Button>
-        <Button variation="link" size="small">n</Button>
-      </View>
-      <View columnSpan={2}>
-        <Text alignSelf="center" style={{justifySelf: 'start', lineHeight: '40px'}}>
-          {statusLine}
-        </Text>
-      </View>
+      <SentenceMeta sentence={proposition} />
       <View columnStart={2}>
         {proposition.index}
       </View>
