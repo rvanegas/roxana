@@ -144,7 +144,7 @@ export function Argument({position, argument, discussionId}) {
     const premise = propositionById(premiseId)
     return (
       <React.Fragment key={premise.key}>
-        <View columnStart={2}>{premise.index}</View>
+        <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>{premise.index}</View>
         <View columnEnd={-2}>{premise.content}</View>
       </React.Fragment>
     )
@@ -156,7 +156,7 @@ export function Argument({position, argument, discussionId}) {
     return (
       <React.Fragment key={conclusion.key}>
         <View columnStart={1} style={{justifySelf: 'end'}}>{'\u2234'}</View>
-        <View>{conclusion.index}</View>
+        <View style={{paddingRight: '10px', placeSelf: 'center end'}}>{conclusion.index}</View>
         <View columnEnd={-2}>{conclusion.content}</View>
       </React.Fragment>
     )
@@ -165,7 +165,7 @@ export function Argument({position, argument, discussionId}) {
   return (
     <React.Fragment key={argument.key}>
       <SentenceMeta sentence={argument} />
-      <View columnStart={2}>
+      <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
         {toAlphaIndex(argument.index)}
       </View>
       <View>
@@ -178,7 +178,7 @@ export function Argument({position, argument, discussionId}) {
       </View>
       {premiseElements}
       {conclusionElements}
-      <View style={{paddingBottom: '20px'}} columnSpan={4} />
+      <View style={{paddingBottom: '10px'}} columnSpan={4} />
     </React.Fragment>
   )
 }

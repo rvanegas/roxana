@@ -56,7 +56,7 @@ export function Proposition({position, discussionId, proposition}) {
   return (
     <React.Fragment>
       <SentenceMeta sentence={proposition} />
-      <View columnStart={2}>
+      <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
         {proposition.index}
       </View>
       <View columnStart={3}>
