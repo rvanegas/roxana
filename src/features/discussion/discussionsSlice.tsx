@@ -4,6 +4,7 @@ import Cookies from 'universal-cookie'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
+import {pick} from '../../app/util'
 import {
   discussionIdFromUrl,
   redirectToDiscussionId,
@@ -379,7 +380,7 @@ function replaceSentence({key, section, discussionId, content}) {
         propositions: discussionSentences.propositions.filter(s => s.id),
         arguments: discussionSentences.arguments.filter(s => s.id),
       }
-      const makeLayoutEntry = sentence => ({index: sentence.index, id: sentence.id, status, owner})
+      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner'])
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
