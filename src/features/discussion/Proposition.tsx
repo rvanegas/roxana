@@ -10,6 +10,7 @@ import {
   unsetFocus,
   focusOnSentence,
   replaceSentenceAction,
+  ReplaceSentenceInput,
 } from './discussionsSlice'
 
 export function Proposition({position, discussionId, proposition}) {
@@ -37,8 +38,8 @@ export function Proposition({position, discussionId, proposition}) {
   function handleBlur() {
     const content = editorState.getCurrentContent().getPlainText()
     if (proposition.content !== content) {
-      const value = {key: proposition.key, section: 'propositions', discussionId, content}
-      const response = dispatch(replaceSentenceAction(value)) as unknown as {then(any)}
+      const input: ReplaceSentenceInput = {key: proposition.key, section: 'propositions', content}
+      const response = dispatch(replaceSentenceAction(input)) as unknown as {then(any)}
       response.then(() => setMode(''))
       setMode('saving')
     }

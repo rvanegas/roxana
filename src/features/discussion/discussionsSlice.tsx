@@ -333,18 +333,18 @@ function createNewDiscussion() {
   }
 }
 
-interface ReplaceSentenceInput {
+export interface ReplaceSentenceInput {
   key: string
   section: Section
-  discussionId: string
   content: string
 }
 
-function replaceSentence({key, section, discussionId, content}) {
+function replaceSentence({key, section, content}) {
   const {updateSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     try {
       const state = getState()
+      const discussionId = state.discussions.discussionId
       let discussionSentences = {
         propositions: state.discussions.propositions,
         arguments: state.discussions.arguments,
@@ -378,7 +378,7 @@ function replaceSentence({key, section, discussionId, content}) {
     catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutVersion') {
         console.warn('try again')
-        dispatch(replaceSentenceAction({key, section, discussionId, content}))
+        dispatch(replaceSentenceAction({key, section, content}))
       }
       else {
         throw exception
@@ -390,10 +390,10 @@ function replaceSentence({key, section, discussionId, content}) {
 function addNewSentence(section : Section) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const discussionId = getState().discussions.discussionId
     const key = nanoid()
     dispatch(addSentence({section, key}))
-    dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
+    const input: ReplaceSentenceInput = {key, section, content: ''}
+    dispatch(replaceSentenceAction(input))
   }
 }
 
@@ -441,7 +441,7 @@ export function getDiscussionAction(discussion) {
   const action = {handler: 'getDiscussion', payload: discussion}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function replaceSentenceAction(value) {
+export function replaceSentenceAction(value: ReplaceSentenceInput) {
   const action = {handler: 'replaceSentence', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }

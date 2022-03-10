@@ -1,6 +1,6 @@
 export type SentenceStatus = 'draft' | 'editable' | 'readOnly' | 'referenced'
 
-export interface Sentence {
+export type Sentence = {
   key: string
   index: number
   id?: string
