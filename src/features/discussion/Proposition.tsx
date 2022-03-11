@@ -83,7 +83,7 @@ export function Proposition({position, discussionId, proposition}) {
 
   return (
     <React.Fragment>
-      <SentenceMeta sentence={proposition} mode={mode} />
+      <SentenceMeta sentence={proposition} mode={mode} section={section} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
         {isArguments ? toAlphaIndex(proposition.index) : proposition.index}
       </View>
