@@ -42,3 +42,16 @@ export function toAlphaIndex(numberIndex) {
   }
   return alphas.join('')
 }
+
+// function toLetters(index) {
+//   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+//   if (index < 26) {
+//     return letters[index];
+//   }
+//   const digits = index
+//     .toString(26)
+//     .split("")
+//     .map((d) => parseInt(d, 26));
+//   digits[0]--;
+//   return digits.map((d) => letters[d]).join("");
+// }
