@@ -26,6 +26,21 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
   if (sentence.owner) {
     statusLine += `, owner: ${sentence.owner}`
   }
+  if (sentence.accepted.length !== 0) {
+    const acceptedUsernames = sentence.accepted.join(', ')
+    statusLine += `, accepted: ${acceptedUsernames}`
+  }
+  if (sentence.rejected.length !== 0) {
+    const rejectedUsernames = sentence.rejected.join(', ')
+    statusLine += `, rejected: ${rejectedUsernames}`
+  }
+  if (!sentence.arguments) {
+    statusLine += `, missing arguments`
+  }
+  else if (sentence.arguments.length !== 0) {
+    const argumentsIds = sentence.arguments.join(', ')
+    statusLine += `, arguments: ${argumentsIds}`
+  }
 
   return (
     <React.Fragment>

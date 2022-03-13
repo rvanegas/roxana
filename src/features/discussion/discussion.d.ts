@@ -10,6 +10,7 @@ export type Sentence = {
   owner?: string
   accepted: string[]
   rejected: string[]
+  arguments: number[]
 }
 
 export type Section = 'propositions' | 'arguments'

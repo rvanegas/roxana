@@ -63,7 +63,8 @@ const discussionsSlice = createSlice({
       const sentence: Sentence = {
         key, content: '', index: nextIndex(state[section]),
         status: 'draft', owner: state.username,
-        accepted: [], rejected: []
+        accepted: [], rejected: [],
+        arguments: []
       }
       state[section].push(sentence)
     },
@@ -117,7 +118,6 @@ const discussionsSlice = createSlice({
 function nextIndex(sentences: Sentence[]): number {
   return sentences.reduce((max, p) => Math.max(max, p.index), 0) + 1
 }
-
 function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
   const indexUnique = sentences.filter(p => p.index === sentence.index).length === 1
   return indexUnique ? sentence.index : nextIndex(sentences)
@@ -302,7 +302,6 @@ function initializeDiscussion({discussionId}) {
     if (getState().discussions.arguments.length === 0) {
       await dispatch(addNewSentence('arguments'))
     }
-    // dispatch(focusOnSentence('propositions', 0))
   }
 }
 
@@ -398,9 +397,11 @@ interface ChangeSentenceStatusInput {
 function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   const {key, section, change} = input
   const {updateSentence} = discussionsSlice.actions
+  const isEditable = s => s.accepted.length === 0 && s.rejected.length === 0 && s.arguments.length === 0
   return async (dispatch, getState) => {
     try {
       const state = getState()
+      const username = state.discussions.username
       let discussionSentences = {
         propositions: state.discussions.propositions,
         arguments: state.discussions.arguments,
@@ -412,38 +413,29 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         throw new Error('sentence not found')
       }
       let newSentence: Sentence
-      if (change === 'edit' && sentence.status === 'committed'
-        && sentence.accepted.size !== 0 && sentence.rejected.size !== 0
-      ) {
-        newSentence = {...sentence, status: 'editing', owner: state.username}
+      if (change === 'edit' && sentence.status === 'committed' && isEditable(sentence)) {
+        newSentence = {...sentence, status: 'draft', owner: username}
       }
-      else if (change === 'commit' && sentence.status === 'editing') {
+      else if (change === 'commit' && sentence.status === 'draft') {
         newSentence = {...sentence, status: 'committed', owner: undefined}
       }
       else if (change === 'accept' && sentence.status === 'committed') {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
-        newAccepted.add(state.username)
-        newRejected.delete(state.username)
-        newSentence = {
-          ...sentence,
-          accepted: Array.from(newAccepted),
-          rejected: Array.from(newRejected)
-        }
+        newAccepted.has(username) ? newAccepted.delete(username) : newAccepted.add(username)
+        newRejected.delete(username)
+        newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
       }
       else if (change === 'reject' && sentence.status === 'committed') {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
-        newAccepted.delete(state.username)
-        newRejected.add(state.username)
-        newSentence = {
-          ...sentence,
-          accepted: Array.from(newAccepted),
-          rejected: Array.from(newRejected)
-        }
+        newRejected.has(username) ? newRejected.delete(username) : newRejected.add(username)
+        newAccepted.delete(username)
+        newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
       }
       else {
-        throw new Error('unknown action or invalid conditions')
+        console.warn('unknown action or invalid conditions', change, sentence)
+        return
       }
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
       discussionSentences[section] = layoutSentences
@@ -467,7 +459,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   }
 }
 
-function addNewSentence(section : Section) {
+function addNewSentence(section: Section) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const key = nanoid()

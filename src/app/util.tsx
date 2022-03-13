@@ -19,6 +19,7 @@ export function discussionIdFromUrl() {
 }
 
 export function redirectToDiscussionId(discussionId) {
+  // console.log('redirect', discussionId)
   window.location.search = `?d=${discussionId}`
 }
 
