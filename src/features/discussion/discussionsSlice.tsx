@@ -388,13 +388,15 @@ function replaceSentence(input: ReplaceSentenceInput) {
         propositions: discussionSentences.propositions.filter(s => s.id),
         arguments: discussionSentences.arguments.filter(s => s.id),
       }
-      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner'])
+      //// duplicated - begin
+      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner', 'accepted', 'rejected'])
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
       })
       await dispatch(updateDiscussionLayout({layout, isReset: false}))
       dispatch(updateSentence({section, newSentence}))
+      //// duplicated - end
     }
     catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutVersion') {
@@ -434,6 +436,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       let newSentence: Sentence
       if (change === 'edit' && sentence.status === 'committed' && isEditable(sentence)) {
+        console.log('s', sentence)
         newSentence = {...sentence, status: 'draft', owner: username}
       }
       else if (change === 'commit' && sentence.status === 'draft') {
@@ -459,6 +462,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
       discussionSentences[section] = layoutSentences
+      //// duplicated - begin
       const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner', 'accepted', 'rejected'])
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
@@ -466,6 +470,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       })
       await dispatch(updateDiscussionLayout({layout, isReset: false}))
       dispatch(updateSentence({section, newSentence}))
+      //// duplicated - end
     }
     catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutVersion') {
