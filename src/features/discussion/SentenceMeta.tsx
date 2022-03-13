@@ -34,12 +34,8 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
     const rejectedUsernames = sentence.rejected.join(', ')
     statusLine += `, rejected: ${rejectedUsernames}`
   }
-  if (!sentence.arguments) {
-    statusLine += `, missing arguments`
-  }
-  else if (sentence.arguments.length !== 0) {
-    const argumentsIds = sentence.arguments.join(', ')
-    statusLine += `, arguments: ${argumentsIds}`
+  if (sentence.inArgument) {
+    statusLine += `, inArgument`
   }
 
   return (

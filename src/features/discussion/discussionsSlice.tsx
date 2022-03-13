@@ -43,6 +43,18 @@ const initialState: State = {
   arguments: [],
 }
 
+function setPropositionArguments(propositions: Sentence[], arguments_: Sentence[]) {
+  const ids = new Set<string>()
+  for (let argument of arguments_) {
+    for (let id of propositionIdsFromArgument(argument)) {
+      ids.add(id)
+    }
+  }
+  for (let proposition of propositions) {
+    proposition.inArgument = proposition.id ? ids.has(proposition.id) : false
+  }
+}
+
 const discussionsSlice = createSlice({
   name: 'discussions',
   initialState: initialState,
@@ -64,16 +76,9 @@ const discussionsSlice = createSlice({
         key, content: '', index: nextIndex(state[section]),
         status: 'draft', owner: state.username,
         accepted: [], rejected: [],
-        arguments: []
+        inArgument: false
       }
       state[section].push(sentence)
-    },
-    updateSentence(state, action) {
-      const {section, newSentence}: {section: Section, newSentence: Sentence} = action.payload
-      const sentence = state[section].find(p => p.key === newSentence.key)
-      if (sentence) {
-        Object.assign(sentence, newSentence)
-      }
     },
     setFocus(state, action) {
       const {section, position}: {section: Section, position: number} = action.payload
@@ -97,6 +102,14 @@ const discussionsSlice = createSlice({
     eventDequeue(state, action) {
       state.eventQueue.shift()
     },
+    updateSentence(state, action) {
+      const {section, newSentence}: {section: Section, newSentence: Sentence} = action.payload
+      const sentence = state[section].find(p => p.key === newSentence.key)
+      if (sentence) {
+        Object.assign(sentence, newSentence)
+      }
+      setPropositionArguments(state.propositions, state.arguments)
+    },
     updateSentences(state, action) {
       function mergeInNewSentences(section: Section) {
         const unsavedSentences = state[section].filter(s => !s.id)
@@ -111,6 +124,7 @@ const discussionsSlice = createSlice({
       state.version = version
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
+      setPropositionArguments(state.propositions, state.arguments)
     }
   }
 })
@@ -397,7 +411,7 @@ interface ChangeSentenceStatusInput {
 function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   const {key, section, change} = input
   const {updateSentence} = discussionsSlice.actions
-  const isEditable = s => s.accepted.length === 0 && s.rejected.length === 0 && s.arguments.length === 0
+  const isEditable = s => (s.accepted.length === 0 && s.rejected.length === 0 && !s.inArgument)
   return async (dispatch, getState) => {
     try {
       const state = getState()
@@ -414,6 +428,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       let newSentence: Sentence
       if (change === 'edit' && sentence.status === 'committed' && isEditable(sentence)) {
+        console.log('ia', sentence.inArgument)
         newSentence = {...sentence, status: 'draft', owner: username}
       }
       else if (change === 'commit' && sentence.status === 'draft') {

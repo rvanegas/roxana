@@ -40,12 +40,7 @@ export function Argument({position, argument, discussionId}) {
 
   function buildArgumentCode() {
     const displayPropositions = displayPropositionIds.map(id => propositionById(id))
-    let argumentCode = ''
-    if (displayPropositions.length > 0) {
-      const indexes = displayPropositions.map(p => p.index).join(' ')
-      argumentCode = `${indexes} ${argumentCode}`
-    }
-    return argumentCode
+    return displayPropositions.map(p => p.index).join(' ')
   }
 
   function initialEditorState() {
@@ -54,8 +49,8 @@ export function Argument({position, argument, discussionId}) {
   }
 
   function setDisplayFromArgumentCode(argumentCode) {
-    const invalidPattern = /[^\d\s:]/
-    const separatorPattern = /[\s:]+/
+    const invalidPattern = /[^\d\s]/
+    const separatorPattern = /\s+/
 
     if (invalidPattern.test(argumentCode)) {
       setArgumentCodeInvalid(true)
@@ -69,6 +64,10 @@ export function Argument({position, argument, discussionId}) {
     }
     const displayPropositions = displayPropositionIndexes.map(propositionByIndex)
     if (displayPropositions.indexOf(undefined) !== -1) {
+      setArgumentCodeInvalid(true)
+      return
+    }
+    if (displayPropositions.some(p => p.status !== 'committed')) {
       setArgumentCodeInvalid(true)
       return
     }
