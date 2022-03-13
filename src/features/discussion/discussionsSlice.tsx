@@ -62,7 +62,8 @@ const discussionsSlice = createSlice({
       const {section, key}: {section: Section, key: string} = action.payload
       const sentence: Sentence = {
         key, content: '', index: nextIndex(state[section]),
-        status: 'draft', owner: state.username
+        status: 'draft', owner: state.username,
+        accepted: [], rejected: []
       }
       state[section].push(sentence)
     },
@@ -391,7 +392,7 @@ function replaceSentence(input: ReplaceSentenceInput) {
 interface ChangeSentenceStatusInput {
   key: string
   section: Section
-  change: 'commit' | 'accept' | 'reject'
+  change: 'edit' | 'commit' | 'accept' | 'reject'
 }
 
 function changeSentenceStatus(input: ChangeSentenceStatusInput) {
@@ -411,12 +412,42 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         throw new Error('sentence not found')
       }
       let newSentence: Sentence
-      if (change === 'commit' || true) {
+      if (change === 'edit' && sentence.status === 'committed'
+        && sentence.accepted.size !== 0 && sentence.rejected.size !== 0
+      ) {
+        newSentence = {...sentence, status: 'editing', owner: state.username}
+      }
+      else if (change === 'commit' && sentence.status === 'editing') {
         newSentence = {...sentence, status: 'committed', owner: undefined}
+      }
+      else if (change === 'accept' && sentence.status === 'committed') {
+        const newAccepted = new Set(sentence.accepted)
+        const newRejected = new Set(sentence.rejected)
+        newAccepted.add(state.username)
+        newRejected.delete(state.username)
+        newSentence = {
+          ...sentence,
+          accepted: Array.from(newAccepted),
+          rejected: Array.from(newRejected)
+        }
+      }
+      else if (change === 'reject' && sentence.status === 'committed') {
+        const newAccepted = new Set(sentence.accepted)
+        const newRejected = new Set(sentence.rejected)
+        newAccepted.delete(state.username)
+        newRejected.add(state.username)
+        newSentence = {
+          ...sentence,
+          accepted: Array.from(newAccepted),
+          rejected: Array.from(newRejected)
+        }
+      }
+      else {
+        throw new Error('unknown action or invalid conditions')
       }
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
       discussionSentences[section] = layoutSentences
-      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner'])
+      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner', 'accepted', 'rejected'])
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)

@@ -8,6 +8,8 @@ export type Sentence = {
   autoFocus?: boolean
   status: SentenceStatus
   owner?: string
+  accepted: string[]
+  rejected: string[]
 }
 
 export type Section = 'propositions' | 'arguments'
