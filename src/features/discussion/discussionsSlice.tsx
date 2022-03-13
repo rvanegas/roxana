@@ -428,7 +428,6 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       let newSentence: Sentence
       if (change === 'edit' && sentence.status === 'committed' && isEditable(sentence)) {
-        console.log('ia', sentence.inArgument)
         newSentence = {...sentence, status: 'draft', owner: username}
       }
       else if (change === 'commit' && sentence.status === 'draft') {
@@ -449,7 +448,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
       }
       else {
-        console.warn('unknown action or invalid conditions', change, sentence)
+        console.warn('unknown action or invalid conditions,', change, sentence)
         return
       }
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
