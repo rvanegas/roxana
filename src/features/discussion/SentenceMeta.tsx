@@ -46,7 +46,7 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
     statusSegments.push(`rejected: ${rejectedUsernames}`)
   }
   if (sentence.inArgument) {
-    statusSegments.push(`inArgument`)
+    statusSegments.push(`in argument`)
   }
   const statusLine = statusSegments.join(', ')
 

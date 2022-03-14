@@ -29,7 +29,7 @@ export function ArgumentsList() {
     </View>
   )
 
-return (
+  return (
     <React.Fragment key="arguments">
       <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
         Arguments
