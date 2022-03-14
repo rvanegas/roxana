@@ -1,9 +1,10 @@
 import React from 'react'
-import {useDispatch} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {Button, View, Text} from '@aws-amplify/ui-react'
 import {Section, Sentence, SentenceMode} from './discussion.d'
 import {
   changeSentenceStatusAction,
+  selectDiscussions,
   isEditable,
   isCommittable,
   isAcceptable,
@@ -18,6 +19,11 @@ interface SentenceMetaProps {
 
 export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
   const dispatch = useDispatch()
+  const discussions = useSelector(selectDiscussions)
+
+  if (discussions.isCompact) {
+    return null
+  }
 
   function handleChangeStatus(change) {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))

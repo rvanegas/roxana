@@ -23,15 +23,19 @@ export function ArgumentsList() {
     />
   ))
 
-  return (
+  const newButton = discussions.isCompact ? null : (
+    <View columnSpan={2} style={{placeSelf: 'center start'}}>
+      <Button variation="link" size="small" onClick={handleNew}>new</Button>
+    </View>
+  )
+
+return (
     <React.Fragment key="arguments">
       <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
         Arguments
       </Heading>
       {argumentElements}
-      <View columnSpan={2} style={{placeSelf: 'center start'}}>
-        <Button variation="link" size="small" onClick={handleNew}>new</Button>
-      </View>
+      {newButton}
     </React.Fragment>
   )
 }

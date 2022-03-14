@@ -31,6 +31,7 @@ interface State {
   propositions: Sentence[]
   arguments: Sentence[]
   discussants: string[]
+  isCompact: boolean
 }
 
 const initialState: State = {
@@ -42,7 +43,8 @@ const initialState: State = {
   version: undefined,
   propositions: [],
   arguments: [],
-  discussants: []
+  discussants: [],
+  isCompact: false
 }
 
 function unpdateSentenceDerivatives(state) {
@@ -73,6 +75,10 @@ const discussionsSlice = createSlice({
     initialize(state, action) {
       const discussionId: string = action.payload
       Object.assign(state, {discussionId, version: 0, propositions: [], arguments: []})
+    },
+    setIsCompact(state, action) {
+      const isCompact: boolean = action.payload
+      state.isCompact = isCompact
     },
     incrementVersion(state, action) {
       const version: number = action.payload
@@ -585,5 +591,5 @@ export function propositionIdsFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus, setUsername} = discussionsSlice.actions
+export const {unsetFocus, setUsername, setIsCompact} = discussionsSlice.actions
 export default discussionsSlice.reducer
