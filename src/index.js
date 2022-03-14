@@ -6,7 +6,10 @@ import { Provider } from 'react-redux';
 import * as serviceWorker from './serviceWorker';
 import Amplify from "aws-amplify";
 import awsExports from "./aws-exports";
+const packageJson = require('../package.json')
+
 Amplify.configure(awsExports);
+console.log('version', packageJson.version)
 
 ReactDOM.render(
   <React.StrictMode>
