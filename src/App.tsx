@@ -26,7 +26,7 @@ function App() {
                   <Text alignSelf="center" style={{justifySelf: 'end'}}>
                     {user.username}
                   </Text>
-                  <Button onClick={signOut}>Sign out</Button>
+                  <Button variation="link" size="small" onClick={signOut}>Sign out</Button>
                 </Grid>
               </View>
               <View>

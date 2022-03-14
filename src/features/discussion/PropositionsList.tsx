@@ -1,6 +1,6 @@
 import React from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {Text, Heading, View, Button} from '@aws-amplify/ui-react'
+import {Heading, View, Button} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
 import '@aws-amplify/ui-react/styles.css'
 import {
@@ -25,11 +25,11 @@ export function PropositionsList() {
 
   return (
     <React.Fragment key="propositions">
-      <Heading style={{paddingTop: '20px'}} columnStart="1" columnEnd="-1">
-        <Text>Propositions</Text>
+      <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
+        Propositions
       </Heading>
       {propositionEntities}
-      <View columnSpan={2} style={{placeSelf: 'center end'}}>
+      <View columnSpan={2} style={{placeSelf: 'center start'}}>
         <Button variation="link" size="small" onClick={handleNew}>new</Button>
       </View>
     </React.Fragment>

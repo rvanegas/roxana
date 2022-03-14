@@ -30,6 +30,7 @@ interface State {
   version?: number
   propositions: Sentence[]
   arguments: Sentence[]
+  discussants: string[]
 }
 
 const initialState: State = {
@@ -41,16 +42,26 @@ const initialState: State = {
   version: undefined,
   propositions: [],
   arguments: [],
+  discussants: []
 }
 
-function setPropositionArguments(propositions: Sentence[], arguments_: Sentence[]) {
+function unpdateSentenceDerivatives(state) {
   const ids = new Set<string>()
-  for (let argument of arguments_) {
+  const sentences = state.propositions.concat(state.arguments)
+  const discussants = new Set<string>()
+  for (let sentence of sentences) {
+    const claimants = sentence.accepted.concat(sentence.rejected)
+    for (let claimant of claimants) {
+      discussants.add(claimant)
+    }
+  }
+  state.discussants = Array.from(discussants)
+  for (let argument of state.arguments) {
     for (let id of propositionIdsFromArgument(argument)) {
       ids.add(id)
     }
   }
-  for (let proposition of propositions) {
+  for (let proposition of state.propositions) {
     proposition.inArgument = proposition.id ? ids.has(proposition.id) : false
   }
 }
@@ -108,7 +119,7 @@ const discussionsSlice = createSlice({
       if (sentence) {
         Object.assign(sentence, newSentence)
       }
-      setPropositionArguments(state.propositions, state.arguments)
+      unpdateSentenceDerivatives(state)
     },
     updateSentences(state, action) {
       function mergeInNewSentences(section: Section) {
@@ -124,7 +135,7 @@ const discussionsSlice = createSlice({
       state.version = version
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
-      setPropositionArguments(state.propositions, state.arguments)
+      unpdateSentenceDerivatives(state)
     }
   }
 })
@@ -411,6 +422,12 @@ function replaceSentence(input: ReplaceSentenceInput) {
   }
 }
 
+export const isEditable = (sentence: Sentence) => sentence.status === 'committed' && !sentence.inArgument
+  && sentence.accepted.length === 0 && sentence.rejected.length === 0
+export const isCommittable = (sentence: Sentence) => sentence.status === 'draft'
+export const isAcceptable = (sentence: Sentence) => sentence.status === 'committed'
+export const isRejectable = (sentence: Sentence) => sentence.status === 'committed'
+
 interface ChangeSentenceStatusInput {
   key: string
   section: Section
@@ -420,7 +437,6 @@ interface ChangeSentenceStatusInput {
 function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   const {key, section, change} = input
   const {updateSentence} = discussionsSlice.actions
-  const isEditable = s => (s.accepted.length === 0 && s.rejected.length === 0 && !s.inArgument)
   return async (dispatch, getState) => {
     try {
       const state = getState()
@@ -436,20 +452,20 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         throw new Error('sentence not found')
       }
       let newSentence: Sentence
-      if (change === 'edit' && sentence.status === 'committed' && isEditable(sentence)) {
+      if (change === 'edit' && isEditable(sentence)) {
         newSentence = {...sentence, status: 'draft', owner: username}
       }
-      else if (change === 'commit' && sentence.status === 'draft') {
+      else if (change === 'commit' && isCommittable(sentence)) {
         newSentence = {...sentence, status: 'committed', owner: undefined}
       }
-      else if (change === 'accept' && sentence.status === 'committed') {
+      else if (change === 'accept' && isAcceptable(sentence)) {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
         newAccepted.has(username) ? newAccepted.delete(username) : newAccepted.add(username)
         newRejected.delete(username)
         newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
       }
-      else if (change === 'reject' && sentence.status === 'committed') {
+      else if (change === 'reject' && isRejectable(sentence)) {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
         newRejected.has(username) ? newRejected.delete(username) : newRejected.add(username)
