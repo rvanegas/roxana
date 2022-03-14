@@ -253,8 +253,8 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
           content: sentence.content,
           status: layoutEntry.status,
           owner: layoutEntry.owner,
-          accepted: layoutEntry.accepted,
-          rejected: layoutEntry.rejected,
+          accepted: layoutEntry.accepted || [],
+          rejected: layoutEntry.rejected || [],
           inArgument: false
         }
         newSentences[section].push(newSentence)
@@ -389,7 +389,8 @@ function replaceSentence(input: ReplaceSentenceInput) {
         arguments: discussionSentences.arguments.filter(s => s.id),
       }
       //// duplicated - begin
-      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner', 'accepted', 'rejected'])
+      const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
+      const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
@@ -436,7 +437,6 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       let newSentence: Sentence
       if (change === 'edit' && sentence.status === 'committed' && isEditable(sentence)) {
-        console.log('s', sentence)
         newSentence = {...sentence, status: 'draft', owner: username}
       }
       else if (change === 'commit' && sentence.status === 'draft') {
@@ -457,13 +457,14 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
       }
       else {
-        console.warn('unknown action or invalid conditions,', change, sentence)
+        console.warn('unknown action or invalid conditions:', change, sentence)
         return
       }
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
       discussionSentences[section] = layoutSentences
       //// duplicated - begin
-      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner', 'accepted', 'rejected'])
+      const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
+      const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)

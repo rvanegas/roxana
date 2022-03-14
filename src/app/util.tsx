@@ -19,8 +19,8 @@ export function discussionIdFromUrl() {
 }
 
 export function redirectToDiscussionId(discussionId) {
-  // console.log('redirect', discussionId)
-  window.location.search = `?d=${discussionId}`
+  console.log('redirect', discussionId)
+  // window.location.search = `?d=${discussionId}`
 }
 
 export function pick(object: object, keys: string[]) {
