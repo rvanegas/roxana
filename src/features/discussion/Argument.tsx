@@ -100,11 +100,10 @@ export function Argument({position, argument, discussionId}) {
   function handleChange(editorState) {
     const argumentCode = editorState.getCurrentContent().getPlainText()
     setDisplayFromArgumentCode(argumentCode)
-    if (canonicalArgumentCode) {
+    if (canonicalArgumentCode !== undefined) {
       const contentState = ContentState.createFromText(canonicalArgumentCode)
       setEditorState(EditorState.createWithContent(contentState))
       setArgumentCodeInvalid(false)
-      canonicalArgumentCode = null
     }
     else {
       setEditorState(editorState)
