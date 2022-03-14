@@ -47,18 +47,20 @@ export function Discussion() {
     }
   }, [dispatch, discussionStatusInit, discussionId, username])
 
-  const statusSegments: string[] = []
-  if (discussionId) {
-    statusSegments.push(`current: ${discussionId}`)
-  }
-  const discussants = discussions.discussants.join(', ')
-  if (discussants) {
-    statusSegments.push(`discussants: ${discussants}`)
-  }
-  const statusLine = statusSegments.join('; ')
-
   function handleSwitch(e) {
     dispatch(setIsCompact(e.target.checked))
+  }
+
+  function statusLine() {
+    const statusSegments: string[] = []
+    if (discussionId) {
+      statusSegments.push(`current: ${discussionId}`)
+    }
+    const discussants = discussions.discussants.join(', ')
+    if (discussants) {
+      statusSegments.push(`discussants: ${discussants}`)
+    }
+    return statusSegments.join('; ')
   }
 
   return (
@@ -78,7 +80,7 @@ export function Discussion() {
         </Text>
       </View>
       <Text columnStart="1" columnEnd="-1" style={{paddingLeft: '10px'}}>
-        {statusLine}
+        {statusLine()}
       </Text>
       <Grid
         templateColumns="2rem 2rem 1fr 3rem"
