@@ -12,23 +12,21 @@ import {
   unsetFocus,
   replaceSentenceAction,
   ReplaceSentenceInput,
-  propositionIdsFromArgument,
+  propositionIndexesFromArgument,
 } from './discussionsSlice'
 
 export function Argument({position, argument, discussionId}) {
   const section: Section = 'arguments'
   // @ts-ignore
   const isArguments = section === 'arguments'
-  const propositionById = id => propositions.find(p => p.id === id)
-  const propositionByIndex = index => propositions.find(p => p.index === index)
-  const propositionIds = propositionIdsFromArgument(argument)
+  const propositionIndexes = propositionIndexesFromArgument(argument)
   const editorRef = React.createRef() as ElementRef
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
-  const [displayPropositionIds, setDisplayPropositionIds] = useState(propositionIds)
+  const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
-  const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
+  const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
   const placeholder = argument.index === 1 ?
     'Type a sequence of proposition numbers. For example, "1 2 3".' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
@@ -36,74 +34,66 @@ export function Argument({position, argument, discussionId}) {
   const readOnly = !(argument.status === 'draft' && argument.owner === username)
   const [mode, setMode] = useState<SentenceMode>('')
 
-  let canonicalArgumentCode
-
-  function buildArgumentCode() {
-    const displayPropositions = displayPropositionIds.map(id => propositionById(id))
-    return displayPropositions.map(p => p.index).join(' ')
-  }
+  let canonicalContent
 
   function initialEditorState() {
-    const contentState = ContentState.createFromText(buildArgumentCode())
+    const contentState = ContentState.createFromText(argument.content)
     return EditorState.createWithContent(contentState)
   }
 
-  function setDisplayFromArgumentCode(argumentCode) {
+  function setDisplayFromArgumentInput(argumentInput) {
     const invalidPattern = /[^\d\s]/
     const separatorPattern = /\s+/
 
-    if (invalidPattern.test(argumentCode)) {
-      setArgumentCodeInvalid(true)
+    if (invalidPattern.test(argumentInput)) {
+      setArgumentInputInvalid(true)
       return
     }
-    const displayPropositionIndexes = argumentCode.split(separatorPattern)
+    const indexes = argumentInput.split(separatorPattern)
       .map(index => parseInt(index)).filter(Number.isInteger)
-    if (displayPropositionIndexes.length !== (new Set(displayPropositionIndexes)).size) {
-      setArgumentCodeInvalid(true)
+    if (indexes.length !== (new Set(indexes)).size) {
+      setArgumentInputInvalid(true)
       return
     }
-    const displayPropositions = displayPropositionIndexes.map(propositionByIndex)
+    const displayPropositions = indexes.map(i => propositions[i-1])
     if (displayPropositions.indexOf(undefined) !== -1) {
-      setArgumentCodeInvalid(true)
+      setArgumentInputInvalid(true)
       return
     }
     if (displayPropositions.some(p => p.status !== 'committed')) {
-      setArgumentCodeInvalid(true)
+      setArgumentInputInvalid(true)
       return
     }
-    const displayPropositionIds = displayPropositions.map(p => p.id)
-    setArgumentCodeInvalid(false)
-    setDisplayPropositionIds(displayPropositionIds)
+    setArgumentInputInvalid(false)
+    setDisplayPropositionIndexes(indexes)
   }
 
   function handleFocus() {
     setMode('editing')
   }
   function handleBlur() {
-    const argumentCode = buildArgumentCode()
-    if (editorState.getCurrentContent().getPlainText() !== argumentCode) {
-      canonicalArgumentCode = argumentCode
+    const content = displayPropositionIndexes.join(' ')
+    if (editorState.getCurrentContent().getPlainText() !== argument.content) {
+      canonicalContent = content
     }
-    const key = argument.key
-    const content = displayPropositionIds.join(' ')
-    if (content !== argument.content) {
-      const value: ReplaceSentenceInput = {key, section: 'arguments', content}
+    if (content === argument.content) {
+      setMode('')
+    }
+    else {
+      const value: ReplaceSentenceInput = {key: argument.key, section: 'arguments', content}
       const response = dispatch(replaceSentenceAction(value)) as unknown as {then(any)}
       response.then(() => setMode(''))
       setMode('saving')
     }
-    else {
-      setMode('')
-    }
   }
 
   function handleChange(editorState) {
-    const argumentCode = editorState.getCurrentContent().getPlainText()
-    setDisplayFromArgumentCode(argumentCode)
-    if (canonicalArgumentCode !== undefined) {
-      const contentState = ContentState.createFromText(canonicalArgumentCode)
+    const argumentInput = editorState.getCurrentContent().getPlainText()
+    setDisplayFromArgumentInput(argumentInput)
+    if (canonicalContent !== undefined) {
+      const contentState = ContentState.createFromText(canonicalContent)
       setEditorState(EditorState.createWithContent(contentState))
-      setArgumentCodeInvalid(false)
+      setArgumentInputInvalid(false)
     }
     else {
       setEditorState(editorState)
@@ -136,34 +126,27 @@ export function Argument({position, argument, discussionId}) {
 
   //////////////////
 
-  const premiseIds = displayPropositionIds.slice(0, displayPropositionIds.length - 1)
-  const premiseElements = premiseIds.length === 0 ? null : premiseIds.map(premiseId => {
-    const premise = propositionById(premiseId)
-    return (
-      <React.Fragment key={premise.key}>
-        <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>{premise.index}</View>
-        <View columnEnd={-2}>{premise.content}</View>
-      </React.Fragment>
-    )
-  })
+  let propositionElements
+  const indexesLength = displayPropositionIndexes.length
+  if (indexesLength !== 0) {
+    propositionElements = displayPropositionIndexes.map((index, mapIndex) => {
+      const proposition = propositions[index-1]
+      const therefore = (mapIndex !== indexesLength-1) ? null
+        : <View columnStart={1} style={{justifySelf: 'end'}}>{'\u2234'}</View>
+      return (
+        <React.Fragment key={proposition.key}>
+          {therefore}
+          <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>{proposition.index}</View>
+          <View columnEnd={-2}>{proposition.content}</View>
+        </React.Fragment>
+      )
+    })
+  }
 
-  const conclusionIds = displayPropositionIds.slice(-1)
-  const conclusionElements = conclusionIds.length === 0 ? null : conclusionIds.map(conclusionId => {
-    const conclusion = propositionById(conclusionId)
-    return (
-      <React.Fragment key={conclusion.key}>
-        <View columnStart={1} style={{justifySelf: 'end'}}>{'\u2234'}</View>
-        <View style={{paddingRight: '10px', placeSelf: 'center end'}}>{conclusion.index}</View>
-        <View columnEnd={-2}>{conclusion.content}</View>
-      </React.Fragment>
-    )
-  })
-
-  const dividerStyle = argumentCodeInvalid ? {borderColor: 'red'} : undefined
+  const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
   const postSentence = (
     <React.Fragment>
-      {premiseElements}
-      {conclusionElements}
+      {propositionElements}
       <View style={{paddingBottom: '10px'}} columnSpan={4} />
     </React.Fragment>
   )
