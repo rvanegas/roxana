@@ -216,6 +216,8 @@ function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussion
           || typeof entry.index !== 'number'
           || typeof entry.status !== 'string'
           || (entry.status === 'draft' && typeof entry.owner !== 'string')
+          || (Array.isArray(entry.accepted) && entry.accepted.some(a => typeof a !== 'string'))
+          || (Array.isArray(entry.rejected) && entry.rejected.some(a => typeof a !== 'string'))
         if (invalidEntry) {
           console.error('entry', entry)
           throw new Error('invalid entry')
@@ -290,7 +292,7 @@ function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussion
     await parseLayout()
     await readLayout('propositions')
     await readLayout('arguments')
-    dispatch(updateSentences({version, updatedAt, newSentences}))
+    dispatch(updateSentences({version, newSentences}))
     if (layoutUpdated) {
       await dispatch(updateDiscussionLayout())
     }
