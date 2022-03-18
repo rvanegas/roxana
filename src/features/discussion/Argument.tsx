@@ -27,7 +27,7 @@ export function Argument({position, argument, discussionId}) {
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
-  const placeholder = argument.index === 1 ?
+  const placeholder = position === 0 ?
     'Type a sequence of proposition numbers. For example, "1 2 3".' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
@@ -46,21 +46,25 @@ export function Argument({position, argument, discussionId}) {
     const separatorPattern = /\s+/
 
     if (invalidPattern.test(argumentInput)) {
+      // console.warn('invalid pattern, syntax')
       setArgumentInputInvalid(true)
       return
     }
     const indexes = argumentInput.split(separatorPattern)
       .map(index => parseInt(index)).filter(Number.isInteger)
     if (indexes.length !== (new Set(indexes)).size) {
+      // console.warn('invalid pattern, numbers')
       setArgumentInputInvalid(true)
       return
     }
     const displayPropositions = indexes.map(i => propositions[i-1])
     if (displayPropositions.indexOf(undefined) !== -1) {
+      // console.warn('invalid pattern, references')
       setArgumentInputInvalid(true)
       return
     }
     if (displayPropositions.some(p => p.status !== 'committed')) {
+      // console.warn('invalid pattern, uncommitted', displayPropositions)
       setArgumentInputInvalid(true)
       return
     }
@@ -136,7 +140,7 @@ export function Argument({position, argument, discussionId}) {
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
-          <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>{proposition.index}</View>
+          <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>{index}</View>
           <View columnEnd={-2}>{proposition.content}</View>
         </React.Fragment>
       )
@@ -155,7 +159,7 @@ export function Argument({position, argument, discussionId}) {
     <React.Fragment>
       <SentenceMeta sentence={argument} mode={mode} section={section} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
-        {isArguments ? toAlphaIndex(argument.index) : argument.index}
+        {isArguments ? toAlphaIndex(position) : position+1}
       </View>
       <View columnStart={3}>
         <Editor
