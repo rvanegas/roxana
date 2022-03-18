@@ -169,14 +169,12 @@ function updateDiscussionLayout() {
         arguments: sentencesToEntries(state.discussions.arguments)
       })
       const id = state.discussions.discussionId
+      const version = 2
       const oldRevision = state.discussions.revision
       const revision = oldRevision + 1
       const variables = {
-        input: {id, layout, revision},
-        condition: {
-          version: {eq: 2},
-          and: {revision: {eq: oldRevision}}
-        }
+        input: {id, version, revision, layout},
+        condition: {revision: {eq: oldRevision}}
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       dispatch(incrementRevision(revision))
@@ -288,12 +286,12 @@ function getDiscussion(discussion: GetDiscussionInput) {
     if (discussion.revision && discussion.revision <= state.discussions.revision) {
       return
     }
-    // if (state.version !== 2 || state.revision === undefined) {
-    //   throw new Error('bad data')
-    // }
-
     if (!discussion.layout) {
       await loadDiscussion()
+    }
+    if (!discussion.revision || discussion.version !== 2) {
+      console.error('version', discussion)
+      throw new Error('bad version')
     }
     await parseLayout()
     await readLayout('propositions')
@@ -343,7 +341,8 @@ function createNewDiscussion() {
   return async (dispatch) => {
     const layout = JSON.stringify({propositions: [], arguments: []})
     const revision = 1
-    const variables = {input: {layout, revision}} as {input: {id, layout, revision}}
+    const version = 2
+    const variables = {input: {version, layout, revision}} as {input: {id, version, layout, revision}}
     for (;;) {
       try {
         const discussionId = generateDiscussionId()

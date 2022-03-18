@@ -4,8 +4,8 @@ input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONL
 
 type Discussion @model {
   id: ID!
-  version: Int! // == 2
-  revision: Int // incremented on every update
+  version: Int!    # == 2
+  revision: Int    # incremented on every update
   layout: String!
   layoutStates: [LayoutState!] @hasMany
   users: [User] @manyToMany(relationName: "DiscussionUsers")
