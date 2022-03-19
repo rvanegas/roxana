@@ -11,6 +11,7 @@ export type Sentence = {
   accepted: string[]
   rejected: string[]
   inArgument: boolean
+  irrational: string[]
 }
 
 export type Section = 'propositions' | 'arguments'

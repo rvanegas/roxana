@@ -11,6 +11,7 @@ import {
   isAcceptable,
   isRejectable
 } from './discussionsSlice'
+import {claimsSummary} from './discussionUtil'
 
 interface SentenceMetaProps {
   sentence: Sentence
@@ -49,10 +50,24 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
       const rejectedUsernames = sentence.rejected.join(', ')
       statusSegments.push(`rejected: ${rejectedUsernames}`)
     }
+    if (sentence.irrational.length !== 0) {
+      const irrationalUsernames = sentence.irrational.join(', ')
+      statusSegments.push(`irrational: ${irrationalUsernames}`)
+    }
     if (sentence.inArgument) {
       statusSegments.push(`in argument`)
     }
     return statusSegments.join('; ')
+  }
+
+  function annotations() {
+    const hasIrrational = sentence.irrational.length !== 0
+    if (hasIrrational) {
+      return <span style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>
+    }
+    return claimsSummary(sentence, discussions.discussants).map((claim, index) => (
+      <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
+    ))
   }
 
   return (
@@ -65,6 +80,9 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
         <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
           {statusLine()}
         </Text>
+      </View>
+      <View columnStart={1} style={{placeSelf: 'start end'}}>
+        {annotations()}
       </View>
     </React.Fragment>
   )
