@@ -49,9 +49,9 @@ const initialState: State = {
 }
 
 function unpdateSentenceDerivatives(state) {
+  const discussants = new Set<string>()
   const indexes = new Set<number>()
   const sentences = state.propositions.concat(state.arguments)
-  const discussants = new Set<string>()
   for (let sentence of sentences) {
     const claimants = sentence.accepted.concat(sentence.rejected)
     for (let claimant of claimants) {
