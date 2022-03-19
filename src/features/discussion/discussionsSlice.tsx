@@ -71,16 +71,18 @@ function updateSentenceDerivatives(state) {
 
   for (let argument of state.arguments) {
     argument.irrational = []
-    for (let discussant of state.discussants) {
-      const indexes = propositionIndexesFromArgument(argument)
-      const propositions = indexes.map(index => state.propositions[index-1])
+    const indexes = propositionIndexesFromArgument(argument)
+    const propositions = indexes.map(index => state.propositions[index-1])
+    if (propositions.length !== 0) {
       const premises = propositions.slice(0, -1)
       const conclusion = propositions.slice(-1)[0]
-      const irrational = premises.every(p => p.accepted.includes(discussant))
-        && conclusion.rejected.includes(discussant)
-        && argument.accepted.includes(discussant)
-      if (irrational) {
-        argument.irrational.push(discussant)
+      for (let discussant of state.discussants) {
+        const irrational = premises.every(p => p.accepted.includes(discussant))
+          && conclusion.rejected.includes(discussant)
+          && argument.accepted.includes(discussant)
+        if (irrational) {
+          argument.irrational.push(discussant)
+        }
       }
     }
   }
@@ -103,6 +105,7 @@ const discussionsSlice = createSlice({
       if (state.revision && state.revision + 1 !== revision) {
         throw new Error('bad revision increment')
       }
+      console.log('revision', revision)
       state.revision = revision
     },
     addSentence(state, action) {

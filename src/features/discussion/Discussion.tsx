@@ -84,7 +84,7 @@ export function Discussion() {
         {statusLine()}
       </Text>
       <Grid
-        templateColumns="2rem 2rem 1fr 3rem"
+        templateColumns="3rem 2rem 1fr 3rem"
         gap="var(--amplify-space-small)"
       >
         <PropositionsList />
