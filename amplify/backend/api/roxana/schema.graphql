@@ -22,3 +22,8 @@ type User @model {
   username: ID! @primaryKey
   discussions: [Discussion] @manyToMany(relationName: "DiscussionUsers")
 }
+
+type Subscription {
+  onDiscussionById(id: ID!): Discussion
+    @aws_subscribe(mutations: ["updateDiscussion"])
+}

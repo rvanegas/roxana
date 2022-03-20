@@ -39,10 +39,11 @@ export function Discussion() {
       dispatch(initializeDiscussionAction())
     }
     if (discussionId) {
-      const request = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)) as unknown as {subscribe(any)}
+      const variables = {id: discussionId}
+      const request = API.graphql(graphqlOperation(custom.onDiscussionLayoutById, variables)) as unknown as {subscribe(any)}
       const subscription = request.subscribe({
         next: next => {
-          const discussion: GetDiscussionInput = next.value.data.onUpdateDiscussion
+          const discussion: GetDiscussionInput = next.value.data.onDiscussionById
           dispatch(getDiscussionAction(discussion))
         },
         error: error => console.error(error),

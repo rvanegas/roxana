@@ -31,3 +31,15 @@ export const onUpdateDiscussionLayout = /* GraphQL */ `
     }
   }
 `
+export const onDiscussionLayoutById = /* GraphQL */ `
+  subscription OnDiscussionLayoutById($id: ID!) {
+    onDiscussionById(id: $id) {
+      id
+      version
+      revision
+      layout
+      createdAt
+      updatedAt
+    }
+  }
+`;

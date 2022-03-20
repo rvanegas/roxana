@@ -1,6 +1,38 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onDiscussionById = /* GraphQL */ `
+  subscription OnDiscussionById($id: ID!) {
+    onDiscussionById(id: $id) {
+      id
+      version
+      revision
+      layout
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
 export const onCreateDiscussion = /* GraphQL */ `
   subscription OnCreateDiscussion {
     onCreateDiscussion {
