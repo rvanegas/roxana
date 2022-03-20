@@ -16,23 +16,18 @@ export function claimsSummary(sentence: Sentence, discussants: string[]) : boole
   if (acceptions > 0 && rejections > 0) {
     return [true, false]
   }
-
   if (acceptions > 1) {
     return [true, true]
   }
-
   if (rejections > 1) {
     return [false, false]
   }
-
   if (acceptions === 1) {
     return [true]
   }
-
   if (rejections === 1) {
     return [false]
   }
-
   if (acceptions === 0 && rejections === 0) {
     return []
   }

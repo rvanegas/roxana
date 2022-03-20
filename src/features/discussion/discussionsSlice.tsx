@@ -434,17 +434,23 @@ function replaceSentence(input: ReplaceSentenceInput) {
   }
 }
 
-export const isEditable = (sentence: Sentence) => sentence.status === 'committed' && !sentence.inArgument
-  && sentence.accepted.length === 0 && sentence.rejected.length === 0
-export const isCommittable = (sentence: Sentence, username) => sentence.status === 'draft'
-  && sentence.owner === username
-export const isAcceptable = (sentence: Sentence) => sentence.status === 'committed'
-export const isRejectable = (sentence: Sentence) => sentence.status === 'committed'
+export const isActionable = {
+  edit: (sentence: Sentence) => sentence.status === 'committed' && !sentence.inArgument
+    && sentence.accepted.length === 0 && sentence.rejected.length === 0,
+  commit: (sentence: Sentence, username: string) => sentence.status === 'draft'
+    && sentence.owner === username,
+  accept: (sentence: Sentence, username: string) => sentence.status === 'committed'
+    && !sentence.accepted.includes(username),
+  reject: (sentence: Sentence, username: string) => sentence.status === 'committed'
+    && !sentence.rejected.includes(username),
+  clear: (sentence: Sentence, username: string) => sentence.status === 'committed'
+    && (sentence.accepted.includes(username) || sentence.rejected.includes(username)),
+}
 
 interface ChangeSentenceStatusInput {
   key: string
   section: Section
-  change: 'edit' | 'commit' | 'accept' | 'reject'
+  change: 'edit' | 'commit' | 'accept' | 'reject' | 'clear'
 }
 
 function changeSentenceStatus(input: ChangeSentenceStatusInput) {
@@ -465,24 +471,31 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         throw new Error('sentence not found')
       }
       let newSentence: Sentence
-      if (change === 'edit' && isEditable(sentence)) {
+      if (change === 'edit' && isActionable.edit(sentence)) {
         newSentence = {...sentence, status: 'draft', owner: username}
       }
-      else if (change === 'commit' && isCommittable(sentence, username)) {
+      else if (change === 'commit' && isActionable.commit(sentence, username)) {
         newSentence = {...sentence, status: 'committed', owner: undefined}
       }
-      else if (change === 'accept' && isAcceptable(sentence)) {
+      else if (change === 'accept' && isActionable.accept(sentence, username)) {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
-        newAccepted.has(username) ? newAccepted.delete(username) : newAccepted.add(username)
+        newAccepted.add(username)
         newRejected.delete(username)
         newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
       }
-      else if (change === 'reject' && isRejectable(sentence)) {
+      else if (change === 'reject' && isActionable.reject(sentence, username)) {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
-        newRejected.has(username) ? newRejected.delete(username) : newRejected.add(username)
+        newRejected.add(username)
         newAccepted.delete(username)
+        newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
+      }
+      else if (change === 'clear' && isActionable.clear(sentence, username)) {
+        const newAccepted = new Set(sentence.accepted)
+        const newRejected = new Set(sentence.rejected)
+        newAccepted.delete(username)
+        newRejected.delete(username)
         newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
       }
       else {
