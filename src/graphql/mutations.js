@@ -11,17 +11,6 @@ export const createDiscussion = /* GraphQL */ `
       version
       revision
       layout
-      layoutStates {
-        items {
-          id
-          layout
-          version
-          createdAt
-          updatedAt
-          discussionLayoutStatesId
-        }
-        nextToken
-      }
       users {
         items {
           id
@@ -37,18 +26,6 @@ export const createDiscussion = /* GraphQL */ `
           id
           content
           discussionId
-          currentDiscussionId
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
-      currentSentences {
-        items {
-          id
-          content
-          discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }
@@ -69,17 +46,6 @@ export const updateDiscussion = /* GraphQL */ `
       version
       revision
       layout
-      layoutStates {
-        items {
-          id
-          layout
-          version
-          createdAt
-          updatedAt
-          discussionLayoutStatesId
-        }
-        nextToken
-      }
       users {
         items {
           id
@@ -95,18 +61,6 @@ export const updateDiscussion = /* GraphQL */ `
           id
           content
           discussionId
-          currentDiscussionId
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
-      currentSentences {
-        items {
-          id
-          content
-          discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }
@@ -127,17 +81,6 @@ export const deleteDiscussion = /* GraphQL */ `
       version
       revision
       layout
-      layoutStates {
-        items {
-          id
-          layout
-          version
-          createdAt
-          updatedAt
-          discussionLayoutStatesId
-        }
-        nextToken
-      }
       users {
         items {
           id
@@ -153,18 +96,6 @@ export const deleteDiscussion = /* GraphQL */ `
           id
           content
           discussionId
-          currentDiscussionId
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
-      currentSentences {
-        items {
-          id
-          content
-          discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }
@@ -172,111 +103,6 @@ export const deleteDiscussion = /* GraphQL */ `
       }
       createdAt
       updatedAt
-    }
-  }
-`;
-export const createLayoutState = /* GraphQL */ `
-  mutation CreateLayoutState(
-    $input: CreateLayoutStateInput!
-    $condition: ModelLayoutStateConditionInput
-  ) {
-    createLayoutState(input: $input, condition: $condition) {
-      id
-      layout
-      version
-      discussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionLayoutStatesId
-    }
-  }
-`;
-export const updateLayoutState = /* GraphQL */ `
-  mutation UpdateLayoutState(
-    $input: UpdateLayoutStateInput!
-    $condition: ModelLayoutStateConditionInput
-  ) {
-    updateLayoutState(input: $input, condition: $condition) {
-      id
-      layout
-      version
-      discussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionLayoutStatesId
-    }
-  }
-`;
-export const deleteLayoutState = /* GraphQL */ `
-  mutation DeleteLayoutState(
-    $input: DeleteLayoutStateInput!
-    $condition: ModelLayoutStateConditionInput
-  ) {
-    deleteLayoutState(input: $input, condition: $condition) {
-      id
-      layout
-      version
-      discussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionLayoutStatesId
     }
   }
 `;
@@ -294,37 +120,10 @@ export const createSentence = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      currentDiscussionId
-      currentDiscussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -349,37 +148,10 @@ export const updateSentence = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      currentDiscussionId
-      currentDiscussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -404,37 +176,10 @@ export const deleteSentence = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      currentDiscussionId
-      currentDiscussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -525,16 +270,10 @@ export const createDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -567,16 +306,10 @@ export const updateDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -609,16 +342,10 @@ export const deleteDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt

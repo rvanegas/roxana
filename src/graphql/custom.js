@@ -5,12 +5,11 @@ export const getDiscussionSimple = /* GraphQL */ `
       layout
       version
       revision
-      currentSentences {
+      sentences {
         items {
           id
           content
           discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }

@@ -7,28 +7,15 @@ type Discussion @model {
   version: Int!    # == 2
   revision: Int    # incremented on every update
   layout: String!
-  layoutStates: [LayoutState!] @hasMany
   users: [User] @manyToMany(relationName: "DiscussionUsers")
-
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])
-  currentSentences: [Sentence!] @hasMany(indexName: "byCurrentDiscussion", fields: ["id"])
-}
-
-type LayoutState @model {
-  id: ID!
-  layout: String!  # immutable
-  version: Int!
-  discussion: Discussion! @belongsTo
 }
 
 type Sentence @model {
   id: ID!
   content: String!  # immutable
-
   discussionId: ID! @index(name: "byDiscussion")
   discussion: Discussion! @belongsTo(fields: ["discussionId"])
-  currentDiscussionId: ID! @index(name: "byCurrentDiscussion")
-  currentDiscussion: Discussion! @belongsTo(fields: ["currentDiscussionId"])
 }
 
 type User @model {

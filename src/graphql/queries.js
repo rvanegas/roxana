@@ -8,17 +8,6 @@ export const getDiscussion = /* GraphQL */ `
       version
       revision
       layout
-      layoutStates {
-        items {
-          id
-          layout
-          version
-          createdAt
-          updatedAt
-          discussionLayoutStatesId
-        }
-        nextToken
-      }
       users {
         items {
           id
@@ -34,18 +23,6 @@ export const getDiscussion = /* GraphQL */ `
           id
           content
           discussionId
-          currentDiscussionId
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
-      currentSentences {
-        items {
-          id
-          content
-          discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }
@@ -68,79 +45,14 @@ export const listDiscussions = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
           nextToken
         }
-        currentSentences {
-          nextToken
-        }
         createdAt
         updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-export const getLayoutState = /* GraphQL */ `
-  query GetLayoutState($id: ID!) {
-    getLayoutState(id: $id) {
-      id
-      layout
-      version
-      discussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionLayoutStatesId
-    }
-  }
-`;
-export const listLayoutStates = /* GraphQL */ `
-  query ListLayoutStates(
-    $filter: ModelLayoutStateFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listLayoutStates(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        layout
-        version
-        discussion {
-          id
-          version
-          revision
-          layout
-          createdAt
-          updatedAt
-        }
-        createdAt
-        updatedAt
-        discussionLayoutStatesId
       }
       nextToken
     }
@@ -157,37 +69,10 @@ export const getSentence = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      currentDiscussionId
-      currentDiscussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -210,15 +95,6 @@ export const listSentences = /* GraphQL */ `
         content
         discussionId
         discussion {
-          id
-          version
-          revision
-          layout
-          createdAt
-          updatedAt
-        }
-        currentDiscussionId
-        currentDiscussion {
           id
           version
           revision
@@ -290,16 +166,10 @@ export const getDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
