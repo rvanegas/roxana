@@ -63,13 +63,14 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
     return icons
   }
 
+  const buttons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
+    isActionable[action](sentence, username) &&
+      <Button variation="link" size="small" onClick={() => handleChangeStatus(action)}>{action}</Button>
+  ))
+
   const actionStatusLine = discussions.isCompact ? null : (
     <View columnSpan={4} style={{placeSelf: 'center start'}}>
-      <Button variation="link" size="small" isDisabled={!isActionable.edit(sentence)} onClick={() => handleChangeStatus('edit')}>edit</Button>
-      <Button variation="link" size="small" isDisabled={!isActionable.commit(sentence, username)} onClick={() => handleChangeStatus('commit')}>commit</Button>
-      <Button variation="link" size="small" isDisabled={!isActionable.accept(sentence, username)} onClick={() => handleChangeStatus('accept')}>accept</Button>
-      <Button variation="link" size="small" isDisabled={!isActionable.reject(sentence, username)} onClick={() => handleChangeStatus('reject')}>reject</Button>
-      <Button variation="link" size="small" isDisabled={!isActionable.clear(sentence, username)} onClick={() => handleChangeStatus('clear')}>clear</Button>
+      {buttons}
       <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
         {statusLine()}
       </Text>
