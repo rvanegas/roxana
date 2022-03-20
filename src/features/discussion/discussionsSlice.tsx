@@ -106,7 +106,7 @@ const discussionsSlice = createSlice({
         console.warn('revisions', state.revision, revision)
         throw new Error('bad revision increment')
       }
-      console.log('revision', revision)
+      console.log('revision local', revision)
       state.revision = revision
     },
     addSentence(state, action) {
@@ -164,6 +164,7 @@ const discussionsSlice = createSlice({
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
       updateSentenceDerivatives(state)
+      console.log('revision remote', revision)
     }
   }
 })
@@ -176,7 +177,7 @@ function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
   return indexUnique ? sentence.index : nextIndex(sentences)
 }
 
-function updateDiscussionLayout() {
+function updateDiscussionLayout(changeNote: string) {
   const {incrementRevision} = discussionsSlice.actions
   const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
@@ -197,7 +198,9 @@ function updateDiscussionLayout() {
         input: {id, version, revision, layout},
         condition: {revision: {eq: oldRevision}}
       }
+      console.log('updateLayout begin', revision, changeNote)
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
+      console.log('updateLayout end', revision, changeNote)
       dispatch(incrementRevision(revision))
     }
     catch (exception: any) {
@@ -320,7 +323,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
     await readLayout('arguments')
     dispatch(updateSentences({revision: discussion.revision, newSentences}))
     if (layoutUpdated) {
-      await dispatch(updateDiscussionLayout())
+      await dispatch(updateDiscussionLayout('expire commits'))
     }
   }
 }
@@ -419,7 +422,7 @@ function replaceSentence(input: ReplaceSentenceInput) {
       const newSentence = {key, index, content, id: newSentenceId, status, owner}
       //// duplicated - begin
       dispatch(updateSentence({section, newSentence}))
-      await dispatch(updateDiscussionLayout())
+      await dispatch(updateDiscussionLayout('replace'))
       //// duplicated - end
     }
     catch (exception: any) {
@@ -504,7 +507,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       //// duplicated - begin
       dispatch(updateSentence({section, newSentence}))
-      await dispatch(updateDiscussionLayout())
+      await dispatch(updateDiscussionLayout(change))
       //// duplicated - end
     }
     catch (exception: any) {
