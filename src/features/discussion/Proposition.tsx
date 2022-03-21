@@ -69,8 +69,6 @@ export function Proposition({position, discussionId, proposition}) {
     return 'not-handled'
   }
 
-
-
   useEffect(() => {
     if (proposition.autoFocus) {
       editorRef.current.focus()

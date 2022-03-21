@@ -69,6 +69,9 @@ function updateSentenceDerivatives(state) {
     state.propositions[index-1].inArgument = indexes.has(index)
   }
 
+  for (let proposition of state.propositions) {
+    proposition.irrational = []
+  }
   for (let argument of state.arguments) {
     argument.irrational = []
     const indexes = propositionIndexesFromArgument(argument)
@@ -82,6 +85,14 @@ function updateSentenceDerivatives(state) {
           && argument.accepted.includes(discussant)
         if (irrational) {
           argument.irrational.push(discussant)
+          if (!conclusion.irrational.includes(discussant)) {
+            conclusion.irrational.push(discussant)
+          }
+          for (let premise of premises) {
+            if (!premise.irrational.includes(discussant)) {
+              premise.irrational.push(discussant)
+            }
+          }
         }
       }
     }
