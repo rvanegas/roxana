@@ -97,7 +97,7 @@ export function Discussion() {
         {discussantButtons}
       </View>
       <Grid
-        templateColumns="3rem 2rem 1fr 3rem"
+        templateColumns="4rem 2rem 1fr 3rem"
         gap="var(--amplify-space-small)"
       >
         <PropositionsList />

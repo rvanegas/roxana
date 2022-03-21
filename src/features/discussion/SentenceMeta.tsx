@@ -84,7 +84,7 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
   }
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
-    annotations.push(<span key="i" style={{color: 'red'}}>{'\u2049'}</span>)
+    annotations.push(<span key="i" style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>)
   }
   const annotationIcons = (
     <View columnStart={1} style={{placeSelf: 'start end'}}>
