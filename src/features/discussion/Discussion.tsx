@@ -56,17 +56,24 @@ export function Discussion() {
   function handleSwitch(e) {
     dispatch(setIsCompact(e.target.checked))
   }
+  function handleDiscussantSwitch(e, discussant) {
+    e.preventDefault()
+    dispatch(toggleHideDiscussant(discussant))
+  }
 
-  const discussantButtons = discussions.discussants.map(discussant => (
-    <SwitchField
-      style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
-      key={discussant}
-      labelPosition="end"
-      label={discussant}
-      defaultChecked={true}
-      onChange={() => dispatch(toggleHideDiscussant(discussant))}
-    />
-  ))
+  const discussantButtons = discussions.discussants.map(discussant => {
+    const isHidden = discussions.hideDiscussants[discussant]
+    return (
+      <SwitchField
+        style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
+        key={discussant}
+        labelPosition="end"
+        label={discussant}
+        isChecked={!isHidden}
+        onClick={e => handleDiscussantSwitch(e, discussant)}
+      />
+    )
+  })
 
   return (
     <React.Fragment>
