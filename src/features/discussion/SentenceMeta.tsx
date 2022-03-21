@@ -27,19 +27,21 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
   }
 
   function claimsSummary() {
-    if (sentence.accepted.length > 0 && sentence.rejected.length > 0) {
+    const accepted = sentence.accepted.filter(d => !discussions.hideDiscussants[d])
+    const rejected = sentence.rejected.filter(d => !discussions.hideDiscussants[d])
+    if (accepted.length > 0 && rejected.length > 0) {
       return [true, false]
     }
-    else if (sentence.accepted.length > 1) {
+    else if (accepted.length > 1) {
       return [true, true]
     }
-    else if (sentence.rejected.length > 1) {
+    else if (rejected.length > 1) {
       return [false, false]
     }
-    else if (sentence.accepted.length === 1) {
+    else if (accepted.length === 1) {
       return [true]
     }
-    else if (sentence.rejected.length === 1) {
+    else if (rejected.length === 1) {
       return [false]
     }
     else {
@@ -77,7 +79,8 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
   const annotations = claimsSummary().map((claim, index) => (
     <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
   ))
-  if (sentence.irrational.length !== 0) {
+  const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
+  if (irrational.length !== 0) {
     annotations.push(<span key="i" style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>)
   }
   const annotationIcons = (
