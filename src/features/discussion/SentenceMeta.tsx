@@ -8,7 +8,6 @@ import {
   selectDiscussions,
   isActionable
 } from './discussionsSlice'
-import {claimsSummary} from './discussionUtil'
 
 interface SentenceMetaProps {
   sentence: Sentence
@@ -25,6 +24,27 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
 
   function handleChangeStatus(change) {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
+  }
+
+  function claimsSummary() {
+    if (sentence.accepted.length > 0 && sentence.rejected.length > 0) {
+      return [true, false]
+    }
+    else if (sentence.accepted.length > 1) {
+      return [true, true]
+    }
+    else if (sentence.rejected.length > 1) {
+      return [false, false]
+    }
+    else if (sentence.accepted.length === 1) {
+      return [true]
+    }
+    else if (sentence.rejected.length === 1) {
+      return [false]
+    }
+    else {
+      return []
+    }
   }
 
   function statusLine() {
@@ -55,7 +75,7 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
   }
 
   function annotations() {
-    const icons = claimsSummary(sentence, discussions.discussants).map((claim, index) => (
+    const icons = claimsSummary().map((claim, index) => (
       <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
     ))
     if (sentence.irrational.length !== 0) {

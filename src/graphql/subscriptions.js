@@ -22,6 +22,7 @@ export const onDiscussionById = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -54,6 +55,7 @@ export const onCreateDiscussion = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -86,6 +88,7 @@ export const onUpdateDiscussion = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -118,6 +121,7 @@ export const onDeleteDiscussion = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -134,6 +138,7 @@ export const onCreateSentence = /* GraphQL */ `
     onCreateSentence {
       id
       content
+      searchable
       discussionId
       discussion {
         id
@@ -159,6 +164,7 @@ export const onUpdateSentence = /* GraphQL */ `
     onUpdateSentence {
       id
       content
+      searchable
       discussionId
       discussion {
         id
@@ -184,6 +190,7 @@ export const onDeleteSentence = /* GraphQL */ `
     onDeleteSentence {
       id
       content
+      searchable
       discussionId
       discussion {
         id
