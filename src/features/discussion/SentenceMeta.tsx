@@ -74,15 +74,17 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
     return statusSegments.join('; ')
   }
 
-  function annotations() {
-    const icons = claimsSummary().map((claim, index) => (
-      <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
-    ))
-    if (sentence.irrational.length !== 0) {
-      icons.push(<span key="i" style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>)
-    }
-    return icons
+  const annotations = claimsSummary().map((claim, index) => (
+    <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
+  ))
+  if (sentence.irrational.length !== 0) {
+    annotations.push(<span key="i" style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>)
   }
+  const annotationIcons = (
+    <View columnStart={1} style={{placeSelf: 'start end'}}>
+      {annotations}
+    </View>
+  )
 
   const buttons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
     isActionable[action](sentence, username) &&
@@ -99,11 +101,6 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
       <Text style={{display: 'inline-block', paddingLeft: '20px', paddingBottom: '20px'}}>
         {statusLine()}
       </Text>
-    </View>
-  )
-  const annotationIcons = (
-    <View columnStart={1} style={{placeSelf: 'start end'}}>
-      {annotations()}
     </View>
   )
 
