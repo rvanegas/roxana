@@ -80,7 +80,7 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
     <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
   ))
   if (sentence.inArgument) {
-    annotations.unshift(<span key="i" style={{color: 'gray'}}>{'\u279c'}</span>)
+    annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
   }
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {

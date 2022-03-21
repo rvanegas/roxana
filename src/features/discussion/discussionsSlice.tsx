@@ -239,6 +239,13 @@ function updateDiscussionLayout(changeNote: string) {
   }
 }
 
+function GetDiscussionError(this: {message: string, stack: any}, message: string) {
+  this.message = message
+  this.stack = Error().stack
+}
+GetDiscussionError.prototype = Object.create(Error.prototype)
+GetDiscussionError.prototype.name = 'GetDiscussionError'
+
 export interface GetDiscussionInput {
   id: string,
   revision?: number,
@@ -258,7 +265,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
 
     async function parseLayout() {
       if (!discussion.layout) {
-        throw new Error('missing layout')
+        throw new GetDiscussionError('missing layout')
       }
       layoutEntries = JSON.parse(discussion.layout)
       for (let entry of layoutEntries.propositions.concat(layoutEntries.arguments)) {
@@ -270,7 +277,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
           || (Array.isArray(entry.rejected) && entry.rejected.some(a => typeof a !== 'string'))
         if (invalidEntry) {
           console.error('entry', entry)
-          throw new Error('invalid entry')
+          throw new GetDiscussionError('invalid entry')
         }
       }
     }
@@ -280,7 +287,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
       const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as any
       discussion = response.data.getDiscussion
       if (!discussion) {
-        throw new Error('no such discussion')
+        throw new GetDiscussionError('no such discussion')
       }
       sentences = discussion.sentences.items
       // console.log('sentences number', sentences.length)
@@ -300,11 +307,11 @@ function getDiscussion(discussion: GetDiscussionInput) {
           || sentences.find(s => s.id === layoutEntry.id)
           || await getSentence(layoutEntry.id)
         if (!sentence) {
-          throw new Error('invalid sentence id, fixing layout')
+          throw new GetDiscussionError('invalid sentence id, fixing layout')
         }
         const notUnique = newSentences[section].some(s => s.id === sentence.id)
         if (notUnique) {
-          throw new Error('non-unique sentence id, fixing layout')
+          throw new GetDiscussionError('non-unique sentence id, fixing layout')
         }
         const newSentence: Sentence = {
           id: sentence.id,
@@ -339,7 +346,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
     }
     if (!discussion.revision || discussion.version !== 2) {
       console.error('version', discussion)
-      throw new Error('bad version')
+      throw new GetDiscussionError('bad version')
     }
     await parseLayout()
     await readLayout('propositions')
@@ -372,9 +379,14 @@ function initializeDiscussion() {
       dispatch(initialize(discussionId))
       await dispatch(getDiscussion({id: discussionId}))
     }
-    catch {
-      await dispatch(createNewDiscussionAction())
-      return
+    catch (exception: any) {
+      if (exception.name === 'GetDiscussionError') {
+        await dispatch(createNewDiscussionAction())
+        return
+      }
+      else {
+        throw exception
+      }
     }
     if (getState().discussions.propositions.length === 0) {
       await dispatch(addNewSentence('propositions'))
