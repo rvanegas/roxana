@@ -276,13 +276,14 @@ function getDiscussion(discussion: GetDiscussionInput) {
     }
 
     async function loadDiscussion() {
-      const input = {id: discussion.id}
+      const input = {id: discussion.id, limit: 500}
       const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as any
       discussion = response.data.getDiscussion
       if (!discussion) {
         throw new Error('no such discussion')
       }
       sentences = discussion.sentences.items
+      // console.log('sentences number', sentences.length)
     }
 
     async function getSentence(id) {
@@ -442,10 +443,8 @@ function replaceSentence(input: ReplaceSentenceInput) {
       const index = nextUniqueIndex(sentence, sentences)
       const {status, owner} = sentence
       const newSentence = {key, index, content, id: newSentenceId, status, owner}
-      //// duplicated - begin
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout('replace'))
-      //// duplicated - end
     }
     catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutRevision') {
@@ -527,10 +526,8 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         console.warn('unknown action or invalid conditions:', change, sentence)
         return
       }
-      //// duplicated - begin
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout(change))
-      //// duplicated - end
     }
     catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutRevision') {

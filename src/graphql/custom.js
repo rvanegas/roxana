@@ -1,11 +1,11 @@
 export const getDiscussionSimple = /* GraphQL */ `
-  query GetDiscussion($id: ID!) {
+  query GetDiscussion($id: ID!, $limit: Int) {
     getDiscussion(id: $id) {
       id
       layout
       version
       revision
-      sentences {
+      sentences(limit: $limit) {
         items {
           id
           content
