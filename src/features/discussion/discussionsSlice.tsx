@@ -33,7 +33,6 @@ interface State {
   arguments: Sentence[]
   discussants: string[]
   hideDiscussants: object
-  showDetail: boolean
 }
 
 const initialState: State = {
@@ -47,7 +46,6 @@ const initialState: State = {
   arguments: [],
   discussants: [],
   hideDiscussants: {},
-  showDetail: true,
 }
 
 function updateSentenceDerivatives(state) {
@@ -113,10 +111,6 @@ const discussionsSlice = createSlice({
     initialize(state, action) {
       const discussionId: string = action.payload
       Object.assign(state, {discussionId, revision: 0, propositions: [], arguments: []})
-    },
-    setShowDetail(state, action) {
-      const showDetail: boolean = action.payload
-      state.showDetail = showDetail
     },
     incrementRevision(state, action) {
       const revision: number = action.payload
@@ -647,5 +641,5 @@ export function propositionIndexesFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus, setUsername, setShowDetail, toggleHideDiscussant} = discussionsSlice.actions
+export const {unsetFocus, setUsername, toggleHideDiscussant} = discussionsSlice.actions
 export default discussionsSlice.reducer
