@@ -1,0 +1,18 @@
+
+.discussion-editor {
+  position: relative;
+}
+
+.discussion-editor-draft {
+  background-color: lightyellow;
+}
+
+.discussion-actions {
+  background-color: white;
+  position: absolute;
+  z-index:  1;
+  top: 0;
+  right: 0;
+  padding: 0 5px;
+  color: darkred;
+}

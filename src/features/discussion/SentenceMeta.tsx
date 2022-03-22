@@ -1,7 +1,9 @@
 import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {Button, View, Text} from '@aws-amplify/ui-react'
+import {Divider, Button, View, Text} from '@aws-amplify/ui-react'
+import classNames from 'classnames'
 import {Section, Sentence, SentenceMode} from './discussion.d'
+import {toAlphaIndex} from '../../app/util'
 import {CurrentUserContext} from '../user/User'
 import {
   changeSentenceStatusAction,
@@ -11,16 +13,20 @@ import {
 
 interface SentenceMetaProps {
   sentence: Sentence
+  position: number
   section: Section
   mode: SentenceMode
-  editorLine: any
+  postSentence?: any
+  dividerStyle: any
+  editorElement: any
 }
 
-export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMetaProps) {
+export function SentenceMeta({sentence, position, section, mode, postSentence, dividerStyle, editorElement}: SentenceMetaProps) {
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
+  const isArguments = section === 'arguments'
 
   function handleChangeStatus(change) {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
@@ -107,6 +113,12 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
     </View>
   )
 
+  const indexLine = (
+    <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
+      {isArguments ? toAlphaIndex(position) : position+1}
+    </View>
+  )
+
   const buttons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
     isActionable[action](sentence, username) &&
       <Button
@@ -125,11 +137,33 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
     </View>
   )
 
+  const editorClassName = classNames({
+    'discussion-editor': true,
+    'discussion-editor-draft': sentence.status === 'draft' && sentence.owner === username
+  })
+
+  const editorLine = (
+    <React.Fragment>
+      <View columnStart={3}>
+        <div className={editorClassName}>
+          {editorElement}
+          <Divider style={dividerStyle} />
+          <div className={'discussion-actions'}>
+            edit accept
+          </div>
+        </div>
+      </View>
+      {postSentence}
+    </React.Fragment>
+  )
+
   return (
     <React.Fragment>
       {annotationIcons}
+      {indexLine}
       {editorLine}
       {actionStatusLine}
+      {isArguments && <View style={{paddingBottom: '10px'}} columnSpan={4} />}
     </React.Fragment>
   )
 }
