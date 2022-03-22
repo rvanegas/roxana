@@ -76,15 +76,6 @@ export function Proposition({position, discussionId, proposition}) {
     }
   })
 
-  // function myBlockStyleFn(contentBlock) {
-  // const ownDraft = sentence.status === 'draft' && sentence.owner === username
-  // const editorStyle = ownDraft ? {backgroundColor: 'lightyellow'} : {}
-  //   const type = contentBlock.getType();
-  //   if (type === 'blockquote') {
-  //     return 'superFancyBlockquote';
-  //   }
-  // }
-
   const sentence = proposition
 
   ///////////////////
@@ -92,14 +83,16 @@ export function Proposition({position, discussionId, proposition}) {
   const dividerStyle = undefined
   const postSentence = undefined
 
+  const ownDraft = sentence.status === 'draft' && sentence.owner === username
+  const editorStyle = ownDraft ? {backgroundColor: 'lightyellow'} : {}
+
   const editorLine = (
     <React.Fragment>
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </View>
-      <View columnStart={3}>
+      <View style={editorStyle} columnStart={3}>
         <Editor
-          // blockStyleFn={myBlockStyleFn}
           editorState={editorState} onChange={handleChange}
           keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
           onBlur={handleBlur} onFocus={handleFocus}

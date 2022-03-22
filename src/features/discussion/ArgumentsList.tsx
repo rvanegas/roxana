@@ -23,7 +23,7 @@ export function ArgumentsList() {
     />
   ))
 
-  const newButton = discussions.isCompact ? null : (
+  const newButton = !discussions.showDetail ? null : (
     <View columnSpan={2} style={{placeSelf: 'center start', paddingBottom: '20px'}}>
       <Button variation="link" size="small" onClick={handleNew}>new</Button>
     </View>
