@@ -33,6 +33,21 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
   }
 
+  function handleStatusToggle() {
+    if (sentence.status !== 'committed') {
+      return
+    }
+    if (sentence.accepted.includes(username)) {
+      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'reject'}))
+    }
+    else if (sentence.rejected.includes(username)) {
+      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'clear'}))
+    }
+    else {
+      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'accept'}))
+    }
+  }
+
   function claimsSummary() {
     const accepted = sentence.accepted.filter(d => !discussions.hideDiscussants[d])
     const rejected = sentence.rejected.filter(d => !discussions.hideDiscussants[d])
@@ -82,15 +97,28 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
   }
   const annotationIcons = (
-    <View columnStart={1} className="sentence-meta" style={{placeSelf: 'start end'}}>
-      {annotations}
+    <View
+      columnStart={1} className="sentence-meta" style={{height: '100%', width: '100%', position: 'relative'}}
+      onClick={handleStatusToggle}
+    >
+      <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
+      <div style={{textAlign: 'right'}}>
+        {annotations}
+      </div>
     </View>
   )
 
   const fontWeight = readOnly ? 'bold' : 'normal'
   const indexLine = (
-    <View columnStart={2} className="sentence-meta" style={{fontFamily: 'Comic Sans', fontWeight, paddingRight: '5px', placeSelf: 'start end'}}>
-      {isArguments ? toAlphaIndex(position) : position+1}
+    <View
+      columnStart={2} className="sentence-meta"
+      style={{fontFamily: 'Comic Sans', fontWeight, paddingRight: '5px', height: '100%', width: '100%', position: 'relative'}}
+      onClick={handleStatusToggle}
+    >
+      <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
+      <div style={{textAlign: 'right'}}>
+        {isArguments ? toAlphaIndex(position) : position+1}
+      </div>
     </View>
   )
 
