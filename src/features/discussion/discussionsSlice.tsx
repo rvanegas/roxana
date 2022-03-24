@@ -485,7 +485,7 @@ function replaceSentence(input: ReplaceSentenceInput) {
 }
 
 export const isActionable = {
-  edit: (sentence: Sentence, username: string) => sentence.status === 'committed' && !sentence.inArgument
+  edit: (sentence: Sentence, username: string) => !sentence.inArgument
     && sentence.accepted.length === 0 && sentence.rejected.length === 0,
   commit: (sentence: Sentence, username: string) => sentence.status === 'draft'
     && sentence.owner === username,
