@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react'
 import {useDispatch} from 'react-redux'
+
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
 import {SentenceMeta} from './SentenceMeta'
@@ -10,6 +11,7 @@ import {
   unsetFocus,
   focusOnSentence,
   replaceSentenceAction,
+  changeSentenceStatusAction,
   ReplaceSentenceInput,
 } from './discussionsSlice'
 import './discussion.css'
@@ -30,7 +32,7 @@ export function Proposition({position, discussionId, proposition}) {
     'Type a proposition. For example, "Socrates is a man."' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
-  const readOnly = !(proposition.status === 'draft' && proposition.owner === username)
+  const readOnly = proposition.accepted.length + proposition.rejected.length > 0 || proposition.inArgument
   const [mode, setMode] = useState<SentenceMode>('')
 
   function initEditorState() {
@@ -40,7 +42,9 @@ export function Proposition({position, discussionId, proposition}) {
 
   function handleFocus() {
     setMode('editing')
+    dispatch(changeSentenceStatusAction({key: proposition.key, section, change: 'edit'}))
   }
+
   function handleBlur() {
     const content = editorState.getCurrentContent().getPlainText()
     if (proposition.content !== content || proposition.status === 'draft') {
@@ -102,7 +106,7 @@ export function Proposition({position, discussionId, proposition}) {
   return (
     <React.Fragment>
       <SentenceMeta
-        sentence={sentence} position={position} mode={mode} section={section}
+        sentence={sentence} position={position} mode={mode} section={section} readOnly={readOnly}
         postSentence={postSentence} dividerStyle={dividerStyle} editorElement={editorElement}
       />
     </React.Fragment>
