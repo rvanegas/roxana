@@ -5,7 +5,7 @@ import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 import {dlog, pick} from '../../app/util'
-import {Section, Sentence} from './discussion.d'
+import {Section, Sentence, SentenceStatus} from './discussion.d'
 import {
   discussionIdFromUrl,
   redirectToDiscussionId,
@@ -122,10 +122,10 @@ const discussionsSlice = createSlice({
       state.revision = revision
     },
     addSentence(state, action) {
-      const {section, key}: {section: Section, key: string} = action.payload
+      const {section, key, status}: {section: Section, key: string, status: SentenceStatus} = action.payload
       const sentence: Sentence = {
         key, content: '', index: nextIndex(state[section]),
-        status: 'draft', owner: state.username,
+        status, owner: status === 'draft' ? state.username : undefined,
         accepted: [], rejected: [], irrational: [],
         inArgument: false
       }
@@ -284,7 +284,6 @@ function getDiscussion(discussion: GetDiscussionInput) {
         throw new GetDiscussionError('no such discussion')
       }
       sentences = discussion.sentences.items
-      // console.log('sentences number', sentences.length)
     }
 
     async function getSentence(id) {
@@ -383,10 +382,10 @@ function initializeDiscussion() {
       }
     }
     if (getState().discussions.propositions.length === 0) {
-      await dispatch(addNewSentence('propositions'))
+      await dispatch(addNewSentence('propositions', 'committed'))
     }
     if (getState().discussions.arguments.length === 0) {
-      await dispatch(addNewSentence('arguments'))
+      await dispatch(addNewSentence('arguments', 'committed'))
     }
   }
 }
@@ -452,13 +451,24 @@ function replaceSentence(input: ReplaceSentenceInput) {
         console.error('not found', key, section, discussionSentences)
         throw new Error('sentence not found')
       }
-      const newSentenceId = await createNewSentence(content, discussionId)
-      if (sentence.id) {
-        disassociateSentence(sentence.id)
+      let newSentenceId
+      if (content !== sentence.content || !sentence.id) {
+        newSentenceId = await createNewSentence(content, discussionId)
+        if (sentence.id) {
+          disassociateSentence(sentence.id)
+        }
+      }
+      else {
+        newSentenceId = sentence.id
       }
       const index = nextUniqueIndex(sentence, sentences)
-      const {status, owner} = sentence
-      const newSentence = {key, index, content, id: newSentenceId, status, owner}
+      let {status, owner} = sentence
+      if (sentence.id) {
+        status = 'committed'
+        owner = undefined
+      }
+      const accepted = content && /\S/.test(content) ? [state.discussions.username] : []
+      const newSentence = {key, index, content, id: newSentenceId, status, owner, accepted}
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout('replace'))
     }
@@ -557,11 +567,11 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   }
 }
 
-function addNewSentence(section: Section) {
+function addNewSentence(section: Section, status: string) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const key = nanoid()
-    dispatch(addSentence({section, key}))
+    dispatch(addSentence({section, key, status}))
     const input: ReplaceSentenceInput = {key, section, content: ''}
     dispatch(replaceSentenceAction(input))
   }
@@ -630,7 +640,7 @@ export function focusOnSentence(section: Section, position: number) {
     }
     let sentence = state.discussions[section][position]
     if (!sentence) {
-      await dispatch(addNewSentence(section))
+      await dispatch(addNewSentence(section, 'draft'))
     }
     dispatch(setFocus({section, position}))
   }

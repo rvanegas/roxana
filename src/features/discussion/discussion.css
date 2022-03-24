@@ -24,3 +24,7 @@
 .discussion-editor:hover .discussion-actions {
   visibility: visible;
 }
+
+.sentence-meta {
+  user-select:  none;
+}
