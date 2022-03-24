@@ -38,8 +38,7 @@ export function Argument({position, argument, discussionId}) {
   let canonicalContent
 
   function initialEditorState() {
-    const content = argument.status === 'draft' && argument.owner !== username ? `${username} is thinking...` : argument.content
-    const contentState = ContentState.createFromText(content)
+    const contentState = ContentState.createFromText(argument.content)
     return EditorState.createWithContent(contentState)
   }
 
