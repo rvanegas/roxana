@@ -142,7 +142,7 @@ export function Argument({position, argument, discussionId}) {
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
-          <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>{index}</View>
+          <View columnStart={2} style={{fontFamily: 'Comic Sans', fontWeight: 'bold', paddingRight: '10px', placeSelf: 'center end'}}>{index}</View>
           <View columnEnd={-2}>{proposition.content}</View>
         </React.Fragment>
       )
