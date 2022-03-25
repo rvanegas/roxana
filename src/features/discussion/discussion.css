@@ -3,26 +3,18 @@
   position: relative;
 }
 
-.discussion-editor:hover .discussion-actions {
-  color: blue;
-}
-
 .discussion-editor-draft {
   background-color: lightyellow;
 }
 
 .discussion-actions {
+  font-style: italic;
   background-color: white;
   position: absolute;
   z-index:  1;
   top: 0;
   right: 0;
   padding: 0 5px;
-  visibility: hidden;
-}
-
-.discussion-editor:hover .discussion-actions {
-  visibility: visible;
 }
 
 .sentence-meta {
