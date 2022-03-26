@@ -119,7 +119,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
 
   const editingStatus = (
     <div className={'discussion-actions'}>
-      {sentence.owner} editing...
+      ...{sentence.owner} editing
     </div>
   )
 
