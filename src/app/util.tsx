@@ -53,6 +53,10 @@ export function hoursAgo(ago) {
   return dayjs().diff(dayjs(ago), 'hour')
 }
 
+export function isPresent(str: string) {
+  return str && /\S/.test(str)
+}
+
 // function toLetters(index) {
 //   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 //   if (index < 26) {

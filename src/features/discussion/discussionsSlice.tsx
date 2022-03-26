@@ -4,14 +4,16 @@ import Cookies from 'universal-cookie'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
-import {dlog, pick} from '../../app/util'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
 import {
   discussionIdFromUrl,
+  dlog,
   redirectToDiscussionId,
   generateDiscussionId,
   incrementDiscussionIdLength,
   hoursAgo,
+  isPresent,
+  pick,
 } from '../../app/util'
 
 const cookies = new Cookies()
@@ -467,7 +469,7 @@ function replaceSentence(input: ReplaceSentenceInput) {
         status = 'committed'
         owner = undefined
       }
-      const accepted = content && /\S/.test(content) ? [state.discussions.username] : []
+      const accepted = isPresent(content) ? [state.discussions.username] : []
       const newSentence = {key, index, content, id: newSentenceId, status, owner, accepted}
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout('replace'))
@@ -490,9 +492,9 @@ export const isActionable = {
   commit: (sentence: Sentence, username: string) => sentence.status === 'draft'
     && sentence.owner === username,
   accept: (sentence: Sentence, username: string) => sentence.status === 'committed'
-    && !sentence.accepted.includes(username),
+    && !sentence.accepted.includes(username) && isPresent(sentence.content),
   reject: (sentence: Sentence, username: string) => sentence.status === 'committed'
-    && !sentence.rejected.includes(username),
+    && !sentence.rejected.includes(username) && isPresent(sentence.content),
   clear: (sentence: Sentence, username: string) => sentence.status === 'committed'
     && (sentence.accepted.includes(username) || sentence.rejected.includes(username)),
 }
