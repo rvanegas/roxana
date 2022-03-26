@@ -386,9 +386,6 @@ function initializeDiscussion() {
     if (getState().discussions.propositions.length === 0) {
       await dispatch(addNewSentence('propositions', 'committed'))
     }
-    if (getState().discussions.arguments.length === 0) {
-      await dispatch(addNewSentence('arguments', 'committed'))
-    }
   }
 }
 
@@ -473,6 +470,9 @@ function replaceSentence(input: ReplaceSentenceInput) {
       const newSentence = {key, index, content, id: newSentenceId, status, owner, accepted}
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout('replace'))
+      if (state.discussions.arguments.length === 0 && state.discussions.propositions.length > 0 && isPresent(content)) {
+        await dispatch(addNewSentence('arguments', 'committed'))
+      }
     }
     catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutRevision') {
