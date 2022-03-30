@@ -25,11 +25,11 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser.username
+  const username = currentUser?.username
   const isArguments = section === 'arguments'
 
   function handleStatusToggle() {
-    if (sentence.status !== 'committed') {
+    if (!username || sentence.status !== 'committed') {
       return
     }
     if (sentence.accepted.includes(username)) {

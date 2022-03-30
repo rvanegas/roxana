@@ -6,8 +6,6 @@ import {CurrentUserContext} from '../user/User'
 import {SentenceMeta} from './SentenceMeta'
 import {Section, SentenceMode, ElementRef} from './discussion.d'
 import {
-
-
   unsetFocus,
   focusOnSentence,
   replaceSentenceAction,
@@ -18,7 +16,7 @@ import './discussion.css'
 
 export function Proposition({position, discussionId, proposition}) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser.username
+  const username = currentUser?.username
   const section: Section = 'propositions'
   // @ts-ignore
 
@@ -32,7 +30,7 @@ export function Proposition({position, discussionId, proposition}) {
 
   const placeholder = position === 0 ?
     'Type a proposition. For example, "Socrates is a man."' : null
-  const readOnly = proposition.accepted.length + proposition.rejected.length > 0 || proposition.inArgument
+  const readOnly = !username || proposition.accepted.length + proposition.rejected.length > 0 || proposition.inArgument
   const [mode, setMode] = useState<SentenceMode>('')
 
   function initEditorState() {

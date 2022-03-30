@@ -1,23 +1,19 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, nanoid} from '@reduxjs/toolkit'
-import Cookies from 'universal-cookie'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
 import {
-  discussionIdFromUrl,
   dlog,
   redirectToDiscussionId,
   generateDiscussionId,
   incrementDiscussionIdLength,
   hoursAgo,
   isPresent,
+  // sleep,
   pick,
 } from '../../app/util'
-
-const cookies = new Cookies()
-const cookieKey = 'roxanaDiscussionId'
 
 interface Event {
   handler: string
@@ -26,6 +22,8 @@ interface Event {
 
 interface State {
   eventQueue: Event[]
+  // ownDiscussionIds: string[]
+  recentDiscussions: {id: string, updatedAt: string}[]
   status: string
   error?: string
   discussionId?: string
@@ -35,10 +33,12 @@ interface State {
   arguments: Sentence[]
   discussants: string[]
   hideDiscussants: object
+  // users: string[]
 }
 
 const initialState: State = {
   eventQueue: [] as Event[],
+  recentDiscussions: [],
   status: 'init',
   error: undefined,
   discussionId: undefined,
@@ -48,6 +48,7 @@ const initialState: State = {
   arguments: [],
   discussants: [],
   hideDiscussants: {},
+  // users: [],
 }
 
 function updateSentenceDerivatives(state) {
@@ -110,9 +111,19 @@ const discussionsSlice = createSlice({
   name: 'discussions',
   initialState: initialState,
   reducers: {
+    setRecentDiscussions(state, action) {
+      state.recentDiscussions = action.payload
+    },
     initialize(state, action) {
       const discussionId: string = action.payload
-      Object.assign(state, {discussionId, revision: 0, propositions: [], arguments: []})
+      Object.assign(state, {
+        discussionId,
+        revision: 0,
+        propositions: [],
+        arguments: [],
+        discussants: [],
+        hideDiscussants: {},
+      })
     },
     incrementRevision(state, action) {
       const revision: number = action.payload
@@ -156,7 +167,7 @@ const discussionsSlice = createSlice({
       const event: Event = action.payload
       state.eventQueue.push(event)
     },
-    eventDequeue(state, action) {
+    eventDequeue(state) {
       state.eventQueue.shift()
     },
     updateSentence(state, action) {
@@ -186,6 +197,15 @@ const discussionsSlice = createSlice({
     }
   }
 })
+
+export function loadRecentDiscussions() {
+  const {setRecentDiscussions} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const response = await API.graphql(graphqlOperation(custom.listRecentDiscussions)) as {data}
+    dlog('searchDiscussions', response)
+    dispatch(setRecentDiscussions(response.data.searchDiscussions.items))
+  }
+}
 
 function nextIndex(sentences: Sentence[]): number {
   return sentences.reduce((max, p) => Math.max(max, p.index), 0) + 1
@@ -242,22 +262,45 @@ function GetDiscussionError(this: {message: string, stack: any}, message: string
 GetDiscussionError.prototype = Object.create(Error.prototype)
 GetDiscussionError.prototype.name = 'GetDiscussionError'
 
-export interface GetDiscussionInput {
+export interface GetDiscussionInitInput {
   id: string,
-  revision?: number,
-  layout?: string,
-  version?: number,
-  updatedAt?: any,
-  sentences?: any
 }
 
-function getDiscussion(discussion: GetDiscussionInput) {
+export interface GetDiscussionUpdateInput {
+  id: string,
+  revision: number,
+  layout: string,
+  version: number,
+  updatedAt: any,
+}
+
+export type GetDiscussionInput = GetDiscussionInitInput | GetDiscussionUpdateInput
+
+function getDiscussion(discussionInput: GetDiscussionInput) {
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const newSentences = {propositions: [], arguments: []}
+
+    let discussion : {
+      id: string,
+      revision: number,
+      layout: string,
+      version: number,
+      updatedAt: any,
+    }
     let sentences: Sentence[] = []
+
+    const newSentences = {propositions: [], arguments: []}
     let layoutEntries
     let layoutUpdated
+
+    async function loadDiscussion() {
+      const input = {id: discussionInput.id, limit: 500}
+      const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as {data}
+      if (!response.data.getDiscussion) {
+        throw new GetDiscussionError('no such discussion')
+      }
+      return response
+    }
 
     async function parseLayout() {
       if (!discussion.layout) {
@@ -278,18 +321,8 @@ function getDiscussion(discussion: GetDiscussionInput) {
       }
     }
 
-    async function loadDiscussion() {
-      const input = {id: discussion.id, limit: 500}
-      const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as any
-      discussion = response.data.getDiscussion
-      if (!discussion) {
-        throw new GetDiscussionError('no such discussion')
-      }
-      sentences = discussion.sentences.items
-    }
-
     async function getSentence(id) {
-      const response = await API.graphql(graphqlOperation(queries.getSentence, {id})) as any
+      const response = await API.graphql(graphqlOperation(queries.getSentence, {id})) as {data}
       return response.data.getSentence
     }
 
@@ -329,20 +362,34 @@ function getDiscussion(discussion: GetDiscussionInput) {
       }
     }
 
+    // called from subscription
+    const isUpdate = discussionInput['revision'] !== undefined
+
     const state = getState()
-    if (state.discussions.discussionId && state.discussions.discussionId !== discussion.id) {
-      return // ignore updates from other discussions
+    if (state.discussions.discussionId && state.discussions.discussionId !== discussionInput.id) {
+      throw new Error('received update from wrong discussion')
     }
-    if (discussion.revision && discussion.revision <= state.discussions.revision) {
-      return
+    if (isUpdate && discussionInput['revision'] <= state.discussions.revision) {
+      return  // already up to date
     }
-    if (!discussion.layout) {
-      await loadDiscussion()
+    if (isUpdate && state.revision === 0) {
+      return  // haven't completed initial load
     }
+
+    if (!isUpdate) {
+      const response = await loadDiscussion()
+      discussion = pick(response.data.getDiscussion, ['id', 'revision', 'layout', 'version', 'updatedAt'])
+      sentences = response.data.getDiscussion.sentences.items
+    }
+    else {
+      discussion = pick(discussionInput, ['id', 'revision', 'layout', 'version', 'updatedAt'])
+    }
+
     if (!discussion.revision || discussion.version !== 2) {
       console.error('version', discussion)
       throw new GetDiscussionError('bad version')
     }
+
     await parseLayout()
     await readLayout('propositions')
     await readLayout('arguments')
@@ -353,36 +400,11 @@ function getDiscussion(discussion: GetDiscussionInput) {
   }
 }
 
-function initializeDiscussion() {
+function initializeDiscussion({discussionId}) {
   const {initialize} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    let discussionId = discussionIdFromUrl()
-    if (discussionId) {
-      cookies.set(cookieKey, discussionId)
-    }
-    else {
-      discussionId = cookies.get(cookieKey)
-      if (discussionId) {
-        redirectToDiscussionId(discussionId)
-      }
-      else {
-        await dispatch(createNewDiscussionAction())
-      }
-      return
-    }
-    try {
-      dispatch(initialize(discussionId))
-      await dispatch(getDiscussion({id: discussionId}))
-    }
-    catch (exception: any) {
-      if (exception.name === 'GetDiscussionError') {
-        await dispatch(createNewDiscussionAction())
-        return
-      }
-      else {
-        throw exception
-      }
-    }
+    dispatch(initialize(discussionId))
+    await dispatch(getDiscussion({id: discussionId}))
     if (getState().discussions.propositions.length === 0) {
       await dispatch(addNewSentence('propositions', 'committed'))
     }
@@ -400,7 +422,6 @@ function createNewDiscussion() {
         const discussionId = generateDiscussionId()
         variables.input.id = discussionId
         await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
-        cookies.set(cookieKey, discussionId)
         redirectToDiscussionId(discussionId)
         break
       }
@@ -429,7 +450,7 @@ function replaceSentence(input: ReplaceSentenceInput) {
   const {updateSentence} = discussionsSlice.actions
   async function createNewSentence(content, discussionId) {
     const variables = {input: {content, discussionId}}
-    const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as any
+    const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as {data}
     return response.data.createSentence.id
   }
   async function disassociateSentence(id) {
@@ -465,6 +486,9 @@ function replaceSentence(input: ReplaceSentenceInput) {
       if (sentence.id) {
         status = 'committed'
         owner = undefined
+      }
+      if (isPresent(content) && !state.discussions.username) {
+        throw new Error('why is this happening?')
       }
       const accepted = isPresent(content) ? [state.discussions.username] : []
       const newSentence = {key, index, content, id: newSentenceId, status, owner, accepted}
@@ -605,7 +629,7 @@ function enqueueEvent(action) {
         }
         const handler = eventHandlerFunctions[event.handler]
         await dispatch(handler(event.payload))
-        dispatch(eventDequeue(null))
+        dispatch(eventDequeue())
       }
       dispatch(setStatus('idle'))
     }
@@ -616,8 +640,8 @@ export function createNewDiscussionAction() {
   const action = {handler: 'createNewDiscussion'}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function initializeDiscussionAction() {
-  const action = {handler: 'initializeDiscussion'}
+export function initializeDiscussionAction(value) {
+  const action = {handler: 'initializeDiscussion', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function getDiscussionAction(discussion) {
