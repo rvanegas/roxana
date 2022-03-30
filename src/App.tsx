@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react'
-import {BrowserRouter, Routes, Route, Outlet, useLocation, useNavigate, useSearchParams} from 'react-router-dom'
+import {BrowserRouter, Routes, Route, Outlet, useLocation, useSearchParams, useNavigate, Navigate} from 'react-router-dom'
 import {Authenticator, useAuthenticator, Grid, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
@@ -14,15 +14,12 @@ export default function App() {
 
   function SignIn() {
     const [searchParams] = useSearchParams()
-    const uri = searchParams.get('uri')
+    const path = decodeURI(searchParams.get('path') || '/')
     return (
       <Authenticator>
-        {({signOut, user}: {signOut, user}) => {
-          if (uri) {
-            document.location.href = uri
-          }
-          return <div/>
-        }}
+        {({signOut, user}: {signOut, user}) =>
+          <Navigate to={path} replace={true} />
+        }
       </Authenticator>
     )
   }
@@ -36,7 +33,7 @@ export default function App() {
     }
 
     function navigateToSignIn() {
-      const signInUrl = `/signin?uri=${encodeURI(document.location.href)}`
+      const signInUrl = `/signin?path=${encodeURI(location.pathname)}`
       navigate(signInUrl)
     }
 
