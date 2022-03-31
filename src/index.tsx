@@ -16,6 +16,7 @@ Amplify.configure(awsExports);
 console.log('version', packageJson.version)
 
 Bugsnag.start({
+  appVersion: packageJson.version,
   apiKey: 'f9ee89b75415659a9708bea10e368d0f',
   plugins: [new BugsnagPluginReact()]
 })
