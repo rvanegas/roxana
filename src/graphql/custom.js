@@ -45,7 +45,7 @@ export const onDiscussionLayoutById = /* GraphQL */ `
 `
 export const listRecentDiscussions = /* GraphQL */ `
   query SearchDiscussions {
-    searchDiscussions(sort: {direction: desc, field: updatedAt}, limit: 10) {
+    searchDiscussions(sort: {direction: desc, field: updatedAt}, limit: 20) {
       items {
         id
         updatedAt
