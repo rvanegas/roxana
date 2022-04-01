@@ -105,12 +105,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
 
   const fontWeight = readOnly ? 'bold' : 'normal'
   const indexLine = (
-    <View
-      columnStart={2} className="sentence-meta"
-      style={{fontFamily: 'Comic Sans', fontWeight, paddingRight: '5px', height: '100%', width: '100%', position: 'relative'}}
-      onClick={handleStatusToggle}
-    >
-      <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
+    <View columnStart={2} className="sentence-meta" style={{fontWeight}}>
       <div style={{textAlign: 'right'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </div>
