@@ -89,7 +89,7 @@ function updateSentenceDerivatives(state) {
       const conclusion = propositions.slice(-1)[0]
       for (let discussant of state.discussants) {
         const irrational = premises.every(p => p.accepted.includes(discussant))
-          && conclusion.rejected.includes(discussant)
+          && !conclusion.accepted.includes(discussant)
           && argument.accepted.includes(discussant)
         if (irrational) {
           argument.irrational.push(discussant)

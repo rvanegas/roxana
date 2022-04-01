@@ -86,7 +86,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
       fontWeight: 'bold',
       textDecoration: underline ? 'underline' : 'none'
     }
-    annotations.push(<span key="i" style={style}>{'\u2049'}</span>)
+    annotations.push(<span key="i" style={style}>{'\u2757'}</span>)
   }
   if (sentence.inArgument) {
     annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
