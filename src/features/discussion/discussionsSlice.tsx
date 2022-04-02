@@ -262,21 +262,15 @@ function GetDiscussionError(this: {message: string, stack: any}, message: string
 GetDiscussionError.prototype = Object.create(Error.prototype)
 GetDiscussionError.prototype.name = 'GetDiscussionError'
 
-export interface GetDiscussionInitInput {
-  id: string,
-}
-
-export interface GetDiscussionUpdateInput {
+function getDiscussion(discussionInput: {id: string})
+function getDiscussion(discussionInput: {
   id: string,
   revision: number,
   layout: string,
   version: number,
-  updatedAt: any,
-}
-
-export type GetDiscussionInput = GetDiscussionInitInput | GetDiscussionUpdateInput
-
-function getDiscussion(discussionInput: GetDiscussionInput) {
+  updatedAt: string
+})
+function getDiscussion(discussionInput) {
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
 
@@ -285,7 +279,7 @@ function getDiscussion(discussionInput: GetDiscussionInput) {
       revision: number,
       layout: string,
       version: number,
-      updatedAt: any,
+      updatedAt: string,
     }
     let sentences: Sentence[] = []
 
