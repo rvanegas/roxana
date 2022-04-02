@@ -78,6 +78,9 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     }
     return <span key={index} style={style}>{claim ? '\u2714' : '\u2718'}</span>
   })
+  if (sentence.inArgument) {
+    annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
+  }
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
     let underline = irrational.includes(username) && !discussions.hideDiscussants[username]
@@ -86,10 +89,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
       fontWeight: 'bold',
       textDecoration: underline ? 'underline' : 'none'
     }
-    annotations.push(<span key="i" style={style}>{'\u2757'}</span>)
-  }
-  if (sentence.inArgument) {
-    annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
+    annotations.unshift(<span key="i" style={style}>{'\u2757'}</span>)
   }
   const annotationIcons = (
     <View
