@@ -506,15 +506,12 @@ function replaceSentence(input: ReplaceSentenceInput) {
 
 export const isActionable = {
   edit: (sentence: Sentence, username: string) => !sentence.inArgument
-    && sentence.accepted.length === 0 && sentence.rejected.length === 0,
-  commit: (sentence: Sentence, username: string) => sentence.status === 'draft'
-    && sentence.owner === username,
+    && !sentenceCommittedOthers(sentence, username),
   accept: (sentence: Sentence, username: string) => sentence.status === 'committed'
-    && !sentence.accepted.includes(username) && isPresent(sentence.content),
+    && isPresent(sentence.content),
   reject: (sentence: Sentence, username: string) => sentence.status === 'committed'
-    && !sentence.rejected.includes(username) && isPresent(sentence.content),
+    && isPresent(sentence.content),
   clear: (sentence: Sentence, username: string) => sentence.status === 'committed'
-    && (sentence.accepted.includes(username) || sentence.rejected.includes(username)),
 }
 
 interface ChangeSentenceStatusInput {
@@ -542,10 +539,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       let newSentence: Sentence
       if (change === 'edit' && isActionable.edit(sentence, username)) {
-        newSentence = {...sentence, status: 'draft', owner: username}
-      }
-      else if (change === 'commit' && isActionable.commit(sentence, username)) {
-        newSentence = {...sentence, status: 'committed', owner: undefined}
+        newSentence = {...sentence, status: 'draft', owner: username, accepted: [], rejected: []}
       }
       else if (change === 'accept' && isActionable.accept(sentence, username)) {
         const newAccepted = new Set(sentence.accepted)
@@ -664,6 +658,10 @@ export function focusOnSentence(section: Section, position: number) {
     }
     dispatch(setFocus({section, position}))
   }
+}
+
+export function sentenceCommittedOthers(sentence: Sentence, username: string): boolean {
+  return sentence.accepted.concat(sentence.rejected).findIndex(n => n !== username) !== -1
 }
 
 export function propositionIndexesFromArgument(argument) {
