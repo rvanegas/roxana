@@ -19,10 +19,17 @@
 
 /* Component of same name will be renamed */
 .sentence-meta {
-  user-select:  none;
-  font-family: Comic Sans;
-  font-weight: bold;
+  user-select: none;
   padding-right: 5px;
+  padding-top: 2px;
   height: 100%;
   width: 100%;
+  font-size: 10pt;
+}
+
+.sentence-index {
+  font-family: Comic Sans;
+  user-select: none;
+  font-weight: bold;
+  padding-right: 5px;
 }
