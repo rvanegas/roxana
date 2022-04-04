@@ -139,7 +139,7 @@ const discussionsSlice = createSlice({
       const sentence: Sentence = {
         key, content: '', index: nextIndex(state[section]),
         status, owner: status === 'draft' ? state.username : undefined,
-        accepted: [], rejected: [], irrational: [],
+        accepted: [], rejected: [], irrational: [], goal: [],
         inArgument: false
       }
       state[section].push(sentence)
@@ -151,6 +151,23 @@ const discussionsSlice = createSlice({
     unsetFocus(state, action) {
       const {section, position}: {section: Section, position: number} = action.payload
       delete state[section][position].autoFocus
+    },
+    setGoal(state, action) {
+      const position: number = action.payload
+      if (!state.username) {
+        return
+      }
+      for (let pos = 0; pos < state.propositions.length; pos++) {
+        const newGoal = new Set<string>(state.propositions[pos].goal)
+        if (pos === position && !newGoal.has(state.username)) {
+          newGoal.add(state.username)
+          state.propositions[pos].goal = Array.from(newGoal)
+        }
+        else if (newGoal.has(state.username)) {
+          newGoal.delete(state.username)
+          state.propositions[pos].goal = Array.from(newGoal)
+        }
+      }
     },
     setStatus(state, action) {
       state.status = action.payload
@@ -217,7 +234,7 @@ function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
 
 function updateDiscussionLayout(changeNote: string) {
   const {incrementRevision} = discussionsSlice.actions
-  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
+  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'goal']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
   const layoutFilter = sentence => sentence.id !== undefined
   const sentencesToEntries = sentences => sentences.filter(layoutFilter).map(makeLayoutEntry)
@@ -344,6 +361,7 @@ function getDiscussion(discussionInput) {
           owner: layoutEntry.owner,
           accepted: layoutEntry.accepted || [],
           rejected: layoutEntry.rejected || [],
+          goal: layoutEntry.goal || [],
           irrational: [],
           inArgument: false
         }
@@ -581,6 +599,25 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   }
 }
 
+function changeGoalSentence({position}: {position: number}) {
+  const {setGoal} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    try {
+      dispatch(setGoal(position))
+      await dispatch(updateDiscussionLayout('goal'))
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision') {
+        console.warn('try again')
+        dispatch(changeGoalSentence({position}))
+      }
+      else {
+        throw exception
+      }
+    }
+  }
+}
+
 function addNewSentence(section: Section, status: string) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -597,6 +634,7 @@ const eventHandlerFunctions = {
   getDiscussion,
   replaceSentence,
   changeSentenceStatus,
+  changeGoalSentence,
 }
 
 function enqueueEvent(action) {
@@ -644,6 +682,11 @@ export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
   const action = {handler: 'changeSentenceStatus', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
+export function changeGoalSentenceAction(value: {position: number}) {
+  const action = {handler: 'changeGoalSentence', payload: value}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+
 
 export function focusOnSentence(section: Section, position: number) {
   const {setFocus} = discussionsSlice.actions

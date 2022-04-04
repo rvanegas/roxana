@@ -12,8 +12,9 @@ import {
   unsetFocus,
   focusOnSentence,
   replaceSentenceAction,
-  changeSentenceStatusAction,
   ReplaceSentenceInput,
+  changeSentenceStatusAction,
+  changeGoalSentenceAction,
   sentenceCommittedOthers,
 } from './discussionsSlice'
 import './discussion.css'
@@ -197,6 +198,13 @@ export function SentenceLine(props: SentenceProps) {
     }
   }
 
+  function handleGoalSet() {
+    if (sentence.status !== 'committed' || section !== 'propositions') {
+      return
+    }
+    dispatch(changeGoalSentenceAction({position}))
+  }
+
   function claimsSummary() {
     const accepted = sentence.accepted.filter(d => !discussions.hideDiscussants[d])
     const rejected = sentence.rejected.filter(d => !discussions.hideDiscussants[d])
@@ -259,15 +267,20 @@ export function SentenceLine(props: SentenceProps) {
     </View>
   )
 
-  // const isHome = Math.random() > 0.5
   const indexStyle = {
     fontWeight: 'bold',
-    // border: position === 0 ? '1px gray double' : position === 2 ? '1px gray dashed' : 'none',
+    border: sentence.goal.includes(username) ? '1px gray double' :
+      sentence.goal.length !== 0 ? '1px gray dashed' : 'none',
     height: '20px',
-    width: '20px'
+    width: '20px',
+    position: 'relative'
   }
   const indexLine = (
-    <View columnStart={2} className="sentence-index" style={indexStyle}>
+    <View
+      columnStart={2} className="sentence-index" style={indexStyle}
+      onClick={username && handleGoalSet}
+    >
+      <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
       <div style={{textAlign: 'right'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </div>
