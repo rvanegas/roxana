@@ -4,7 +4,7 @@ import {View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
 import {SentenceMeta} from './SentenceMeta'
-import {Section, ElementRef} from './discussion.d'
+import {Section, Sentence, ElementRef} from './discussion.d'
 import {
   selectDiscussions,
   propositionIndexesFromArgument,
@@ -17,37 +17,36 @@ import {
 } from './discussionsSlice'
 import './discussion.css'
 
-export function Proposition({position, discussionId, proposition}) {
-  let canonicalContent
-  const sentence = proposition
-  const section: Section = 'propositions'
+interface SentenceProps {
+  section: Section
+  sentence: Sentence
+  position: number
+}
 
+export function SentenceLine(props: SentenceProps) {
+  const {section, sentence, position} = props
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
-  // @ts-ignore
-  const propositionIndexes = section === 'arguments' && propositionIndexesFromArgument(sentence)
+  const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
   const editorRef = React.createRef() as ElementRef
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
-  // @ts-ignore
-  const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(section === 'arguments' && propositionIndexes)
+  const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
   const placeholder = position !== 0 ? null : (
-    // @ts-ignore
     section === 'propositions' ?
       'Type a proposition. For example, "Socrates is a man."' :
       'Type a sequence of proposition numbers. For example, "1 2 3".'
   )
   const readOnly = !username || sentenceCommittedOthers(sentence, username) || sentence.inArgument
+  let canonicalContent
 
   function initialEditorState() {
     const contentState = ContentState.createFromText(sentence.content)
     return EditorState.createWithContent(contentState)
   }
-
-  //////////////////
 
   function setDisplayFromArgumentInput(argumentInput) {
     const invalidPattern = /[^\d\s]/

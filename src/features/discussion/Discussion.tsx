@@ -3,8 +3,7 @@ import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
 import {SwitchField, View, Heading, Grid, Text} from '@aws-amplify/ui-react'
-import {PropositionsList} from './PropositionsList'
-import {ArgumentsList} from './ArgumentsList'
+import {SentencesList} from './SentencesList'
 import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
 import {dlog} from '../../app/util'
@@ -70,7 +69,7 @@ export function Discussion() {
     )
   })
 
-  const argumentsList = discussions.arguments.length === 0 ? null : <ArgumentsList />
+  const argumentsList = discussions.arguments.length === 0 ? null : <SentencesList section="arguments" />
 
   return (
     <React.Fragment>
@@ -89,7 +88,7 @@ export function Discussion() {
         templateColumns="5rem 20px 1fr 3rem"
         gap="7px"
       >
-        <PropositionsList />
+        <SentencesList section="propositions" />
         {argumentsList}
       </Grid>
     </React.Fragment>
