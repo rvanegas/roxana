@@ -325,6 +325,7 @@ function getDiscussion(discussionInput) {
           || (entry.status === 'draft' && typeof entry.owner !== 'string')
           || (Array.isArray(entry.accepted) && entry.accepted.some(a => typeof a !== 'string'))
           || (Array.isArray(entry.rejected) && entry.rejected.some(a => typeof a !== 'string'))
+          || (Array.isArray(entry.cleared) && entry.cleared.some(a => typeof a !== 'string'))
         if (invalidEntry) {
           console.error('entry', entry)
           throw new GetDiscussionError('invalid entry')
