@@ -76,11 +76,12 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
       color: (claim ? 'seagreen' : 'firebrick'),
       borderBottom: underline ? '1px gray solid' : 'none'
     }
-    return claim ? <span key={index} className="oi" style={style} data-glyph="check" title="check" />
-      : <span key={index} className="oi" style={style} data-glyph="x" title="x" />
+    return claim ?
+      <span key={index} className="oi" style={style} data-glyph="check" /> :
+      <span key={index} className="oi" style={style} data-glyph="x" />
   })
   if (sentence.inArgument) {
-    annotations.unshift(<span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />)
+    annotations.unshift(<span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" />)
   }
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
@@ -89,13 +90,13 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
       color: 'gold',
       borderBottom: underline ? '1px gray solid' : 'none'
     }
-    annotations.unshift(<span key="i" className="oi" style={style} data-glyph="warning" title="warning" />)
+    annotations.unshift(<span key="i" className="oi" style={style} data-glyph="warning" />)
   }
 
   const annotationIcons = (
     <View
       columnStart={1} className="sentence-meta" style={{height: '100%', width: '100%', position: 'relative'}}
-      onClick={handleStatusToggle}
+      onClick={username && handleStatusToggle}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
       <div style={{textAlign: 'right'}}>
