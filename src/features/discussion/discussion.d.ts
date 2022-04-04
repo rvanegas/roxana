@@ -16,8 +16,6 @@ export type Sentence = {
 
 export type Section = 'propositions' | 'arguments'
 
-export type SentenceMode = 'editing' | 'saving' | ''
-
 export interface ElementRef {
   current: {blur(): void, focus(): void}
 }

@@ -2,7 +2,7 @@ import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import {Divider, View} from '@aws-amplify/ui-react'
 import classNames from 'classnames'
-import {Section, Sentence, SentenceMode} from './discussion.d'
+import {Section, Sentence} from './discussion.d'
 import {toAlphaIndex} from '../../app/util'
 import {CurrentUserContext} from '../user/User'
 import {
@@ -14,14 +14,13 @@ interface SentenceMetaProps {
   sentence: Sentence
   position: number
   section: Section
-  mode: SentenceMode
   postSentence?: any
   dividerStyle: any
   editorElement: any
-  readOnly: boolean
 }
 
-export function SentenceMeta({sentence, position, section, mode, postSentence, dividerStyle, editorElement, readOnly}: SentenceMetaProps) {
+export function SentenceMeta(props: SentenceMetaProps) {
+  const {sentence, position, section, postSentence, dividerStyle, editorElement} = props
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
@@ -29,7 +28,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
   const isArguments = section === 'arguments'
 
   function handleStatusToggle() {
-    if (!username || sentence.status !== 'committed') {
+    if (sentence.status !== 'committed') {
       return
     }
     if (sentence.accepted.includes(username)) {
