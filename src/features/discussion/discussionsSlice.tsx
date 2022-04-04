@@ -55,7 +55,7 @@ function updateSentenceDerivatives(state) {
   const discussants = new Set<string>()
   const sentences = state.propositions.concat(state.arguments)
   for (let sentence of sentences) {
-    const claimants = sentence.accepted.concat(sentence.rejected)
+    const claimants = sentence.accepted.concat(sentence.rejected).concat(sentence.goal)
     for (let claimant of claimants) {
       discussants.add(claimant)
     }

@@ -267,10 +267,10 @@ export function SentenceLine(props: SentenceProps) {
     </View>
   )
 
+  const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
   const indexStyle = {
     fontWeight: 'bold',
-    border: sentence.goal.includes(username) ? '1px gray double' :
-      sentence.goal.length !== 0 ? '1px gray dashed' : 'none',
+    border: goal.includes(username) ? '1px gray double' : goal.length !== 0 ? '1px gray dashed' : 'none',
     height: '20px',
     width: '20px',
     position: 'relative'
