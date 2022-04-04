@@ -1,5 +1,6 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, nanoid} from '@reduxjs/toolkit'
+import Cookies from 'universal-cookie'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
@@ -14,6 +15,8 @@ import {
   // sleep,
   pick,
 } from '../../app/util'
+
+const cookies = new Cookies()
 
 interface Event {
   handler: string
@@ -35,6 +38,15 @@ interface State {
   // users: string[]
 }
 
+function hideDiscussantsCookie() {
+  try {
+    return cookies.get('hideDiscussants')
+  }
+  catch (exception: any) {
+    return {}
+  }
+}
+
 const initialState: State = {
   eventQueue: [] as Event[],
   recentDiscussions: [],
@@ -46,7 +58,7 @@ const initialState: State = {
   propositions: [],
   arguments: [],
   discussants: [],
-  hideDiscussants: {},
+  hideDiscussants: hideDiscussantsCookie(),
   // users: [],
 }
 
@@ -121,7 +133,6 @@ const discussionsSlice = createSlice({
         propositions: [],
         arguments: [],
         discussants: [],
-        hideDiscussants: {},
       })
     },
     incrementRevision(state, action) {
@@ -175,6 +186,7 @@ const discussionsSlice = createSlice({
     toggleHideDiscussant(state, action) {
       const discussant: string = action.payload
       state.hideDiscussants[discussant] = !state.hideDiscussants[discussant]
+      cookies.set('hideDiscussants', state.hideDiscussants)
     },
     setUsername(state, action) {
       const username: string = action.payload
