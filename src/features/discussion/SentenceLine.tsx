@@ -12,7 +12,6 @@ import {
   unsetFocus,
   focusOnSentence,
   replaceSentenceAction,
-  ReplaceSentenceInput,
   changeSentenceStatusAction,
   changeGoalSentenceAction,
   sentenceCommittedOthers,
@@ -83,14 +82,15 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function handleChange(editorState) {
-    if (section === 'arguments') {
-      const argumentInput = editorState.getCurrentContent().getPlainText()
-      setDisplayFromArgumentInput(argumentInput)
-    }
-    if (section === 'arguments' && canonicalContent !== undefined) {
+    if (canonicalContent !== undefined) {
       const contentState = ContentState.createFromText(canonicalContent)
       setEditorState(EditorState.createWithContent(contentState))
       setArgumentInputInvalid(false)
+    }
+    else if (section === 'arguments') {
+      const argumentInput = editorState.getCurrentContent().getPlainText()
+      setDisplayFromArgumentInput(argumentInput)
+      setEditorState(editorState)
     }
     else {
       setEditorState(editorState)
@@ -98,7 +98,10 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function setFinalContent() {
-    if (section === 'arguments') {
+    if (canonicalContent) {
+      return canonicalContent
+    }
+    else if (section === 'arguments') {
       const content = displayPropositionIndexes.join(' ')
       if (editorState.getCurrentContent().getPlainText() !== sentence.content) {
         canonicalContent = content
@@ -141,7 +144,7 @@ export function SentenceLine(props: SentenceProps) {
   function handleBlur() {
     const content = setFinalContent()
     if (content !== sentence.content || sentence.status === 'draft') {
-      const input: ReplaceSentenceInput = {key: sentence.key, section, content}
+      const input = {key: sentence.key, section, content}
       dispatch(replaceSentenceAction(input))
     }
   }
@@ -149,6 +152,9 @@ export function SentenceLine(props: SentenceProps) {
   function myKeyBindingFn(e) {
     if (e.keyCode === 13) {
       return e.shiftKey ? 'next-line' : 'blur-line'
+    }
+    if (e.keyCode === 27) {
+      return 'escape'
     }
     return getDefaultKeyBinding(e)
   }
@@ -158,6 +164,11 @@ export function SentenceLine(props: SentenceProps) {
       if (command === 'next-line') {
         dispatch(focusOnSentence(section, position + 1))
       }
+      return 'handled'
+    } else if (command === 'escape') {
+      canonicalContent = sentence.content
+      setDisplayFromArgumentInput(canonicalContent)
+      editorRef.current.blur()
       return 'handled'
     }
     return 'not-handled'

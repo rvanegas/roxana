@@ -466,13 +466,7 @@ function createNewDiscussion() {
   }
 }
 
-export interface ReplaceSentenceInput {
-  key: string
-  section: Section
-  content: string
-}
-
-function replaceSentence(input: ReplaceSentenceInput) {
+function replaceSentence(input: {key: string, section: Section, content: string}) {
   const {key, section, content} = input
   const {updateSentence} = discussionsSlice.actions
   async function createNewSentence(content, discussionId) {
@@ -662,8 +656,7 @@ function addNewSentence(section: Section, status: string) {
   return async (dispatch, getState) => {
     const key = nanoid()
     dispatch(addSentence({section, key, status}))
-    const input: ReplaceSentenceInput = {key, section, content: ''}
-    dispatch(replaceSentenceAction(input))
+    dispatch(replaceSentenceAction({key, section, content: ''}))
   }
 }
 
@@ -713,7 +706,7 @@ export function getDiscussionAction(discussion) {
   const action = {handler: 'getDiscussion', payload: discussion}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function replaceSentenceAction(value: ReplaceSentenceInput) {
+export function replaceSentenceAction(value) {
   const action = {handler: 'replaceSentence', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
