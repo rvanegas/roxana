@@ -40,7 +40,8 @@ interface State {
 
 function hideDiscussantsCookie() {
   try {
-    return cookies.get('hideDiscussants')
+    const value = cookies.get('hideDiscussants')
+    return typeof value === 'object' ? value : {}
   }
   catch (exception: any) {
     return {}
