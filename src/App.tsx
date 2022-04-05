@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import {useSelector} from 'react-redux'
-import {BrowserRouter, Routes, Route, Outlet, useLocation, useSearchParams, useNavigate} from 'react-router-dom'
+import {BrowserRouter, Routes, Route, Outlet, useLocation, useNavigate} from 'react-router-dom'
 import {Authenticator, useAuthenticator, Flex, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import classNames from 'classnames'
 import '@aws-amplify/ui-react/styles.css'
@@ -9,7 +9,6 @@ import {CurrentUserContext} from './features/user/User'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions} from './features/discussion/discussionsSlice'
-// import DragTest from './DragTest'
 
 export default function App() {
   const [reloadPath, setReloadPath] = useState('')
@@ -17,35 +16,27 @@ export default function App() {
   const {user, signOut}: {user: any, signOut: () => {}} = useAuthenticator(context => [context.user])
 
   function SignIn() {
-    const uri = `/?path=${encodeURI(reloadPath)}`
     return (
       <Authenticator>
         {({signOut, user}: {signOut, user}) => {
-          window.location.href = uri
+          window.location.href = reloadPath
           return <div/>
         }}
       </Authenticator>
     )
   }
 
-// <Navigate to={path} replace={true} />
-
   function Home() {
     const location = useLocation()
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams()
-    const path = searchParams.get('path')
     const discussions = useSelector(selectDiscussions)
     const isSynced = discussions.eventQueue.length === 0
 
     useEffect(() => {
-      if (path) {
-        navigate(path)
-      }
-      else if (location.pathname === '/') {
+      if (location.pathname === '/') {
         navigate('/discussions')
       }
-    }, [path, location, navigate])
+    }, [location, navigate])
 
     function handleHome() {
       navigate('/')
@@ -61,8 +52,7 @@ export default function App() {
       <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
 
     const indicatorClasses = classNames(
-      'indicator',
-      {
+      'indicator', {
         'synced': isSynced,
         'unsynced': !isSynced
       }
@@ -70,6 +60,8 @@ export default function App() {
 
     const locationInDiscussion = (new RegExp('/discussions/\\w+')).test(location.pathname)
     const discussionElement = <Text>discussion: {discussions.discussionId}</Text>
+
+    const syncIndicator = <View className={indicatorClasses}></View>
 
     return (
       <CurrentUserContext.Provider value={user}>
@@ -96,7 +88,7 @@ export default function App() {
               alignItems="center"
               style={{paddingTop: '6px'}}
             >
-              <View className={indicatorClasses}></View>
+              {user ? syncIndicator : undefined}
               <Text>
                 {user?.username}
               </Text>
