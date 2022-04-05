@@ -24,17 +24,22 @@ Bugsnag.start({
 // @ts-ignore
 const ErrorBoundary = Bugsnag.getPlugin('react').createErrorBoundary(React)
 
+const storeProvider = (
+  <Provider store={store}>
+    <AmplifyProvider theme={theme}>
+      <Authenticator.Provider>
+        <App />
+      </Authenticator.Provider>
+    </AmplifyProvider>
+  </Provider>
+)
+
+const bugsnagBoundary = <ErrorBoundary>{storeProvider}</ErrorBoundary>
+const isLocalhost = document.location.host === 'localhost:3000'
+
 ReactDOM.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <Provider store={store}>
-        <AmplifyProvider theme={theme}>
-          <Authenticator.Provider>
-            <App />
-          </Authenticator.Provider>
-        </AmplifyProvider>
-      </Provider>
-    </ErrorBoundary>
+    {isLocalhost ? storeProvider : bugsnagBoundary}
   </React.StrictMode>,
   document.getElementById('root')
 );
