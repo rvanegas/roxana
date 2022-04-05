@@ -32,7 +32,7 @@ export function SentencesList({section}) {
 
   return (
     <React.Fragment key={section}>
-      <Heading style={{paddingTop: '30px', paddingBottom: '10px'}} columnStart="1" columnEnd="-1">
+      <Heading style={{paddingTop: '4px', paddingBottom: '10px'}} columnStart="1" columnEnd="-1">
         {section === 'propositions' ? 'Propositions' : 'Arguments'}
       </Heading>
       {elements}

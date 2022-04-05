@@ -2,7 +2,7 @@ import React, {useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
-import {SwitchField, View, Heading, Grid, Text} from '@aws-amplify/ui-react'
+import {SwitchField, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
@@ -21,7 +21,6 @@ export function Discussion() {
   const username = currentUser?.username
   const params = useParams()
   const discussions = useSelector(selectDiscussions)
-  const isSyncing = discussions.eventQueue.length !== 0
   const discussionStatusInit = discussions.status === 'init'
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
@@ -58,11 +57,11 @@ export function Discussion() {
     dispatch(toggleHideDiscussant(discussant))
   }
 
-  const discussantButtons = discussions.discussants.map(discussant => {
+  const discussantToggles = discussions.discussants.map(discussant => {
     const isHidden = discussions.hideDiscussants[discussant]
     return (
       <SwitchField
-        style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
+        style={{display: 'inline-block', lineHeight: '30px'}}
         key={discussant} labelPosition="end" label={discussant} isChecked={!isHidden}
         onClick={e => handleDiscussantSwitch(e, discussant)}
       />
@@ -73,16 +72,8 @@ export function Discussion() {
 
   return (
     <React.Fragment>
-      <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
-        Discussion: {discussionId}
-      </Heading>
-      <View columnEnd={-1} style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
-        <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
-          {isSyncing && 'syncing...'}
-        </Text>
-      </View>
       <View columnStart="1" columnEnd="-1">
-        {discussantButtons}
+        {discussantToggles}
       </View>
       <Grid
         templateColumns="5rem 20px 1fr 3rem"
