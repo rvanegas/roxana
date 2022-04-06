@@ -77,7 +77,7 @@ export function Discussion() {
       </View>
       <Grid
         templateColumns="5rem 20px 1fr 3rem"
-        gap="7px"
+        columnGap="5px"
       >
         <SentencesList section="propositions" />
         {argumentsList}

@@ -47,21 +47,13 @@ export default function App() {
       navigate('/signin')
     }
 
+    const indicatorClasses = classNames('indicator', {'synced': isSynced})
+    const locationInDiscussion = (new RegExp('/discussions/\\w+')).test(location.pathname)
+    const discussionElement = <Text>discussion: {discussions.discussionId}</Text>
+    const syncIndicator = <View className={indicatorClasses}></View>
     const signInOrOutButton = location.pathname === '/signin' ? null : user ?
       <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
       <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
-
-    const indicatorClasses = classNames(
-      'indicator', {
-        'synced': isSynced,
-        'unsynced': !isSynced
-      }
-    )
-
-    const locationInDiscussion = (new RegExp('/discussions/\\w+')).test(location.pathname)
-    const discussionElement = <Text>discussion: {discussions.discussionId}</Text>
-
-    const syncIndicator = <View className={indicatorClasses}></View>
 
     return (
       <CurrentUserContext.Provider value={user}>
