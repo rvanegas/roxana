@@ -36,6 +36,7 @@ interface State {
   discussants: string[]
   hideDiscussants: object
   sentenceModalPosition?: number
+  offsetHeight?: number
   // users: string[]
 }
 
@@ -62,6 +63,7 @@ const initialState: State = {
   discussants: [],
   hideDiscussants: hideDiscussantsCookie(),
   sentenceModalPosition: undefined,
+  offsetHeight: undefined,
   // users: [],
 }
 
