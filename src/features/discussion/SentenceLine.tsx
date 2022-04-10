@@ -15,9 +15,9 @@ import {
   replaceSentenceAction,
   changeSentenceStatusAction,
   // changeGoalSentenceAction,
-  sentenceCommittedOthers,
   setSentenceModal,
   clearSentenceModal,
+  isActionable,
 } from './discussionsSlice'
 import './discussion.css'
 
@@ -47,7 +47,7 @@ export function SentenceLine(props: SentenceProps) {
       'Type a proposition. For example, "Socrates is a man."' :
       'Type a sequence of proposition numbers. For example, "1 2 3".'
   )
-  const readOnly = !username || sentenceCommittedOthers(sentence, username) || sentence.inArgument
+  const readOnly = !(username && isActionable.edit(sentence, username))
   const inSentenceModal = discussions.sentenceModalPosition === position
 
   // @ts-ignore
