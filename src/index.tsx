@@ -10,7 +10,7 @@ import {store} from './app/store'
 import {theme} from './theme'
 import * as serviceWorker from './serviceWorker'
 import awsExports from "./aws-exports"
-const packageJson = require('../package.json')
+import packageJson from '../package.json'
 
 Amplify.configure(awsExports);
 console.log('version', packageJson.version)

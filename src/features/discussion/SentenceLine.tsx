@@ -44,7 +44,7 @@ export function SentenceLine(props: SentenceProps) {
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
   const placeholder = position !== 0 ? null : (
     section === 'propositions' ?
-      'Type a proposition. For example, "Socrates is a man."' :
+      'Type a proposition. For example, "Socrates is a man".' :
       'Type a sequence of proposition numbers. For example, "1 2 3".'
   )
   const readOnly = !(username && isActionable.edit(sentence, username))

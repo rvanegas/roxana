@@ -24,7 +24,7 @@ export function SentencesList({section}) {
     />
   ))
 
-  const newButton = (
+  const newButton = !(username && sentences.length !== 0) ? undefined : (
     <View columnSpan={2} style={{placeSelf: 'center start', paddingBottom: '20px'}}>
       <Button variation="link" size="small" onClick={handleNew}>new</Button>
     </View>
@@ -36,7 +36,7 @@ export function SentencesList({section}) {
         {section === 'propositions' ? 'Propositions' : 'Arguments'}
       </Heading>
       {elements}
-      {username && newButton}
+      {newButton}
     </React.Fragment>
   )
 }
