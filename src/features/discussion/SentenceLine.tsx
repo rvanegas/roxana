@@ -35,8 +35,7 @@ export function SentenceLine(props: SentenceProps) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
-  // const editorRef = useRef() // ??
-  const editorRef = React.createRef() as ElementRef
+  const editorRef = useRef() as ElementRef
   const editorContainerRef = useRef()
   const dispatch = useDispatch()
   const propositions = discussions.propositions
@@ -81,7 +80,7 @@ export function SentenceLine(props: SentenceProps) {
     }
   }, [sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw, inSentenceModal])
 
-  if (discussions.showHidden && sentence.hidden) {
+  if (discussions.showHidden && sentence.hidden && !inSentenceModal) {
     return null
   }
 
@@ -149,30 +148,6 @@ export function SentenceLine(props: SentenceProps) {
     dispatch(clearSentenceModal())
   }
 
-  function propositionElements() {
-    if (section === 'propositions') {
-      return null
-    }
-    return displayPropositionIndexes.map((index, mapIndex) => {
-      const proposition = propositions[index-1]
-      const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
-        : <View columnStart={1} className="sentence-line-cell sentence-meta">
-          <div style={{textAlign: 'right'}}>
-            <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
-          </div>
-        </View>
-      return (
-        <React.Fragment key={proposition.key}>
-          {therefore}
-          <View columnStart={2} className="sentence-line-cell sentence-index">
-            <div style={{textAlign: 'right'}}>{index}</div>
-          </View>
-          <View columnEnd={-2} className="sentence-line-cell">{proposition.content}</View>
-        </React.Fragment>
-      )
-    })
-  }
-
   function setFinalContent() {
     if (canonicalContent) {
       return canonicalContent
@@ -194,6 +169,39 @@ export function SentenceLine(props: SentenceProps) {
     if (content !== sentence.content || sentence.status === 'draft') {
       const input = {key: sentence.key, section, content}
       dispatch(replaceSentenceAction(input))
+    }
+  }
+
+  function handleStatusToggle() {
+    if (sentence.status !== 'committed') {
+      return
+    }
+    if (sentence.accepted.includes(username)) {
+      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'reject'}))
+    }
+    else if (sentence.rejected.includes(username)) {
+      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'clear'}))
+    }
+    else {
+      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'accept'}))
+    }
+  }
+
+  function handleGoalSet() {
+    if (sentence.status !== 'committed' || section !== 'propositions') {
+      return
+    }
+    dispatch(changeGoalSentenceAction(position))
+  }
+
+  function handleSetHidden() {
+    const hidden = !sentence.hidden
+    dispatch(changeSentenceHiddenAction({section, position, hidden}))
+  }
+
+  function handleSentenceModal() {
+    if (offsetHeight !== 0) {
+      dispatch(setSentenceModal(position))
     }
   }
 
@@ -233,37 +241,28 @@ export function SentenceLine(props: SentenceProps) {
     />
   )
 
-  function handleStatusToggle() {
-    if (sentence.status !== 'committed') {
-      return
+  function propositionElements() {
+    if (section === 'propositions') {
+      return null
     }
-    if (sentence.accepted.includes(username)) {
-      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'reject'}))
-    }
-    else if (sentence.rejected.includes(username)) {
-      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'clear'}))
-    }
-    else {
-      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'accept'}))
-    }
-  }
-
-  function handleGoalSet() {
-    if (sentence.status !== 'committed' || section !== 'propositions') {
-      return
-    }
-    dispatch(changeGoalSentenceAction(position))
-  }
-
-  function handleSetHidden() {
-    const hidden = !sentence.hidden
-    dispatch(changeSentenceHiddenAction({section, position, hidden}))
-  }
-
-  function handleSentenceModal() {
-    if (offsetHeight !== 0) {
-      dispatch(setSentenceModal(position))
-    }
+    return displayPropositionIndexes.map((index, mapIndex) => {
+      const proposition = propositions[index-1]
+      const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
+        : <View columnStart={1} className="sentence-line-cell sentence-meta">
+          <div style={{textAlign: 'right'}}>
+            <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
+          </div>
+        </View>
+      return (
+        <React.Fragment key={proposition.key}>
+          {therefore}
+          <View columnStart={2} className="sentence-line-cell sentence-index">
+            <div style={{textAlign: 'right'}}>{index}</div>
+          </View>
+          <View columnEnd={-2} className="sentence-line-cell">{proposition.content}</View>
+        </React.Fragment>
+      )
+    })
   }
 
   function claimsSummary() {

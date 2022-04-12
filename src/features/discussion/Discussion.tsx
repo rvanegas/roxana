@@ -60,7 +60,6 @@ export function Discussion() {
 
   function handleHiddenSwitch(e) {
     e.preventDefault()
-    console.log('h')
     dispatch(toggleShowHidden())
   }
 
