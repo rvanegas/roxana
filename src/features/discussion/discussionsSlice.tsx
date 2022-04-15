@@ -14,6 +14,8 @@ import {
 
 const cookies = new Cookies()
 
+let tryAgainTrials = 0
+
 interface Event {
   handler: string
   payload: any
@@ -542,10 +544,12 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       if (state.discussions.arguments.length === 0 && state.discussions.propositions.length > 0 && isPresent(content)) {
         await dispatch(addNewSentence('arguments', 'committed'))
       }
+      tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision') {
-        console.warn('try again')
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+        console.warn('try again', tryAgainTrials)
+        tryAgainTrials++
         dispatch(replaceSentenceAction({key, section, content}))
       }
       else {
@@ -648,10 +652,12 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout(change))
+      tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision') {
-        console.warn('try again')
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+        console.warn('try again', tryAgainTrials)
+        tryAgainTrials++
         dispatch(changeSentenceStatus(input))
       }
       else {
@@ -667,10 +673,12 @@ function changeGoalSentence(position: number) {
     try {
       dispatch(setGoal(position))
       await dispatch(updateDiscussionLayout('goal'))
+      tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision') {
-        console.warn('try again')
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+        console.warn('try again', tryAgainTrials)
+        tryAgainTrials++
         dispatch(changeGoalSentence(position))
       }
       else {
@@ -686,10 +694,12 @@ function changeSentenceHidden(args: {section: Section, position: number, hidden:
     try {
       dispatch(setSentenceHidden(args))
       await dispatch(updateDiscussionLayout('hidden'))
+      tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision') {
-        console.warn('try again')
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+        console.warn('try again', tryAgainTrials)
+        tryAgainTrials++
         dispatch(changeSentenceHidden(args))
       }
       else {
