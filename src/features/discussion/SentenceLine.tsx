@@ -149,7 +149,7 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function setFinalContent() {
-    if (canonicalContent) {
+    if (canonicalContent !== undefined) {
       return canonicalContent
     }
     else if (section === 'arguments') {
