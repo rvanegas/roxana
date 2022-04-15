@@ -1,6 +1,6 @@
 import React, {useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import {Heading, View, Grid, Button} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
@@ -8,9 +8,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {CurrentUserContext} from '../user/User'
 import {
-  loadRecentDiscussions,
-  selectDiscussions,
-  createNewDiscussionAction,
+  loadRecentDiscussions, selectDiscussions, createNewDiscussionAction, setNewDiscussionId,
 } from './discussionsSlice'
 dayjs.extend(relativeTime)
 
@@ -18,6 +16,7 @@ let lastLoaded
 
 export function DiscussionsList() {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const discussions = useSelector(selectDiscussions)
@@ -33,7 +32,12 @@ export function DiscussionsList() {
       lastLoaded = now
       dispatch(loadRecentDiscussions())
     }
-  }, [dispatch])
+    if (discussions.newDiscussionId) {
+      const newDiscussionId = discussions.newDiscussionId
+      dispatch(setNewDiscussionId(null))
+      navigate(`/discussions/${newDiscussionId}`)
+    }
+  }, [dispatch, navigate, discussions.newDiscussionId])
 
   const newButton = !username ? undefined : (
     <View style={{paddingBottom: '10px'}}>
