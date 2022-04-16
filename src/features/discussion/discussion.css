@@ -92,3 +92,10 @@
 .sentence-hidden {
   opacity: 0.3;
 }
+
+/* forgive me. it's draftjs's fault */
+.public-DraftEditorPlaceholder-inner {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}

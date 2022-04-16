@@ -34,7 +34,7 @@ export function SentenceLine(props: SentenceProps) {
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
-  const placeholder = position !== 0 ? null : (
+  const placeholder = position !== 0 || !currentUser ? null : (
     section === 'propositions' ?
       'Type a proposition. For example, "Socrates is a man".' :
       'Type a sequence of proposition numbers. For example, "1 2 3".'
