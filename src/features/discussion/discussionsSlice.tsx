@@ -7,7 +7,7 @@ import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
 import {createNewDiscussionLayout, createDiscussionLayout,
-  parseDiscussionLayout, newSentenceFromLayoutEntry} from '../../data/DiscussionLayout'
+  parseDiscussionLayout, newSentenceFromLayoutEntry} from './layout'
 import {dlog, generateDiscussionId, incrementDiscussionIdLength, // sleep,
   hoursAgo, isPresent} from '../../app/util'
 

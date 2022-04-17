@@ -1,6 +1,6 @@
-import {Sentence} from '../features/discussion/discussion.d'
 import {nanoid} from '@reduxjs/toolkit'
 import {pick} from 'lodash'
+import {Sentence} from './discussion.d'
 
 export function parseDiscussionLayout(layout: string) {
   if (!layout) {
