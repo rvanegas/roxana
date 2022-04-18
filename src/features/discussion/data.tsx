@@ -14,6 +14,87 @@ import {discussionsSlice, nextUniqueIndex, sentenceCommittedOthers} from './disc
 let tryAgainTrials = 0
 const tryAgainTrialsMax = 6
 
+function updateDiscussionLayout(changeNote: string) {
+  const {incrementRevision} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    try {
+      const state = getState()
+      const layout = createDiscussionLayout(pick(state.discussions, ['propositions', 'arguments']))
+      const id = state.discussions.discussionId
+      const version = 2
+      const oldRevision = state.discussions.revision
+      const revision = oldRevision + 1
+      const variables = {
+        input: {id, version, revision, layout},
+        condition: {revision: {eq: oldRevision}}
+      }
+      await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
+      dlog('updateLayout', revision, changeNote)
+      dispatch(incrementRevision(revision))
+    }
+    catch (exception: any) {
+      const errorType = exception.errors ? exception.errors[0].errorType : null
+      if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
+        const newException = new Error()
+        newException.name = 'UnexpectedLayoutRevision'
+        throw newException
+      }
+      else {
+        throw exception
+      }
+    }
+  }
+}
+
+function addNewSentence(section: Section, status: string) {
+  const {addSentence} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const key = nanoid()
+    dispatch(addSentence({section, key, status}))
+    dispatch(replaceSentenceAction({key, section, content: ''}))
+  }
+}
+
+function createNewDiscussion() {
+  const {setNewDiscussionId} = discussionsSlice.actions
+  return async (dispatch) => {
+    const layout = createNewDiscussionLayout()
+    const revision = 1
+    const version = 2
+    const variables = {input: {version, layout, revision}} as {input: {id, version, layout, revision}}
+    for (;;) {
+      try {
+        const discussionId = generateDiscussionId()
+        variables.input.id = discussionId
+        await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
+        dispatch(setNewDiscussionId(discussionId))
+        break
+      }
+      catch (exception: any) {
+        const errorType = exception.errors ? exception.errors[0].errorType : null
+        if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
+          // console.log('failed create, retrying...')
+          incrementDiscussionIdLength()
+        }
+        else {
+          throw exception
+        }
+      }
+    }
+  }
+}
+
+function initializeDiscussion({discussionId}) {
+  const {initialize} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    dispatch(initialize(discussionId))
+    await dispatch(getDiscussion({id: discussionId}))
+    if (getState().discussions.propositions.length === 0) {
+      await dispatch(addNewSentence('propositions', 'committed'))
+    }
+  }
+}
+
 function GetDiscussionError(this: {message: string, stack: any}, message: string) {
   this.message = message
   this.stack = Error().stack
@@ -124,58 +205,6 @@ function getDiscussion(discussionInput) {
   }
 }
 
-function updateDiscussionLayout(changeNote: string) {
-  const {incrementRevision} = discussionsSlice.actions
-  return async (dispatch, getState) => {
-    try {
-      const state = getState()
-      const layout = createDiscussionLayout(pick(state.discussions, ['propositions', 'arguments']))
-      const id = state.discussions.discussionId
-      const version = 2
-      const oldRevision = state.discussions.revision
-      const revision = oldRevision + 1
-      const variables = {
-        input: {id, version, revision, layout},
-        condition: {revision: {eq: oldRevision}}
-      }
-      await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-      dlog('updateLayout', revision, changeNote)
-      dispatch(incrementRevision(revision))
-    }
-    catch (exception: any) {
-      const errorType = exception.errors ? exception.errors[0].errorType : null
-      if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
-        const newException = new Error()
-        newException.name = 'UnexpectedLayoutRevision'
-        throw newException
-      }
-      else {
-        throw exception
-      }
-    }
-  }
-}
-
-function addNewSentence(section: Section, status: string) {
-  const {addSentence} = discussionsSlice.actions
-  return async (dispatch, getState) => {
-    const key = nanoid()
-    dispatch(addSentence({section, key, status}))
-    dispatch(replaceSentenceAction({key, section, content: ''}))
-  }
-}
-
-function initializeDiscussion({discussionId}) {
-  const {initialize} = discussionsSlice.actions
-  return async (dispatch, getState) => {
-    dispatch(initialize(discussionId))
-    await dispatch(getDiscussion({id: discussionId}))
-    if (getState().discussions.propositions.length === 0) {
-      await dispatch(addNewSentence('propositions', 'committed'))
-    }
-  }
-}
-
 function replaceSentence(input: {key: string, section: Section, content: string}) {
   const {key, section, content} = input
   const {updateSentence} = discussionsSlice.actions
@@ -243,35 +272,6 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       }
       else {
         throw exception
-      }
-    }
-  }
-}
-
-function createNewDiscussion() {
-  const {setNewDiscussionId} = discussionsSlice.actions
-  return async (dispatch) => {
-    const layout = createNewDiscussionLayout()
-    const revision = 1
-    const version = 2
-    const variables = {input: {version, layout, revision}} as {input: {id, version, layout, revision}}
-    for (;;) {
-      try {
-        const discussionId = generateDiscussionId()
-        variables.input.id = discussionId
-        await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
-        dispatch(setNewDiscussionId(discussionId))
-        break
-      }
-      catch (exception: any) {
-        const errorType = exception.errors ? exception.errors[0].errorType : null
-        if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
-          // console.log('failed create, retrying...')
-          incrementDiscussionIdLength()
-        }
-        else {
-          throw exception
-        }
       }
     }
   }
@@ -378,15 +378,6 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         throw exception
       }
     }
-  }
-}
-
-export function loadRecentDiscussions() {
-  const {setRecentDiscussions} = discussionsSlice.actions
-  return async (dispatch, getState) => {
-    const response = await API.graphql(graphqlOperation(custom.listRecentDiscussions)) as {data}
-    dlog('searchDiscussions', response)
-    dispatch(setRecentDiscussions(response.data.searchDiscussions.items))
   }
 }
 
@@ -512,5 +503,14 @@ export function focusOnSentence(section: Section, position: number) {
       await dispatch(addNewSentence(section, 'draft'))
     }
     dispatch(setFocus({section, position}))
+  }
+}
+
+export function loadRecentDiscussions() {
+  const {setRecentDiscussions} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const response = await API.graphql(graphqlOperation(custom.listRecentDiscussions)) as {data}
+    dlog('searchDiscussions', response)
+    dispatch(setRecentDiscussions(response.data.searchDiscussions.items))
   }
 }
