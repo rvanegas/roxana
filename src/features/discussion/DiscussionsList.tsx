@@ -50,7 +50,7 @@ export function DiscussionsList() {
     <React.Fragment key={index}>
       <Link to={`/discussions/${discussion.id}`}>{discussion.id}</Link>
       <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
-      <span>{discussion.goalsSummary}</span>
+      <span className="text-ellipsis">{discussion.goalsSummary}</span>
     </React.Fragment>
   ))
 
