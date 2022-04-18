@@ -7,9 +7,9 @@ import 'draft-js/dist/Draft.css'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {CurrentUserContext} from '../user/User'
-import {
-  loadRecentDiscussions, selectDiscussions, createNewDiscussionAction, setNewDiscussionId,
-} from './discussionsSlice'
+import {selectDiscussions, discussionsSlice} from './discussionsSlice'
+import {loadRecentDiscussions, createNewDiscussionAction} from './data'
+
 dayjs.extend(relativeTime)
 
 let lastLoaded
@@ -20,6 +20,7 @@ export function DiscussionsList() {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const discussions = useSelector(selectDiscussions)
+  const {setNewDiscussionId} = discussionsSlice.actions
 
   function handleNewDiscussion() {
     dispatch(createNewDiscussionAction())
@@ -37,7 +38,7 @@ export function DiscussionsList() {
       dispatch(setNewDiscussionId(null))
       navigate(`/discussions/${newDiscussionId}`)
     }
-  }, [dispatch, navigate, discussions.newDiscussionId])
+  }, [setNewDiscussionId, dispatch, navigate, discussions.newDiscussionId])
 
   const newButton = !username ? undefined : (
     <View style={{paddingBottom: '10px'}}>
