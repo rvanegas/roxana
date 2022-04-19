@@ -3,17 +3,36 @@
   width: 100%;
 }
 
-.discussion-container {
-  position: relative;
+.sentence-list-header {
+  padding: 10px;
 }
 
-.sentence-list {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  height: 100vh;
-  overflow-y: auto;
-  width: 50%;
+
+.sentence-list-header-adjacent {
+  display: none;
+}
+
+@media (min-width: 800px) {
+  .sentence-list-header-stacked {
+    display: none;
+  }
+
+  .sentence-list-header-adjacent {
+    display: block;
+  }
+
+  .discussion-container {
+    position: relative;
+  }
+
+  .sentence-list {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    overflow-y: auto;
+    width: 50%;
+  }
 }
 
 .discussion-editor {
