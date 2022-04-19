@@ -57,10 +57,10 @@ export function App() {
 
     return (
       <CurrentUserContext.Provider value={user}>
-        <View padding="20px">
+        <View padding="10px">
           <Flex
             justifyContent="space-between"
-            style={{userSelect: 'none'}}
+            className="navbar"
           >
             <Flex
               justifyContent="flex-end"
@@ -87,9 +87,7 @@ export function App() {
               {signInOrOutButton}
             </Flex>
           </Flex>
-          <View>
-            <Outlet />
-          </View>
+          <Outlet />
         </View>
       </CurrentUserContext.Provider>
     )

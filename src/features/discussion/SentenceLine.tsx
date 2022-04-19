@@ -31,6 +31,7 @@ export function SentenceLine(props: SentenceProps) {
   const editorContainerRef = useRef()
   const dispatch = useDispatch()
   const propositions = discussions.propositions
+  const isLastArgument = section === 'arguments' && discussions.arguments.length - 1 === position
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
@@ -458,7 +459,7 @@ export function SentenceLine(props: SentenceProps) {
       {indexElement}
       {editorLine}
       {sentenceModal}
-      {isArguments && <View style={{paddingBottom: '10px'}} columnSpan={4} />}
+      {isArguments && !isLastArgument && <View style={{paddingBottom: '10px'}} columnSpan={4} />}
     </React.Fragment>
   )
 }

@@ -1,6 +1,6 @@
 import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {View, Button, Heading} from '@aws-amplify/ui-react'
+import {View, Button, Grid} from '@aws-amplify/ui-react'
 import {SentenceLine} from './SentenceLine'
 import {CurrentUserContext} from '../user/User'
 import {selectDiscussions} from './discussionsSlice'
@@ -28,13 +28,18 @@ export function SentencesList({section}) {
     </View>
   )
 
+  const style = section === 'propositions' ? {left: 0} :
+    section === 'arguments' ? {right: 0} : undefined
+
   return (
-    <React.Fragment key={section}>
-      <Heading style={{paddingTop: '4px', paddingBottom: '10px'}} columnStart="1" columnEnd="-1">
-        {section === 'propositions' ? 'Propositions' : 'Arguments'}
-      </Heading>
-      {elements}
-      {newButton}
-    </React.Fragment>
+    <View className="sentence-list" style={style}>
+      <Grid
+        templateColumns="5rem 20px 1fr 3rem"
+        columnGap="5px"
+      >
+        {elements}
+        {newButton}
+      </Grid>
+    </View>
   )
 }

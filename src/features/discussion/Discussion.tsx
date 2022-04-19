@@ -2,7 +2,7 @@ import React, {useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
-import {SwitchField, View, Grid} from '@aws-amplify/ui-react'
+import {SwitchField, Heading, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
@@ -83,21 +83,24 @@ export function Discussion() {
     )
   })
 
-  const argumentsList = discussions.arguments.length === 0 ? null : <SentencesList section="arguments" />
-
   return (
-    <React.Fragment>
-      <View columnStart="1" columnEnd="-1">
+    <View>
+      <View className="view-toggles" columnStart="1" columnEnd="-1">
         {hiddenToggle}
         {discussantToggles}
       </View>
-      <Grid
-        templateColumns="5rem 20px 1fr 3rem"
-        columnGap="5px"
-      >
-        <SentencesList section="propositions" />
-        {argumentsList}
+      <Grid templateColumns="1fr 1fr">
+        <Heading style={{padding: '10px'}}>
+          Propositions
+        </Heading>
+        <Heading style={{padding: '10px'}}>
+          Arguments
+        </Heading>
       </Grid>
-    </React.Fragment>
+      <View className="discussion-container">
+        <SentencesList section="propositions" />
+        <SentencesList section="arguments" />
+      </View>
+    </View>
   )
 }
