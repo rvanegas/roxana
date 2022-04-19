@@ -46,7 +46,7 @@
 
 .discussion-actions {
   font-style: italic;
-  background-color: white;
+  background-color: var(--amplify-colors-background-primary);
   position: absolute;
   z-index: 1;
   top: 0;
