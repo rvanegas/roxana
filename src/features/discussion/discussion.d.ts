@@ -21,5 +21,5 @@ export type Sentence = {
 export type Section = 'propositions' | 'arguments'
 
 export interface ElementRef {
-  current: {blur(): void, focus(): void}
+  current: {blur(): void, focus(): void, scrollBy(number, number): void}
 }

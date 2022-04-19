@@ -39,6 +39,11 @@ export function isPresent(str: string) {
   return str && /\S/.test(str)
 }
 
+export function verticalPixelsBelowViewport(element) {
+  const rect = element.getBoundingClientRect()
+  return rect.bottom - (window.innerHeight || document.documentElement.clientHeight)
+}
+
 // function toLetters(index) {
 //   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 //   if (index < 26) {
