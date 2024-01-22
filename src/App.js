@@ -1,5 +1,8 @@
 import React from 'react'
-import { Authenticator, AmplifyProvider, View, Heading, Text, Button } from '@aws-amplify/ui-react'
+import {
+  Authenticator, AmplifyProvider,
+  View, Heading, Text, Button
+} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import { theme } from './theme'
 
