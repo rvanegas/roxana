@@ -23,7 +23,7 @@ export const propositionsSlice = createSlice({
   // initialState: propositionsAdapter.getInitialState(),
   initialState: [],
   reducers: {
-    addedOne(state, action) {
+    addProposition(state, action) {
       state.push({id: nanoid(), position: state.length, content: action.payload})
     },
     updateProposition(state, action) {
@@ -78,6 +78,6 @@ export const propositionsSlice = createSlice({
 // }
 
 export const selectPropositions = state => state.propositions
-export const { addOne, updateProposition } = propositionsSlice.actions
+export const { addProposition, updateProposition } = propositionsSlice.actions
 
 export default propositionsSlice.reducer
