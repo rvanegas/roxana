@@ -4,13 +4,13 @@ import { View, Divider } from '@aws-amplify/ui-react'
 import { Editor, EditorState, ContentState } from 'draft-js';
 import { updateProposition } from './propositionsSlice'
 
-export function Proposition(props) {
+export function Proposition({proposition, readOnly}) {
   function initEditorState() {
-    const contentState = ContentState.createFromText(props.proposition.content)
+    const contentState = ContentState.createFromText(proposition.content)
     return EditorState.createWithContent(contentState)
   }
   function handleBlur() {
-    const id = props.proposition.id
+    const id = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
     dispatch(updateProposition({id, content}))
   }
@@ -21,7 +21,7 @@ export function Proposition(props) {
   return (
     <View>
       <Editor editorState={editorState} onChange={setEditorState}
-        onBlur={handleBlur} readOnly={props.readOnly}
+        onBlur={handleBlur} readOnly={readOnly}
       />
       <Divider/>
       {JSON.stringify(editorState).length}

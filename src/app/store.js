@@ -1,11 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import counterReducer from '../features/counter/counterSlice'
-import { propositionsSlice } from '../features/discussion/propositionsSlice'
+import propositionsReducer, { propositionsSlice } from '../features/discussion/propositionsSlice'
 
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
-    propositions: propositionsSlice.reducer,
+    propositions: propositionsReducer,
   }
 })
 
