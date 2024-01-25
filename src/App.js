@@ -5,7 +5,7 @@ import {
 } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css';
-import { Proposition } from './Proposition'
+import { PropositionsList } from './features/discussion/PropositionsList'
 import { theme } from './theme'
 
 
@@ -17,7 +17,7 @@ function App() {
           <View>
             <Heading level={3}>Hello, {user.username} ({user.attributes.email})!</Heading>
             <Button onClick={signOut}>Sign out</Button>
-            <Proposition/>
+            <PropositionsList />
           </View>
         )}
       </Authenticator>
