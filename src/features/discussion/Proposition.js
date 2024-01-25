@@ -20,11 +20,10 @@ export function Proposition({proposition, readOnly}) {
 
   return (
     <View>
+      {proposition.position}
       <Editor editorState={editorState} onChange={setEditorState}
         onBlur={handleBlur} readOnly={readOnly}
       />
-      <Divider/>
-      {JSON.stringify(editorState).length}
       <Divider/>
     </View>
   )
