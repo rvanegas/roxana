@@ -3,10 +3,13 @@ import React, { useState } from 'react'
 import {
   View, Button, Divider
 } from '@aws-amplify/ui-react'
-import { Editor, EditorState } from 'draft-js';
+import { Editor, EditorState, ContentState } from 'draft-js';
 
-export function Proposition() {
-  const [editorState, setEditorState] = useState(() => EditorState.createEmpty())
+export function Proposition(props) {
+  const [editorState, setEditorState] = useState(() => {
+    const contentState = ContentState.createFromText(props.proposition.content)
+    return EditorState.createWithContent(contentState)
+  })
   const [readOnly, setReadOnly] = useState(false)
   function plainText() {
     return editorState.getCurrentContent().getPlainText()

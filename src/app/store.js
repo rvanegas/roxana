@@ -1,4 +1,4 @@
-import { configureStore, nanoid } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit'
 import counterReducer from '../features/counter/counterSlice'
 import { propositionsSlice } from '../features/discussion/propositionsSlice'
 
@@ -10,8 +10,8 @@ export const store = configureStore({
 })
 
 const { addedOne } = propositionsSlice.actions
-store.dispatch(addedOne({id: nanoid(), position: 1, content: 'Foo'}))
-store.dispatch(addedOne({id: nanoid(), position: 2, content: 'Bar'}))
+store.dispatch(addedOne('Foo'))
+store.dispatch(addedOne('Bar'))
 
 // propositionsAdapter.addOne({position: 1, content: 'Foo'})
 // propositionsAdapter.addOne({position: 2, content: 'Bar'})
