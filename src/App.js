@@ -10,6 +10,7 @@ import { theme } from './theme'
 import DragTest from './DragTest'
 
 function App() {
+
   return (
     <AmplifyProvider theme={theme}>
       <Authenticator>
@@ -18,7 +19,7 @@ function App() {
             <Heading level={3}>Hello, {user.username} ({user.attributes.email})!</Heading>
             <Button onClick={signOut}>Sign out</Button>
             <PropositionsList />
-            <DragTest/>
+            {user.username === 'rodvandur' && <DragTest/>}
           </View>
         )}
       </Authenticator>
