@@ -22,23 +22,37 @@ export const argumentsSlice = createSlice({
 })
 
 export const selectArguments = state => {
-  if (state.propositions.length < 4) return;
-  return (
-    [
-      {
-        id: 'oiireuhfiwehf',
-        index: 'A',
-        premiseIds: [state.propositions[0].id, state.propositions[1].id],
-        conclusionId: state.propositions[2].id
-      },
-      {
-        id: 'bcwyehkiwnef',
-        index: 'B',
-        premiseIds: [state.propositions[2].id, state.propositions[1].id],
-        conclusionId: state.propositions[0].id
-      }
-    ]
-  )
+  if (state.propositions.length < 4) {
+    return;
+  } else if (state.propositions.length < 6) {
+    return (
+      [
+        {
+          id: 'oiireuhfiwehf',
+          index: 'A',
+          premiseIds: [state.propositions[0].id, state.propositions[1].id],
+          conclusionId: state.propositions[2].id
+        }
+      ]
+    )
+  } else {
+    return (
+      [
+        {
+          id: 'oiireuhfiwehf',
+          index: 'A',
+          premiseIds: [state.propositions[0].id, state.propositions[1].id],
+          conclusionId: state.propositions[2].id
+        },
+        {
+          id: 'bcwyehkiwnef',
+          index: 'B',
+          premiseIds: [state.propositions[2].id, state.propositions[3].id],
+          conclusionId: state.propositions[4].id
+        }
+      ]
+    )
+  }
 }
 
 // export const {} = argumentsSlice.actions
