@@ -11,22 +11,29 @@ export function Argument({argument, readOnly}) {
 
   const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
-  const [displayPremiseIds, setDisplayPremiseIds] = useState(argument.premiseIds)
-  const [displayConclusionId, setDisplayConclusionId] = useState(argument.conclusionId)
+  const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.propositionIds)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
 
   function initEditorState() {
-    const premises = argument.premiseIds.map(premiseId => propositionById(premiseId))
-    const premiseIndexes = premises.map(proposition => proposition.index).join(', ')
-    const conclusionIndex = propositionById(argument.conclusionId).index
-    const argumentCode = `${premiseIndexes}: ${conclusionIndex}`
+    const argumentPropositions = argument.propositionIds
+      .map(propositionId => propositionById(propositionId))
+    let argumentCode = ''
+    if (argumentPropositions.length !== 0) {
+      const conclusionIndex = argumentPropositions.pop().index
+      argumentCode = `:${conclusionIndex}`
+    }
+    if (argumentPropositions.length !== 0) {
+      const premiseIndexes = argumentPropositions
+        .map(proposition => proposition.index).join(' ')
+      argumentCode = `${premiseIndexes} ${argumentCode}`
+    }
     const contentState = ContentState.createFromText(argumentCode)
     return EditorState.createWithContent(contentState)
   }
 
   function parseArgumentCode(argumentCode) {
-    const invalidPattern = /[^\d\s,:]/
-    const separatorPattern = /[\s,:]+/
+    const invalidPattern = /[^\d\s:]/
+    const separatorPattern = /[\s:]+/
 
     if (invalidPattern.test(argumentCode)) {
       setArgumentCodeInvalid(true)
@@ -43,10 +50,10 @@ export function Argument({argument, readOnly}) {
       setArgumentCodeInvalid(true)
       return
     }
-    const displayPropositionIds = displayPropositions.map(displayProposition => displayProposition.id)
+    const displayPropositionIds = displayPropositions
+      .map(displayProposition => displayProposition.id)
     setArgumentCodeInvalid(false)
-    setDisplayConclusionId(displayPropositionIds.pop())
-    setDisplayPremiseIds(displayPropositionIds)
+    setDisplayPropositionIds(displayPropositionIds)
   }
 
   function handleBlur() {
@@ -67,7 +74,22 @@ export function Argument({argument, readOnly}) {
     setEditorState(value)
   }
 
-  const premiseElements = displayPremiseIds.map(premiseId => {
+  console.log('d', displayPropositionIds)
+  const numPremises = displayPropositionIds.length
+
+
+
+  const conclusion = propositionById(displayPropositionIds[displayPropositionIds.length - 1])
+  const conclusionElement = !Boolean(conclusion) ? null : (
+    <React.Fragment key={conclusion.id}>
+      <View style={{justifySelf: 'end'}}>:.</View>
+      <View>{conclusion.index}</View>
+      <View>{conclusion.content}</View>
+    </React.Fragment>
+  )
+
+  const premises = displayPropositionIds.slice(0, displayPropositionIds.length - 1)
+  const premiseElements = premises.length === 0 ? null : premises.map(premiseId => {
     const premise = propositionById(premiseId)
     return (
       <React.Fragment key={premise.id}>
@@ -76,15 +98,6 @@ export function Argument({argument, readOnly}) {
       </React.Fragment>
     )
   })
-
-  const conclusion = propositionById(displayConclusionId)
-  const conclusionElement = (
-    <React.Fragment key={conclusion.id}>
-      <View style={{justifySelf: 'end'}}>:.</View>
-      <View>{conclusion.index}</View>
-      <View>{conclusion.content}</View>
-    </React.Fragment>
-  )
 
   return (
     <React.Fragment key={argument.id}>
