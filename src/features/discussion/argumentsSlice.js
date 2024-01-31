@@ -5,8 +5,8 @@ function newArgument(index) {
 }
 
 function toAlphaIndex(numberIndex) {
-  const divisor = 26
   const base = 'A'.charCodeAt()
+  const divisor = 'Z'.charCodeAt() - base + 1
   let alphas = []
   while (numberIndex >= 0) {
     const remainder = numberIndex % divisor
