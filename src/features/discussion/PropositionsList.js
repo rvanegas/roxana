@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
-import { Grid, View, Button } from '@aws-amplify/ui-react'
-import { Proposition } from './Proposition'
-import { selectPropositions } from './propositionsSlice'
+import React, {useState} from 'react'
+import {useSelector} from 'react-redux'
+import {Grid, View, Button} from '@aws-amplify/ui-react'
+import {Proposition} from './Proposition'
+import {selectPropositions} from './propositionsSlice'
 
 export function PropositionsList() {
   const propositions = useSelector(selectPropositions)
