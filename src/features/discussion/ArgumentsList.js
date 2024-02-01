@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import {useSelector} from 'react-redux'
-import {Grid} from '@aws-amplify/ui-react'
+import {Heading} from '@aws-amplify/ui-react'
 import {selectArguments} from './argumentsSlice'
 import {Argument} from './Argument'
 
@@ -17,11 +17,11 @@ export function ArgumentsList() {
   ))
 
   return (
-    <Grid
-      templateColumns="1rem 2rem 1fr"
-      gap="var(--amplify-space-small)"
-    >
+    <React.Fragment key="arguments">
+      <Heading columnStart="1" columnEnd="-1">
+        Arguments
+      </Heading>
       {argumentElements}
-    </Grid>
+    </React.Fragment>
   )
 }
