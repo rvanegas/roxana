@@ -1,6 +1,6 @@
 import React from 'react'
 import {Authenticator, AmplifyProvider} from '@aws-amplify/ui-react'
-import {Grid, View, Heading, Button} from '@aws-amplify/ui-react'
+import {Grid, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css';
 import {PropositionsList} from './features/discussion/PropositionsList'
@@ -15,15 +15,21 @@ function App() {
         {({signOut, user}) => (
           <View>
             <Grid
-              templateColumns="1rem 2rem 1fr 100px"
+              templateColumns="3fr 1fr 7rem"
               gap="var(--amplify-space-small)"
             >
-              <Heading columnSpan={3} level={3}>
-                Hello, {user.username} ({user.attributes.email})!
+              <Heading alignSelf="flex-start" level={3}>
+                Roxana
               </Heading>
-              <View columnSpan={1}>
-                <Button onClick={signOut}>Sign out</Button>
-              </View>
+              <Text alignSelf="center" style={{justifySelf: 'end'}}>
+                {user.username}
+              </Text>
+              <Button onClick={signOut}>Sign out</Button>
+            </Grid>
+            <Grid
+              templateColumns="1rem 2rem 1fr 3rem"
+              gap="var(--amplify-space-small)"
+            >
               <PropositionsList />
               <ArgumentsList />
             </Grid>
