@@ -11,18 +11,22 @@ export const propositionsSlice = createSlice({
   initialState: [newProposition(0)],
   reducers: {
     updateProposition(state, action) {
-      // payload: {id, content} or {index, autoFocus}
-      const key = action.payload.id !== undefined ? 'id' : 'index'
-      const proposition = state.find(proposition => action.payload[key] === proposition[key])
+      const proposition = state.find(proposition => action.payload.id === proposition.id)
       Object.assign(proposition, action.payload)
       if (proposition.autoFocus === false) delete proposition.autoFocus
-      if (Boolean(state[state.length - 1].content)) {
-        state.push(newProposition(state.length))
+    },
+    focusOnProposition(state, action) {
+      const newIndex = action.payload
+      let proposition = state.find(proposition => newIndex === proposition.index)
+      if (!proposition) {
+        proposition = newProposition(state.length)
+        state.push(proposition)
       }
+      proposition.autoFocus = true
     }
   }
 })
 
 export const selectPropositions = state => state.propositions
-export const {updateProposition} = propositionsSlice.actions
+export const {updateProposition, focusOnProposition} = propositionsSlice.actions
 export default propositionsSlice.reducer
