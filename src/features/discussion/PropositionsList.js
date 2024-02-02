@@ -1,15 +1,17 @@
 import React, {useState} from 'react'
-import {useSelector} from 'react-redux'
+import {useSelector, useDispatch} from 'react-redux'
 import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
-import {selectPropositions, loadPropositions} from './propositionsSlice'
+import {selectPropositions, fetchPropositions, syncFetchPropositions} from './propositionsSlice'
 
 export function PropositionsList() {
+  const dispatch = useDispatch()
   const propositions = useSelector(selectPropositions)
   const [readOnly] = useState(false)
 
   function showMe() {
-    loadPropositions()
+    console.log('showMe')
+    dispatch(fetchPropositions())
   }
 
   const propositionEntities = propositions.map(proposition => (
