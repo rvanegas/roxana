@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
-import {selectPropositions, fetchPropositions, syncFetchPropositions} from './propositionsSlice'
+import {selectPropositions, fetchPropositions} from './propositionsSlice'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
