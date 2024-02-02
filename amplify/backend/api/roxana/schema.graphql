@@ -20,3 +20,8 @@ type Comment @model {
   post: Post @belongsTo
   content: String!
 }
+
+type Proposition @model {
+  id: ID!
+  content: String!
+}
