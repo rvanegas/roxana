@@ -154,6 +154,7 @@ export const getProposition = /* GraphQL */ `
   query GetProposition($id: ID!) {
     getProposition(id: $id) {
       id
+      index
       content
       createdAt
       updatedAt
@@ -169,6 +170,7 @@ export const listPropositions = /* GraphQL */ `
     listPropositions(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        index
         content
         createdAt
         updatedAt

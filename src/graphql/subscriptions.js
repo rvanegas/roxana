@@ -236,6 +236,7 @@ export const onCreateProposition = /* GraphQL */ `
   subscription OnCreateProposition {
     onCreateProposition {
       id
+      index
       content
       createdAt
       updatedAt
@@ -246,6 +247,7 @@ export const onUpdateProposition = /* GraphQL */ `
   subscription OnUpdateProposition {
     onUpdateProposition {
       id
+      index
       content
       createdAt
       updatedAt
@@ -256,6 +258,7 @@ export const onDeleteProposition = /* GraphQL */ `
   subscription OnDeleteProposition {
     onDeleteProposition {
       id
+      index
       content
       createdAt
       updatedAt
