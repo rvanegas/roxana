@@ -150,3 +150,30 @@ export const listComments = /* GraphQL */ `
     }
   }
 `;
+export const getProposition = /* GraphQL */ `
+  query GetProposition($id: ID!) {
+    getProposition(id: $id) {
+      id
+      content
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listPropositions = /* GraphQL */ `
+  query ListPropositions(
+    $filter: ModelPropositionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPropositions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        content
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
