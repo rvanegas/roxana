@@ -18,12 +18,12 @@ export function Proposition({proposition, readOnly}) {
     return EditorState.createWithContent(contentState)
   }
   function handleBlur() {
-    if (placeholder) {
-      setPlaceholder(null)
-    }
     const id = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
     dispatch(updateProposition({id, content}))
+    if (placeholder && Boolean(content)) {
+      setPlaceholder(null)
+    }
   }
   function myKeyBindingFn(e) {
     if (e.keyCode === 13) {

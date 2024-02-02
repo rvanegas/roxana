@@ -13,26 +13,30 @@ function App() {
     <AmplifyProvider theme={theme}>
       <Authenticator>
         {({signOut, user}) => (
-          <View>
-            <Grid
-              templateColumns="3fr 1fr 7rem"
-              gap="var(--amplify-space-small)"
-            >
-              <Heading alignSelf="flex-start" level={3}>
-                Roxana
-              </Heading>
-              <Text alignSelf="center" style={{justifySelf: 'end'}}>
-                {user.username}
-              </Text>
-              <Button onClick={signOut}>Sign out</Button>
-            </Grid>
-            <Grid
-              templateColumns="1rem 2rem 1fr 3rem"
-              gap="var(--amplify-space-small)"
-            >
-              <PropositionsList />
-              <ArgumentsList />
-            </Grid>
+          <View padding="20px">
+            <View>
+              <Grid
+                templateColumns="3fr 1fr 7rem"
+                gap="var(--amplify-space-small)"
+              >
+                <Heading alignSelf="flex-start" level={3}>
+                  Roxana
+                </Heading>
+                <Text alignSelf="center" style={{justifySelf: 'end'}}>
+                  {user.username}
+                </Text>
+                <Button onClick={signOut}>Sign out</Button>
+              </Grid>
+            </View>
+            <View>
+              <Grid
+                templateColumns="1rem 2rem 1fr 3rem"
+                gap="var(--amplify-space-small)"
+              >
+                <PropositionsList />
+                <ArgumentsList />
+              </Grid>
+            </View>
           </View>
         )}
       </Authenticator>
