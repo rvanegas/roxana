@@ -8,12 +8,19 @@ export function Proposition({proposition, readOnly}) {
   const dispatch = useDispatch()
   const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
+  const [placeholder, setPlaceholder] = useState(
+    proposition.index === 0 ?
+    'Type a proposition. For example, "Socrates is a man."' : null
+  )
 
   function initEditorState() {
     const contentState = ContentState.createFromText(proposition.content)
     return EditorState.createWithContent(contentState)
   }
   function handleBlur() {
+    if (placeholder) {
+      setPlaceholder(null)
+    }
     const id = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
     dispatch(updateProposition({id, content}))
@@ -44,6 +51,7 @@ export function Proposition({proposition, readOnly}) {
       <Editor editorState={editorState} onChange={setEditorState}
         keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
         onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
+        placeholder={placeholder}
       />
       <Divider/>
     </View>
