@@ -1,4 +1,7 @@
+import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, nanoid} from '@reduxjs/toolkit'
+// import {createProposition} from './graphql/mutations'
+import {listPropositions} from '../../graphql/queries'
 
 function newProposition(index) {
   const proposition = {id: nanoid(), index, content: ''}
@@ -26,6 +29,11 @@ export const propositionsSlice = createSlice({
     }
   }
 })
+
+export async function loadPropositions() {
+  const result = await API.graphql(graphqlOperation(listPropositions))
+  console.log(result)
+}
 
 export const selectPropositions = state => state.propositions
 export const {updateProposition, focusOnProposition} = propositionsSlice.actions
