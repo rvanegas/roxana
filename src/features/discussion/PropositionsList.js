@@ -10,7 +10,6 @@ export function PropositionsList() {
   const [readOnly] = useState(false)
 
   function showMe() {
-    console.log('showMe')
     dispatch(fetchPropositions())
   }
 
