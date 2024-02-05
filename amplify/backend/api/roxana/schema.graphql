@@ -26,3 +26,7 @@ type Proposition @model {
   index: Int!
   content: String!
 }
+
+type Query {
+  echo(msg: String): String @function(name: "roxtest1-dev")
+}

@@ -1,6 +1,6 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, createAsyncThunk, nanoid} from '@reduxjs/toolkit'
-import {listPropositions} from '../../graphql/queries'
+import {listPropositions, echo} from '../../graphql/queries'
 
 function newProposition(index) {
   const proposition = {id: nanoid(), index, content: ''}
@@ -46,8 +46,18 @@ export const propositionsSlice = createSlice({
         state.status = 'failed'
         state.error = action.error.message
       })
+      .addCase(echoTest.fulfilled, (state, action) => {
+        console.log('action', JSON.parse(action.payload.echo))
+      })
   }
 })
+
+export const echoTest = createAsyncThunk(
+  'propositions/echo', async (message, ThunkAPI) => {
+    const response = await API.graphql(graphqlOperation(echo, message))
+    return response.data
+  }
+)
 
 export const fetchPropositions = createAsyncThunk(
   'propositions/fetchPropositions', async () => {
