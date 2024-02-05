@@ -6,6 +6,11 @@ export const echo = /* GraphQL */ `
     echo(msg: $msg)
   }
 `;
+export const roxtest2 = /* GraphQL */ `
+  query Roxtest2($msg: String) {
+    roxtest2(msg: $msg)
+  }
+`;
 export const getBlog = /* GraphQL */ `
   query GetBlog($id: ID!) {
     getBlog(id: $id) {

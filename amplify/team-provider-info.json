@@ -25,6 +25,10 @@
         "roxtest1": {
           "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
           "s3Key": "amplify-builds/roxtest1-6c4c462f52732f44306a-build.zip"
+        },
+        "roxtest2": {
+          "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
+          "s3Key": "amplify-builds/roxtest2-62372b554c7244726858-build.zip"
         }
       }
     }

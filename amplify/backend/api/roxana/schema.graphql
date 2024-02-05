@@ -29,4 +29,5 @@ type Proposition @model {
 
 type Query {
   echo(msg: String): String @function(name: "roxtest1-dev")
+  roxtest2(msg: String): String @function(name: "roxtest2-dev")
 }
