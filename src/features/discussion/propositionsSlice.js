@@ -67,5 +67,6 @@ export const fetchPropositions = createAsyncThunk(
 )
 
 export const selectPropositions = state => state.propositions.items
+export const selectPropositionsStatus = state => state.propositions.status
 export const {updateProposition, focusOnProposition} = propositionsSlice.actions
 export default propositionsSlice.reducer

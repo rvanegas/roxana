@@ -1,18 +1,20 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
+import {Text, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
-import {selectPropositions, fetchPropositions, roxtest2Action} from './propositionsSlice'
+import {selectPropositions, selectPropositionsStatus, fetchPropositions} from './propositionsSlice'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
   const propositions = useSelector(selectPropositions)
+  const propositionsStatus = useSelector(selectPropositionsStatus)
   const [readOnly] = useState(false)
 
-  function showMe() {
-    dispatch(fetchPropositions())
-    dispatch(roxtest2Action())
-  }
+  useEffect(() => {
+    if (propositionsStatus === 'idle') {
+      dispatch(fetchPropositions())
+    }
+  })
 
   const propositionEntities = propositions.map(proposition => (
     <React.Fragment key={proposition.id}>
@@ -28,7 +30,6 @@ export function PropositionsList() {
   return (
     <React.Fragment key="propositions">
       <Heading style={{paddingTop: '20px'}} columnStart="1" columnEnd="-1">
-        <Button onClick={showMe}>showMe</Button>
         <Text>Propositions</Text>
       </Heading>
       {propositionEntities}
