@@ -5,7 +5,7 @@ import {Proposition} from './Proposition'
 import {
   selectPropositions, selectPropositionsStatus,
   fetchPropositions,
-  updatePropositionAction
+  createProposition
 } from './propositionsSlice'
 
 export function PropositionsList() {
@@ -15,7 +15,7 @@ export function PropositionsList() {
   const [readOnly] = useState(false)
 
   function handleButton() {
-    dispatch(updatePropositionAction())
+    dispatch(createProposition())
   }
 
   useEffect(() => {
