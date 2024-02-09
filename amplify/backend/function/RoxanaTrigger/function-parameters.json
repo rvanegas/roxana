@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "api": {
+      "roxana": [
+        "Query",
+        "Mutation",
+        "Subscription"
+      ]
+    },
+    "auth": {
+      "roxana31481408": [
+        "read"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

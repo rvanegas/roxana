@@ -1,178 +1,23 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const echo = /* GraphQL */ `
-  query Echo($msg: String) {
-    echo(msg: $msg)
-  }
-`;
-export const roxtest2 = /* GraphQL */ `
-  query Roxtest2($msg: String) {
-    roxtest2(msg: $msg)
-  }
-`;
-export const roxtest4 = /* GraphQL */ `
-  query Roxtest4($msg: String) {
-    roxtest4(msg: $msg)
-  }
-`;
-export const getBlog = /* GraphQL */ `
-  query GetBlog($id: ID!) {
-    getBlog(id: $id) {
-      id
-      name
-      posts {
-        items {
-          id
-          title
-          createdAt
-          updatedAt
-          blogPostsId
-        }
-        nextToken
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`;
-export const listBlogs = /* GraphQL */ `
-  query ListBlogs(
-    $filter: ModelBlogFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listBlogs(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        name
-        posts {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-export const getPost = /* GraphQL */ `
-  query GetPost($id: ID!) {
-    getPost(id: $id) {
-      id
-      title
-      blog {
-        id
-        name
-        posts {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      comments {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          postCommentsId
-        }
-        nextToken
-      }
-      createdAt
-      updatedAt
-      blogPostsId
-    }
-  }
-`;
-export const listPosts = /* GraphQL */ `
-  query ListPosts(
-    $filter: ModelPostFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listPosts(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        title
-        blog {
-          id
-          name
-          createdAt
-          updatedAt
-        }
-        comments {
-          nextToken
-        }
-        createdAt
-        updatedAt
-        blogPostsId
-      }
-      nextToken
-    }
-  }
-`;
-export const getComment = /* GraphQL */ `
-  query GetComment($id: ID!) {
-    getComment(id: $id) {
-      id
-      post {
-        id
-        title
-        blog {
-          id
-          name
-          createdAt
-          updatedAt
-        }
-        comments {
-          nextToken
-        }
-        createdAt
-        updatedAt
-        blogPostsId
-      }
-      content
-      createdAt
-      updatedAt
-      postCommentsId
-    }
-  }
-`;
-export const listComments = /* GraphQL */ `
-  query ListComments(
-    $filter: ModelCommentFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listComments(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        post {
-          id
-          title
-          createdAt
-          updatedAt
-          blogPostsId
-        }
-        content
-        createdAt
-        updatedAt
-        postCommentsId
-      }
-      nextToken
-    }
-  }
-`;
 export const getProposition = /* GraphQL */ `
   query GetProposition($id: ID!) {
     getProposition(id: $id) {
       id
       index
       content
+      discussion {
+        id
+        propositions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
       createdAt
       updatedAt
+      discussionPropositionsId
     }
   }
 `;
@@ -187,6 +32,51 @@ export const listPropositions = /* GraphQL */ `
         id
         index
         content
+        discussion {
+          id
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+        discussionPropositionsId
+      }
+      nextToken
+    }
+  }
+`;
+export const getDiscussion = /* GraphQL */ `
+  query GetDiscussion($id: ID!) {
+    getDiscussion(id: $id) {
+      id
+      propositions {
+        items {
+          id
+          index
+          content
+          createdAt
+          updatedAt
+          discussionPropositionsId
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listDiscussions = /* GraphQL */ `
+  query ListDiscussions(
+    $filter: ModelDiscussionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listDiscussions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        propositions {
+          nextToken
+        }
         createdAt
         updatedAt
       }

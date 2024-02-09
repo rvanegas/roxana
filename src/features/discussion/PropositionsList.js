@@ -1,11 +1,13 @@
+import {API, graphqlOperation} from 'aws-amplify'
 import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Text, Button, View, Heading} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
+import * as subscriptions from '../../graphql/subscriptions'
 import {
   selectPropositions, selectPropositionsStatus,
   fetchPropositions,
-  createProposition
+  createProposition, updateProposition
 } from './propositionsSlice'
 
 export function PropositionsList() {
@@ -22,7 +24,23 @@ export function PropositionsList() {
     if (propositionsStatus === 'idle') {
       dispatch(fetchPropositions())
     }
-  })
+
+    let subscription
+    subscription = API.graphql(graphqlOperation(subscriptions.onUpdateProposition))
+      .subscribe({
+        next: ({value}) => {
+          console.log('dispatch', value.data)
+          dispatch(updateProposition(value.data.onUpdateProposition))
+        },
+        error: error => console.warn(error)
+      })
+
+    return function cleanup() {
+      if (subscription) {
+        subscription.unsubscribe()
+      }
+    }
+  }, [dispatch, propositionsStatus])
 
   const propositionEntities = propositions.map(proposition => (
     <React.Fragment key={proposition.id}>

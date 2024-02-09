@@ -33,6 +33,10 @@
         "roxtest4": {
           "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
           "s3Key": "amplify-builds/roxtest4-73664d35307156585555-build.zip"
+        },
+        "RoxanaTrigger": {
+          "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
+          "s3Key": "amplify-builds/RoxanaTrigger-5367682f47616d676a65-build.zip"
         }
       }
     }

@@ -21,8 +21,13 @@ export const propositionsSlice = createSlice({
   reducers: {
     updateProposition(state, action) {
       const proposition = state.items.find(proposition => action.payload.id === proposition.id)
-      Object.assign(proposition, action.payload)
-      if (proposition.autoFocus === false) delete proposition.autoFocus
+      if (proposition) {
+        console.log('assign', proposition, action.payload)
+        Object.assign(proposition, action.payload)
+        if (proposition.autoFocus === false) delete proposition.autoFocus
+      } else {
+        state.items.push(action.payload)
+      }
     },
     focusOnProposition(state, action) {
       const newIndex = action.payload

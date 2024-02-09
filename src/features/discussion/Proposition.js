@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {useDispatch} from 'react-redux'
-import {View, Divider} from '@aws-amplify/ui-react'
+import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {updateProposition, focusOnProposition} from './propositionsSlice'
 
@@ -48,6 +48,7 @@ export function Proposition({proposition, readOnly}) {
 
   return (
     <View>
+      <Text>{proposition.content}</Text>
       <Editor editorState={editorState} onChange={setEditorState}
         keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
         onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
