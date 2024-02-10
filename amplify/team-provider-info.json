@@ -22,18 +22,6 @@
         }
       },
       "function": {
-        "roxtest1": {
-          "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
-          "s3Key": "amplify-builds/roxtest1-6c4c462f52732f44306a-build.zip"
-        },
-        "roxtest2": {
-          "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
-          "s3Key": "amplify-builds/roxtest2-4d4a5355614a485a6133-build.zip"
-        },
-        "roxtest4": {
-          "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
-          "s3Key": "amplify-builds/roxtest4-73664d35307156585555-build.zip"
-        },
         "RoxanaTrigger": {
           "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
           "s3Key": "amplify-builds/RoxanaTrigger-5367682f47616d676a65-build.zip"

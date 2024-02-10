@@ -2,6 +2,7 @@
 # all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
 input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
 
+
 type Proposition @model {
   id: ID!
   index: Int
@@ -11,5 +12,6 @@ type Proposition @model {
 
 type Discussion @model {
   id: ID!
+  nextPropositionIndex: Int
   propositions: [Proposition] @hasMany
 }

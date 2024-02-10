@@ -9,6 +9,7 @@ export const onCreateProposition = /* GraphQL */ `
       content
       discussion {
         id
+        nextPropositionIndex
         propositions {
           nextToken
         }
@@ -29,6 +30,7 @@ export const onUpdateProposition = /* GraphQL */ `
       content
       discussion {
         id
+        nextPropositionIndex
         propositions {
           nextToken
         }
@@ -49,6 +51,7 @@ export const onDeleteProposition = /* GraphQL */ `
       content
       discussion {
         id
+        nextPropositionIndex
         propositions {
           nextToken
         }
@@ -65,6 +68,7 @@ export const onCreateDiscussion = /* GraphQL */ `
   subscription OnCreateDiscussion {
     onCreateDiscussion {
       id
+      nextPropositionIndex
       propositions {
         items {
           id
@@ -85,6 +89,7 @@ export const onUpdateDiscussion = /* GraphQL */ `
   subscription OnUpdateDiscussion {
     onUpdateDiscussion {
       id
+      nextPropositionIndex
       propositions {
         items {
           id
@@ -105,6 +110,7 @@ export const onDeleteDiscussion = /* GraphQL */ `
   subscription OnDeleteDiscussion {
     onDeleteDiscussion {
       id
+      nextPropositionIndex
       propositions {
         items {
           id
