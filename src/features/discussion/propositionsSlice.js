@@ -3,8 +3,8 @@ import {createSlice, createAsyncThunk, nanoid} from '@reduxjs/toolkit'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 
-function newProposition(index) {
-  const proposition = {id: nanoid(), index, content: ''}
+function newProposition(id, index) {
+  const proposition = {id, index, content: ''}
   if (index === 0) proposition.autoFocus = true
   return proposition
 }
@@ -29,15 +29,22 @@ export const propositionsSlice = createSlice({
         state.items.push(action.payload)
       }
     },
-    focusOnProposition(state, action) {
-      const newIndex = action.payload
-      let proposition = state.items.find(proposition => newIndex === proposition.index)
-      if (!proposition) {
-        proposition = newProposition(state.items.length)
-        state.items.push(proposition)
+    focusOnProposition: {
+      reducer(state, action) {
+        const {id, newIndex} = action.payload
+        let proposition = state.items.find(proposition => newIndex === proposition.index)
+        if (!proposition) {
+          proposition = newProposition(id, state.items.length)
+          state.items.push(proposition)
+          // commit
+        }
+        proposition.autoFocus = true
+      },
+      prepare(newIndex) {
+        const id = nanoid()
+        return {payload: {id, newIndex}}
       }
-      proposition.autoFocus = true
-    }
+    },
   },
   extraReducers(builder) {
     builder
@@ -63,6 +70,7 @@ export const propositionsSlice = createSlice({
 
 export const fetchPropositions = createAsyncThunk(
   'propositions/fetchPropositions', async () => {
+    console.log('fetching...')
     const response = await API.graphql(graphqlOperation(queries.listPropositions))
     response.data.listPropositions.items.sort((a,b) => a.index - b.index)
     return response.data.listPropositions.items
