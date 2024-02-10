@@ -29,21 +29,10 @@ export const propositionsSlice = createSlice({
         state.items.push(action.payload)
       }
     },
-    focusOnProposition: {
-      reducer(state, action) {
-        const {id, newIndex} = action.payload
-        let proposition = state.items.find(proposition => newIndex === proposition.index)
-        if (!proposition) {
-          proposition = newProposition(id, state.items.length)
-          state.items.push(proposition)
-          // commit
-        }
-        proposition.autoFocus = true
-      },
-      prepare(newIndex) {
-        const id = nanoid()
-        return {payload: {id, newIndex}}
-      }
+    focusOnProposition(state, action) {
+      const newIndex = action.payload
+      const proposition = state.items.find(proposition => newIndex === proposition.index)
+      proposition.autoFocus = true
     },
   },
   extraReducers(builder) {
@@ -58,6 +47,10 @@ export const propositionsSlice = createSlice({
       .addCase(fetchPropositions.rejected, (state, action) => {
         state.status = 'failed'
         state.error = action.error.message
+      })
+      .addCase(createProposition.pending, (state, action) => {
+        console.log('pending create', action)
+        state.items.push(action.meta.arg)
       })
       .addCase(createProposition.fulfilled, (state, action) => {
         console.log('fulfilled create', action)
@@ -78,12 +71,25 @@ export const fetchPropositions = createAsyncThunk(
 )
 
 export const createProposition = createAsyncThunk(
-  'propositions/createProposition', async () => {
-    const input = {content: 'newer value'}
+  'propositions/createProposition', async (proposition) => {
+    const input = {index: proposition.index}
     const response = await API.graphql(graphqlOperation(mutations.createProposition, {input}))
     return response.data
   }
 )
+
+export function focusOnPropositionThunk(newIndex) {
+  return (dispatch, getState) => {
+    const id = nanoid()
+    const state = getState()
+    let proposition = state.propositions.items.find(proposition => newIndex === proposition.index)
+    if (!proposition) {
+      proposition = newProposition(id, newIndex)
+      dispatch(createProposition(proposition))  // commit to gql
+    }
+    dispatch(focusOnProposition(proposition.index)) // add to store
+  }
+}
 
 export const selectPropositions = state => state.propositions.items
 export const selectPropositionsStatus = state => state.propositions.status
