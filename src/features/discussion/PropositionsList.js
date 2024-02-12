@@ -9,7 +9,8 @@ import {
   selectPropositionsStatus,
   fetchPropositions,
   updateProposition,
-  focusOnPropositionThunk
+  focusOnPropositionThunk,
+  clearPropositionsThunk
 } from './propositionsSlice'
 
 export function PropositionsList() {
@@ -17,25 +18,33 @@ export function PropositionsList() {
   const propositions = useSelector(selectPropositions)
   const propositionsStatus = useSelector(selectPropositionsStatus)
   const [readOnly] = useState(false)
+  const propositionsEmpty = propositions.length === 0
 
   function handleButton() {
-    dispatch(focusOnPropositionThunk(9))
+    dispatch(clearPropositionsThunk())
   }
 
   useEffect(() => {
     if (propositionsStatus === 'idle') {
+      console.log('idle')
       dispatch(fetchPropositions())
+    } else if (propositionsStatus === 'succeeded' && propositionsEmpty) {
+      console.log('succeeded')
+      dispatch(focusOnPropositionThunk(0))
     }
 
     const subscription = API.graphql(graphqlOperation(subscriptions.onUpdateProposition)).subscribe({
-      next: next => dispatch(updateProposition(next.value.data.onUpdateProposition)),
+      next: next => {
+        console.log('next', next)
+        dispatch(updateProposition(next.value.data.onUpdateProposition))
+      },
       error: error => console.warn(error)
     })
 
     return function cleanup() {
       subscription.unsubscribe()
     }
-  }, [dispatch, propositionsStatus])
+  }, [dispatch, propositionsStatus, propositionsEmpty])
 
   const propositionEntities = propositions.map(proposition => (
     <React.Fragment key={proposition.id}>
@@ -51,7 +60,7 @@ export function PropositionsList() {
   return (
     <React.Fragment key="propositions">
       <Heading style={{paddingTop: '20px'}} columnStart="1" columnEnd="-1">
-        <Button onClick={handleButton}>call trigger</Button>
+        <Button onClick={handleButton}>clear</Button>
         <Text>Propositions</Text>
       </Heading>
       {propositionEntities}

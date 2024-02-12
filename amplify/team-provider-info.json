@@ -24,7 +24,7 @@
       "function": {
         "RoxanaTrigger": {
           "deploymentBucketName": "amplify-roxana-dev-201624-deployment",
-          "s3Key": "amplify-builds/RoxanaTrigger-5367682f47616d676a65-build.zip"
+          "s3Key": "amplify-builds/RoxanaTrigger-4250393731306f633237-build.zip"
         }
       }
     }
