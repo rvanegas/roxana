@@ -25,7 +25,7 @@ export function PropositionsList() {
   const propositionsEmpty = propositions.length === 0
 
   function handleButton() {
-    dispatch(getDiscussion())
+    dispatch(getDiscussion('d172f9ff-8e5b-4229-b803-aee6dc8855a2'))
   }
 
   useEffect(() => {
