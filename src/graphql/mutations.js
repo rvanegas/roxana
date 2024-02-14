@@ -19,6 +19,16 @@ export const createDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      layoutStates {
+        items {
+          id
+          layout
+          createdAt
+          updatedAt
+          discussionLayoutStatesId
+        }
+        nextToken
+      }
       createdAt
       updatedAt
     }
@@ -39,6 +49,16 @@ export const updateDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionPropositionsId
+        }
+        nextToken
+      }
+      layoutStates {
+        items {
+          id
+          layout
+          createdAt
+          updatedAt
+          discussionLayoutStatesId
         }
         nextToken
       }
@@ -65,8 +85,96 @@ export const deleteDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      layoutStates {
+        items {
+          id
+          layout
+          createdAt
+          updatedAt
+          discussionLayoutStatesId
+        }
+        nextToken
+      }
       createdAt
       updatedAt
+    }
+  }
+`;
+export const createLayoutState = /* GraphQL */ `
+  mutation CreateLayoutState(
+    $input: CreateLayoutStateInput!
+    $condition: ModelLayoutStateConditionInput
+  ) {
+    createLayoutState(input: $input, condition: $condition) {
+      id
+      layout
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        layoutStates {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionLayoutStatesId
+    }
+  }
+`;
+export const updateLayoutState = /* GraphQL */ `
+  mutation UpdateLayoutState(
+    $input: UpdateLayoutStateInput!
+    $condition: ModelLayoutStateConditionInput
+  ) {
+    updateLayoutState(input: $input, condition: $condition) {
+      id
+      layout
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        layoutStates {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionLayoutStatesId
+    }
+  }
+`;
+export const deleteLayoutState = /* GraphQL */ `
+  mutation DeleteLayoutState(
+    $input: DeleteLayoutStateInput!
+    $condition: ModelLayoutStateConditionInput
+  ) {
+    deleteLayoutState(input: $input, condition: $condition) {
+      id
+      layout
+      discussion {
+        id
+        layout
+        propositions {
+          nextToken
+        }
+        layoutStates {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+      discussionLayoutStatesId
     }
   }
 `;
@@ -82,6 +190,9 @@ export const createProposition = /* GraphQL */ `
         id
         layout
         propositions {
+          nextToken
+        }
+        layoutStates {
           nextToken
         }
         createdAt
@@ -107,6 +218,9 @@ export const updateProposition = /* GraphQL */ `
         propositions {
           nextToken
         }
+        layoutStates {
+          nextToken
+        }
         createdAt
         updatedAt
       }
@@ -128,6 +242,9 @@ export const deleteProposition = /* GraphQL */ `
         id
         layout
         propositions {
+          nextToken
+        }
+        layoutStates {
           nextToken
         }
         createdAt
