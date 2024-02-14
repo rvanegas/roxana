@@ -78,9 +78,9 @@ export const discussionsSlice = createSlice({
 //           delete proposition.nanoid
 //         }
 //       })
-//       .addCase(createProposition.rejected, (state, action) => {
-//         console.log('rejected create', action)
-//       })
+      .addCase(replaceProposition.rejected, (state, action) => {
+        console.log('rejected replace', action)
+      })
   }
 })
 
@@ -113,7 +113,7 @@ export const updateDiscussion = createAsyncThunk(
   }
 )
 
-export const getDiscussionPaginated = /* GraphQL */ `
+const getDiscussionPaginated = /* GraphQL */ `
   query GetDiscussion($id: ID!, $nextToken: String) {
     getDiscussion(id: $id) {
       id
@@ -128,6 +128,17 @@ export const getDiscussionPaginated = /* GraphQL */ `
         }
         nextToken
       }
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+const getDiscussionLayout = /* GraphQL */ `
+  query GetDiscussion($id: ID!) {
+    getDiscussion(id: $id) {
+      id
+      layout
       createdAt
       updatedAt
     }
@@ -205,6 +216,70 @@ export const getDiscussion = createAsyncThunk(
     return {layout: layoutJSON, propositions}
   }
 )
+
+export const getDiscussionUpdate = createAsyncThunk(
+  'discussions/getDiscussionUpdate', async (discussionId, {dispatch, getState}) => {
+    const response = await API.graphql(graphqlOperation(getDiscussionLayout, {id: discussionId}))
+    const discussion = response.data.getDiscussion
+    if (!discussion) {
+      throw new Error('no discussion')
+    }
+    const layout = discussion.layout
+    const state = getState()
+    if (layout === state.discussions.layout) {
+      return
+    }
+    dispatch(getDiscussion(discussionId))
+  }
+)
+
+export const replaceProposition = createAsyncThunk(
+  'discussions/replaceProposition', async ({propositionId, discussionId, content}, {dispatch, getState}) => {
+    console.log('replacing proposition...', propositionId, discussionId, content)
+    const state = getState()
+    const proposition = state.discussions.propositions.find(p => p.id === propositionId)
+    if (!proposition) {
+      throw new Error('proposition not found')
+    }
+    if (proposition.content === content) {
+      return
+    }
+    const input = {input: {content, discussionPropositionsId: discussionId}}
+    console.log('writing to gql', input)
+    const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
+    console.log('wrote to gql', response)
+    const newProposition = response.data.createProposition
+    const layout = JSON.parse(state.discussions.layout)
+    const pos = layout.findIndex(p => p.id === propositionId)
+    const newEntry = {id: newProposition.id, index: layout[pos].index}
+    console.log('old layout', state.discussions.layout, JSON.stringify(layout))
+    layout.splice(pos, 1, newEntry)
+    console.log('new layout', layout)
+    const discussion = {id: discussionId, layout: JSON.stringify(layout)}
+    dispatch(updateDiscussion(discussion))
+  }
+)
+
+
+// ui
+// 1 'a'  'foo'
+// 2 'b'  'bar'
+
+// db
+// propositions: ['a', 'b']
+// layout: [{1, 'a'}, {2, 'b'}]
+
+// --
+
+// 1 'aa'  'foo2'
+// 2 'b'   'bar'
+
+// db
+// propositions: ['a', 'b', 'aa']
+// layout: [{1, 'aa'}, {2, 'b'}]
+
+
+
 
 // export const fetchPropositions = createAsyncThunk(
 //   'propositions/fetchPropositions', async () => {

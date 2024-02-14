@@ -2,9 +2,17 @@ import React, {useState, useEffect} from 'react'
 import {useDispatch} from 'react-redux'
 import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
-import {updateProposition, focusOnPropositionThunk} from './propositionsSlice'
+import {
+  updateProposition,
+  focusOnPropositionThunk
+} from './propositionsSlice'
+import {
+  replaceProposition,
+  selectDiscussion,
+  getDiscussion
+} from './discussionsSlice'
 
-export function Proposition({proposition, readOnly}) {
+export function Proposition({discussionId, proposition, readOnly}) {
   const dispatch = useDispatch()
   const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
@@ -14,13 +22,13 @@ export function Proposition({proposition, readOnly}) {
   )
 
   function initEditorState() {
-    const contentState = ContentState.createFromText(proposition.content || '')
+    const contentState = ContentState.createFromText(proposition.content)
     return EditorState.createWithContent(contentState)
   }
   function handleBlur() {
-    const id = proposition.id
+    const propositionId = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
-    dispatch(updateProposition({id, content}))
+    dispatch(replaceProposition({propositionId, discussionId, content}))
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
     }
