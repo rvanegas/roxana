@@ -17,7 +17,7 @@ function newProposition(id, index) {
 const initialState = {
   propositions: [],
   arguments: [],
-  layout: [],
+  layout: '',
   status: 'idle',
   error: null
 }
@@ -56,8 +56,7 @@ export const discussionsSlice = createSlice({
       .addCase(getDiscussion.fulfilled, (state, action) => {
         state.status = 'succeeded'
         console.log('getDiscussion fulfilled', action.payload)
-        // state.layout = JSON.parse(action.payload.layout)
-        // state.layout = action.payload
+        Object.assign(state, action.payload)
       })
       .addCase(getDiscussion.rejected, (state, action) => {
         state.status = 'failed'
@@ -169,15 +168,21 @@ async function loadDiscussion(discussionId, resetLayout) {
 
 async function readLayout(layout, loadedPropositions, resetLayout) {
   const propositions = []
-  for (let entry of layout) {
-    let proposition = loadedPropositions.find(proposition => proposition.id === entry.id)
+  for (let pos = 0; pos < layout.length; pos++) {
+    const entry = layout[pos]
+    let proposition = loadedPropositions.find(p => p.id === entry.id)
     if (!proposition) {
       const response = await API.graphql(graphqlOperation(queries.getProposition, {id: entry.id}))
       proposition = response.data.getProposition
       if (!proposition) {
-        layout = layout.filter(entryIter => entryIter !== entry)
+        layout.splice(pos, 1)
         await resetLayout(layout, 'invalid proposition id, fixing layout')
       }
+    }
+    const notUnique = propositions.some(p => p.id === proposition.id)
+    if (notUnique) {
+      layout.splice(pos, 1)
+      await resetLayout(layout, 'non-unique proposition id, fixing layout')
     }
     propositions.push({id: proposition.id, index: entry.index, content: proposition.content})
   }
@@ -194,10 +199,10 @@ export const getDiscussion = createAsyncThunk(
       console.error('system error: ', message)
       throw new Error(message)
     }
-    console.log('getting discussion...')
+    console.log('getting discussion...', discussionId)
     const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, resetLayout)
     const propositions = await readLayout(layout, loadedPropositions, resetLayout)
-    return {layoutJSON, propositions}
+    return {layout: layoutJSON, propositions}
   }
 )
 
@@ -247,7 +252,7 @@ export const getDiscussion = createAsyncThunk(
 //   }
 // }
 
-// export const selectPropositions = state => state.propositions.items
+export const selectDiscussion = state => state.discussions
 // export const selectPropositionsStatus = state => state.propositions.status
 // export const {updateProposition} = propositionsSlice.actions
 export default discussionsSlice.reducer
