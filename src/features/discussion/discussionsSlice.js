@@ -2,6 +2,7 @@ import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, createAsyncThunk, nanoid} from '@reduxjs/toolkit'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
+import * as custom from '../../graphql/custom'
 
 function newProposition(id, index) {
   const proposition = {
@@ -15,6 +16,7 @@ function newProposition(id, index) {
 }
 
 const initialState = {
+  discussionId: '',
   propositions: [],
   arguments: [],
   layout: '',
@@ -63,12 +65,16 @@ export const discussionsSlice = createSlice({
         console.log('getDiscussion rejected', action)
         state.error = action.error.message
       })
-      .addCase(updateDiscussion.fulfilled, (state, action) => {
-        console.log('getDiscussion fulfilled', action)
+      .addCase(getDiscussionUpdate.rejected, (state, action) => {
+        console.log('getDiscussionUpdate rejected', action)
+        state.error = action.error.message
       })
-      .addCase(updateDiscussion.rejected, (state, action) => {
-        console.log('getDiscussion rejected', action)
-      })
+      // .addCase(updateDiscussion.fulfilled, (state, action) => {
+      //   console.log('getDiscussion fulfilled', action)
+      // })
+      // .addCase(updateDiscussion.rejected, (state, action) => {
+      //   console.log('getDiscussion rejected', action)
+      // })
 //       .addCase(createProposition.pending, (state, action) => {
 //         state.items.push(action.meta.arg)
 //       })
@@ -107,54 +113,23 @@ export const discussionsSlice = createSlice({
 
 export const updateDiscussion = createAsyncThunk(
   'discussions/updatedDiscussion', async (discussion) => {
-    console.log('updating...')
+    // console.log('updating...')
     const input = {input: discussion}
-    console.log('input', input)
+    // console.log('input', input)
     const response = await API.graphql(graphqlOperation(mutations.updateDiscussion, input))
     return response
   }
 )
 
-const getDiscussionPaginated = /* GraphQL */ `
-  query GetDiscussion($id: ID!, $nextToken: String) {
-    getDiscussion(id: $id) {
-      id
-      layout
-      propositions(nextToken: $nextToken) {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionPropositionsId
-        }
-        nextToken
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`
-
-const getDiscussionLayout = /* GraphQL */ `
-  query GetDiscussion($id: ID!) {
-    getDiscussion(id: $id) {
-      id
-      layout
-      createdAt
-      updatedAt
-    }
-  }
-`
-
-async function loadDiscussion(discussionId, resetLayout) {
+async function loadDiscussion(discussionId, isReload, resetLayout) {
   const loadedPropositions = []
+  const limit = isReload ? 1 : 100
   let nextToken
   let layout
   let layoutJSON
   do {
-    const input = {id: discussionId, nextToken}
-    const response = await API.graphql(graphqlOperation(getDiscussionPaginated, input))
+    const input = {id: discussionId, limit, nextToken}
+    const response = await API.graphql(graphqlOperation(custom.getDiscussionPaginated, input))
     const discussion = response.data.getDiscussion
     nextToken = discussion.propositions.nextToken
     if (!discussion) {
@@ -170,12 +145,13 @@ async function loadDiscussion(discussionId, resetLayout) {
           }
         }
       } catch {
-        console.log('resetLayout call', discussion.layout)
+        // console.log('resetLayout call', discussion.layout)
         await resetLayout([], 'invalid layout, parse error')
       }
     }
+    // console.log('loadDiscussion loaded', discussion.propositions.items.length, 'of', limit)
     loadedPropositions.push(...discussion.propositions.items)
-  } while (nextToken)
+  } while (nextToken && !isReload)
   return {layoutJSON, layout, loadedPropositions}
 }
 
@@ -202,63 +178,72 @@ async function readLayout(layout, loadedPropositions, resetLayout) {
   return propositions
 }
 
+ // query {
+ //    queryCart(filter{
+ //      id: ["UUID2098", "UUID92083", "UUID98332", "UUID2833"]
+ //    }){
+ //      id
+ //      totalPrice
+ //      numberOfItems
+ //    }
+ // }
+
 export const getDiscussion = createAsyncThunk(
-  'discussions/getDiscussion', async (discussionId, {dispatch}) => {
+  'discussions/getDiscussion', async (discussionId, {dispatch, getState}) => {
     async function resetLayout(layout, message) {
-      console.log('resetLayout called')
+      // console.log('resetLayout called')
       const discussion = {id: discussionId, layout: JSON.stringify(layout)}
       dispatch(updateDiscussion(discussion))
       // discussion will reload in response to update event picked up by discussion subscription
       console.error('system error: ', message)
       throw new Error(message)
     }
-    console.log('getting discussion...', discussionId)
-    const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, resetLayout)
+    // console.log('getting discussion...', discussionId)
+    const state = getState()
+    const isReload = state.discussions.discussionId === discussionId
+    const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, isReload, resetLayout)
     const propositions = await readLayout(layout, loadedPropositions, resetLayout)
-    return {layout: layoutJSON, propositions}
+    return {layout: layoutJSON, propositions, discussionId}
   }
 )
 
+// called from subscription in PropositionList
 export const getDiscussionUpdate = createAsyncThunk(
-  'discussions/getDiscussionUpdate', async (discussionId, {dispatch, getState}) => {
-    const response = await API.graphql(graphqlOperation(getDiscussionLayout, {id: discussionId}))
-    const discussion = response.data.getDiscussion
-    if (!discussion) {
-      throw new Error('no discussion')
-    }
+  'discussions/getDiscussionUpdate', async (discussion, {dispatch, getState}) => {
+    // console.log('getDiscussionUpdate', discussion)
     const layout = discussion.layout
     const state = getState()
     if (layout === state.discussions.layout) {
       return
     }
-    dispatch(getDiscussion(discussionId))
+    dispatch(getDiscussion(discussion.id))
   }
 )
 
 export const replaceIfChangedProposition = createAsyncThunk(
   'discussions/replaceIfChangedProposition', async ({propositionId, discussionId, content}, {dispatch, getState}) => {
-    console.log('replaceIfChangedProposition...', propositionId, discussionId, content)
+    // console.log('replaceIfChangedProposition...', propositionId, discussionId, content)
     const state = getState()
     const proposition = state.discussions.propositions.find(p => p.id === propositionId)
     if (!proposition) {
       throw new Error('proposition not found')
     }
     if (proposition.content === content) {
-      console.log('unchanged.')
+      // console.log('unchanged.')
       return
     }
-    console.log('replacing.')
+    // console.log('replacing.')
     const input = {input: {content, discussionPropositionsId: discussionId}}
-    console.log('writing to gql', input)
+    // console.log('writing to gql', input)
     const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
-    console.log('wrote to gql', response)
+    // console.log('wrote to gql', response)
     const newProposition = response.data.createProposition
     const layout = JSON.parse(state.discussions.layout)
     const pos = layout.findIndex(p => p.id === propositionId)
     const newEntry = {id: newProposition.id, index: layout[pos].index}
-    console.log('old layout', state.discussions.layout, JSON.stringify(layout))
+    // console.log('old layout', state.discussions.layout, JSON.stringify(layout))
     layout.splice(pos, 1, newEntry)
-    console.log('new layout', layout)
+    // console.log('new layout', layout)
     const discussion = {id: discussionId, layout: JSON.stringify(layout)}
     dispatch(updateDiscussion(discussion))
   }
