@@ -4,9 +4,7 @@ import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   updateProposition,
-  focusOnPropositionThunk
-} from './propositionsSlice'
-import {
+  focusOnProposition,
   replaceIfChangedProposition,
   selectDiscussion,
   getDiscussion
@@ -27,7 +25,8 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleBlur() {
     const propositionId = proposition.id
     const content = editorState.getCurrentContent().getPlainText()
-    dispatch(replaceIfChangedProposition({propositionId, discussionId, content}))
+    console.log('handle blur', propositionId)
+    dispatch(replaceIfChangedProposition(propositionId, discussionId, content))
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
     }
@@ -41,7 +40,8 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleKeyCommand(command) {
     if (command === 'next-line') {
       editorRef.current.blur()
-      dispatch(focusOnPropositionThunk(proposition.index+1))
+      console.log('handle key', proposition.id)
+      dispatch(focusOnProposition(proposition.index+1))
       return 'handled'
     }
     return 'not-handled'
