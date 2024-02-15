@@ -63,9 +63,11 @@ export const discussionsSlice = createSlice({
         console.log('getDiscussion rejected', action)
         state.error = action.error.message
       })
+      .addCase(updateDiscussion.fulfilled, (state, action) => {
+        console.log('getDiscussion fulfilled', action)
+      })
       .addCase(updateDiscussion.rejected, (state, action) => {
         console.log('getDiscussion rejected', action)
-        // state.error = action.error.message
       })
 //       .addCase(createProposition.pending, (state, action) => {
 //         state.items.push(action.meta.arg)
@@ -78,7 +80,7 @@ export const discussionsSlice = createSlice({
 //           delete proposition.nanoid
 //         }
 //       })
-      .addCase(replaceProposition.rejected, (state, action) => {
+      .addCase(replaceIfChangedProposition.rejected, (state, action) => {
         console.log('rejected replace', action)
       })
   }
@@ -233,17 +235,19 @@ export const getDiscussionUpdate = createAsyncThunk(
   }
 )
 
-export const replaceProposition = createAsyncThunk(
-  'discussions/replaceProposition', async ({propositionId, discussionId, content}, {dispatch, getState}) => {
-    console.log('replacing proposition...', propositionId, discussionId, content)
+export const replaceIfChangedProposition = createAsyncThunk(
+  'discussions/replaceIfChangedProposition', async ({propositionId, discussionId, content}, {dispatch, getState}) => {
+    console.log('replaceIfChangedProposition...', propositionId, discussionId, content)
     const state = getState()
     const proposition = state.discussions.propositions.find(p => p.id === propositionId)
     if (!proposition) {
       throw new Error('proposition not found')
     }
     if (proposition.content === content) {
+      console.log('unchanged.')
       return
     }
+    console.log('replacing.')
     const input = {input: {content, discussionPropositionsId: discussionId}}
     console.log('writing to gql', input)
     const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
