@@ -55,7 +55,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
 
   return (
     <View>
-      <Text>{proposition.content}</Text>
+      <Text color="lightgray">{proposition.content}</Text>
       <Editor editorState={editorState} onChange={setEditorState}
         keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
         onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
