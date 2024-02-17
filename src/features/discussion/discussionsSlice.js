@@ -235,7 +235,7 @@ async function createProposition(proposition) {
 // add
 // delete
 
-export function replaceIfChangedProposition(propositionId, discussionId, content) {
+export function replaceIfChangedProposition({propositionId, discussionId, content}) {
   return async (dispatch, getState) => {
     // console.log('replaceIfChangedProposition...', propositionId, discussionId, content)
     const state = getState()
@@ -357,6 +357,11 @@ export function consoleHandlerAction(message) {
 
 export function createNewPropositionAction(propositionNanoid) {
   const action = {handler: 'createNewProposition', payload: propositionNanoid}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+
+export function replaceIfChangedPropositionAction(propositionNanoid) {
+  const action = {handler: 'replaceIfChangedProposition', payload: propositionNanoid}
   return dispatch => dispatch(enqueueEvent(action))
 }
 
