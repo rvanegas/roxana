@@ -10,7 +10,7 @@ import {
   getDiscussionAction,
 } from './discussionsSlice'
 
-const discussionId = '0b649179-0e26-426f-a69d-f4f2b68162b0'
+const discussionId = '0a345806-bd06-422f-8c0e-b593409b660e'
 
 export function PropositionsList() {
   const dispatch = useDispatch()
