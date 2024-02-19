@@ -14,7 +14,7 @@ const initialState = {
   error: null
 }
 
-export const discussionsSlice = createSlice({
+const discussionsSlice = createSlice({
   name: 'discussions',
   initialState: initialState,
   reducers: {
@@ -45,6 +45,8 @@ export const discussionsSlice = createSlice({
   }
 })
 
+const {update} = discussionsSlice.actions
+
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
     const variables = {input: {id: discussionId, layout}, condition: {layout: {eq: getState().discussions.layout}}}
@@ -54,6 +56,10 @@ function updateDiscussionLayout(discussionId, layout) {
 }
 
 async function loadDiscussion(discussionId, isReload, resetLayout) {
+  let discussion
+  let layout
+  let layoutJSON
+
   async function getLayout() {
     try {
       layoutJSON = discussion.layout
@@ -68,25 +74,20 @@ async function loadDiscussion(discussionId, isReload, resetLayout) {
       await resetLayout([], 'invalid layout, parse error')
     }
   }
+
   const loadedPropositions = []
   const limit = isReload ? 1 : 100
-  let discussion
   let nextToken
-  let layout
-  let layoutJSON
+
   do {
     const input = {id: discussionId, limit, nextToken}
-    console.log('start4')
     const response = await API.graphql(graphqlOperation(custom.getDiscussionPaginated, input))
-    console.log('start5', response)
     discussion = response.data.getDiscussion
     nextToken = discussion.propositions.nextToken
     if (!discussion) throw new Error('no such discussion')
     if (!layout) await getLayout()
     loadedPropositions.push(...discussion.propositions.items)
-    console.log('start6')
   } while (nextToken && !isReload)
-  console.log('start7')
   return {layoutJSON, layout, loadedPropositions}
 }
 
@@ -141,13 +142,9 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
     if (eqLayout) return
     const isReload = state.discussions.discussionId === discussionId
     const propositions = state.discussions.propositions.slice()
-  console.log('start0')
     const {layoutJSON, layout, loadedPropositions} = await loadDiscussion(discussionId, isReload, resetLayout)
-  console.log('start1')
     const newPropositions = await readLayout(layout, propositions, loadedPropositions, resetLayout)
-  console.log('start2')
     await dispatch(update({layout: layoutJSON, propositions: newPropositions, discussionId}))
-  console.log('start3')
   }
 }
 
@@ -162,7 +159,7 @@ async function createProposition(proposition) {
   }
 }
 
-export function replaceProposition({propositionId, discussionId, content}) {
+function replaceProposition({propositionId, discussionId, content}) {
   return async (dispatch, getState) => {
     const state = getState()
     const proposition = state.discussions.propositions.find(p => p.id === propositionId)
@@ -189,24 +186,6 @@ export function replaceProposition({propositionId, discussionId, content}) {
           throw error
         }
       }
-    }
-  }
-}
-
-export function focusOnProposition(newIndex) {
-  const {addProposition} = discussionsSlice.actions
-  return async (dispatch, getState) => {
-    const state = getState()
-    const discussionId = state.discussions.discussionId
-    let proposition = state.discussions.propositions.find(p => p.index === newIndex)
-    if (proposition) {
-      dispatch(updateProposition({id: proposition.id, autoFocus: true}))
-    }
-    else {
-      const propositionId = nanoid()
-      dispatch(addProposition(propositionId))
-      dispatch(updateProposition({id: propositionId, autoFocus: true}))
-      await dispatch(replacePropositionAction({propositionId, discussionId, content: ''}))
     }
   }
 }
@@ -246,6 +225,24 @@ export function replacePropositionAction(value) {
   return dispatch => dispatch(enqueueEvent(action))
 }
 
+export function focusOnProposition(newIndex) {
+  const {addProposition} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    const discussionId = state.discussions.discussionId
+    let proposition = state.discussions.propositions.find(p => p.index === newIndex)
+    if (proposition) {
+      dispatch(updateProposition({id: proposition.id, autoFocus: true}))
+    }
+    else {
+      const propositionId = nanoid()
+      dispatch(addProposition(propositionId))
+      dispatch(updateProposition({id: propositionId, autoFocus: true}))
+      await dispatch(replacePropositionAction({propositionId, discussionId, content: ''}))
+    }
+  }
+}
+
 export const selectDiscussion = state => state.discussions
-export const {update, updateProposition} = discussionsSlice.actions
+export const {updateProposition} = discussionsSlice.actions
 export default discussionsSlice.reducer
