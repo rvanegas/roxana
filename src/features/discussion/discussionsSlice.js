@@ -20,13 +20,18 @@ const discussionsSlice = createSlice({
   reducers: {
     addProposition(state, action) {
       const id = action.payload
-      const proposition = {id, key: id, content: '', index: state.propositions.length}
+      const proposition = {id, key: id, content: '', index: nextIndex(state.propositions)}
       state.propositions.push(proposition)
     },
     updateProposition(state, action) {
       const newProposition = action.payload
       const proposition = state.propositions.find(p => p.key === newProposition.key)
       if (proposition) {
+        if (proposition.key === proposition.id) {
+          if (state.propositions.filter(p => p.index === proposition.index).length > 1) {
+            newProposition.index = nextIndex(state.propositions)
+          }
+        }
         Object.assign(proposition, newProposition)
         if (proposition.autoFocus === false) delete proposition.autoFocus
       }
@@ -47,6 +52,10 @@ const discussionsSlice = createSlice({
 })
 
 const {update} = discussionsSlice.actions
+
+function nextIndex(propositions) {
+  return propositions === [] ? 0 : propositions.reduce((max, p) => Math.max(max, p.index), 0) + 1
+}
 
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
