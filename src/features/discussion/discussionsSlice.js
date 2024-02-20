@@ -19,20 +19,14 @@ const discussionsSlice = createSlice({
   initialState: initialState,
   reducers: {
     addProposition(state, action) {
-      const id = action.payload
-      const proposition = {id, key: id, content: '', index: nextIndex(state.propositions)}
+      const key = action.payload
+      const proposition = {key, content: '', index: nextIndex(state.propositions)}
       state.propositions.push(proposition)
     },
     updateProposition(state, action) {
       const newProposition = action.payload
       const proposition = state.propositions.find(p => p.key === newProposition.key)
       if (proposition) {
-        if (proposition.key === proposition.id) {
-          const numWithIndex = state.propositions.filter(p => p.index === proposition.index).length
-          if (numWithIndex > 1) {
-            newProposition.index = nextIndex(state.propositions)
-          }
-        }
         Object.assign(proposition, newProposition)
         if (proposition.autoFocus === false) delete proposition.autoFocus
       }
@@ -55,7 +49,12 @@ const discussionsSlice = createSlice({
 const {update} = discussionsSlice.actions
 
 function nextIndex(propositions) {
-  return propositions === [] ? 0 : propositions.reduce((max, p) => Math.max(max, p.index), 0) + 1
+  return propositions.reduce((max, p) => Math.max(max, p.index), 0) + 1
+}
+
+function nextUniqueIndex(proposition, propositions) {
+  const indexUnique = propositions.filter(p => p.index === proposition.index).length === 1
+  return indexUnique ? proposition.index : nextIndex(propositions)
 }
 
 function updateDiscussionLayout(discussionId, layout) {
@@ -152,7 +151,7 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
         }
         newPropositions.push(newProposition)
       }
-      newPropositions.push(...currentPropositions.filter(p => p.key === p.id))
+      newPropositions.push(...currentPropositions.filter(p => !p.id))
     }
 
     const state = getState()
@@ -170,7 +169,8 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
 function replaceProposition({key, discussionId, content}) {
   return async (dispatch, getState) => {
     const state = getState()
-    const proposition = state.discussions.propositions.find(p => p.key === key)
+    const propositions = state.discussions.propositions
+    const proposition = propositions.find(p => p.key === key)
     if (!proposition) {
       console.error('not found', key, state.discussions.propositions.slice())
       throw new Error('proposition not found')
@@ -178,21 +178,23 @@ function replaceProposition({key, discussionId, content}) {
     const input = {input: {content, discussionPropositionsId: discussionId}}
     const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
     const newPropositionId = response.data.createProposition.id
-    for (;;) {
-      try {
-        dispatch(updateProposition({key, content, id: newPropositionId}))
-        const layoutPropositions = getState().discussions.propositions.filter(p => p.key !== p.id)
-        const layout = JSON.stringify(layoutPropositions.map(p => ({index: p.index, id: p.id})))
-        await dispatch(updateDiscussionLayout(discussionId, layout))
-        break
+    try {
+      const index = nextUniqueIndex(proposition, propositions)
+      const newProposition = {key, index, content, id: newPropositionId}
+      const layoutPropositions = propositions.filter(p => p.id)
+        .map(p => p.key === proposition.key ? newProposition : p)
+      if (!proposition.id) layoutPropositions.push(newProposition)
+      const layout = JSON.stringify(layoutPropositions.map(p => ({index: p.index, id: p.id})))
+      await dispatch(updateDiscussionLayout(discussionId, layout))
+      dispatch(updateProposition(newProposition))
+    }
+    catch (e) {
+      if (e.message !== 'unexpected layout') {
+        throw e
       }
-      catch (e) {
-        if (e.message !== 'unexpected layout') {
-          throw e
-        }
-        else {
-          console.warn('try again')
-        }
+      else {
+        console.warn('try again')
+        dispatch(replacePropositionAction({key, discussionId, content}))
       }
     }
   }
