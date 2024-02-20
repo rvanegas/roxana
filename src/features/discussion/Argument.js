@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
-import {selectPropositions} from './propositionsSlice'
+import {selectDiscussions} from './discussionsSlice'
 import {updateArgument, focusOnArgument} from './argumentsSlice'
 
 function toAlphaIndex(numberIndex) {
@@ -18,7 +18,8 @@ function toAlphaIndex(numberIndex) {
 }
 
 export function Argument({argument, readOnly}) {
-  const propositions = useSelector(selectPropositions)
+  const discussions = useSelector(selectDiscussions)
+  const propositions = discussions.propositions
   const [editorState, setEditorState] = useState(initialEditorState)
   const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.propositionIds)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)

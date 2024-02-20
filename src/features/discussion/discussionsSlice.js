@@ -258,6 +258,6 @@ export function focusOnProposition(newIndex) {
   }
 }
 
-export const selectDiscussion = state => state.discussions
+export const selectDiscussions = state => state.discussions
 export const {updateProposition} = discussionsSlice.actions
 export default discussionsSlice.reducer
