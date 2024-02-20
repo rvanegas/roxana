@@ -23,20 +23,12 @@ const discussionsSlice = createSlice({
       const proposition = {id, key: id, content: '', index: state.propositions.length}
       state.propositions.push(proposition)
     },
-    updatePropositionFocus(state, action) {
-      const {id, autoFocus} = action.payload
-      const proposition = state.propositions.find(p => p.id === id)
-      if (proposition) {
-        proposition.autoFocus = autoFocus
-        if (proposition.autoFocus === false) delete proposition.autoFocus
-      }
-    },
     updateProposition(state, action) {
-      const {newProposition, newId} = action.payload
-      const proposition = state.propositions.find(p => p.id === newProposition.id)
+      const newProposition = action.payload
+      const proposition = state.propositions.find(p => p.key === newProposition.key)
       if (proposition) {
         Object.assign(proposition, newProposition)
-        Object.assign(proposition, {id: newId})
+        if (proposition.autoFocus === false) delete proposition.autoFocus
       }
     },
     setStatus(state, action) {
@@ -54,7 +46,7 @@ const discussionsSlice = createSlice({
   }
 })
 
-const {update, updateProposition} = discussionsSlice.actions
+const {update} = discussionsSlice.actions
 
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
@@ -179,11 +171,13 @@ async function createProposition(proposition) {
   }
 }
 
-function replaceProposition({propositionId, discussionId, content}) {
+function replaceProposition({key, discussionId, content}) {
   return async (dispatch, getState) => {
     const state = getState()
-    const proposition = state.discussions.propositions.find(p => p.id === propositionId)
+    const proposition = state.discussions.propositions.find(p => p.key === key)
+    console.log('replace', key, content)
     if (!proposition) {
+      console.log('not found', key, state.discussions.propositions.slice())
       throw new Error('proposition not found')
     }
     const newProposition = await createProposition({content, discussionPropositionsId: discussionId})
@@ -196,7 +190,7 @@ function replaceProposition({propositionId, discussionId, content}) {
           )
         )
         await dispatch(updateDiscussionLayout(discussionId, layout))
-        dispatch(updateProposition({newProposition: {id: propositionId, content}, newId: newPropositionId}))
+        dispatch(updateProposition({key, content, id: newPropositionId}))
         break
       }
       catch (e) {
@@ -253,17 +247,17 @@ export function focusOnProposition(newIndex) {
     const discussionId = state.discussions.discussionId
     let proposition = state.discussions.propositions.find(p => p.index === newIndex)
     if (proposition) {
-      dispatch(updatePropositionFocus({id: proposition.id, autoFocus: true}))
+      dispatch(updateProposition({id: proposition.id, autoFocus: true}))
     }
     else {
-      const propositionId = nanoid()
-      dispatch(addProposition(propositionId))
-      dispatch(updatePropositionFocus({id: propositionId, autoFocus: true}))
-      await dispatch(replacePropositionAction({propositionId, discussionId, content: ''}))
+      const key = nanoid()
+      dispatch(addProposition(key))
+      dispatch(updateProposition({key, autoFocus: true}))
+      await dispatch(replacePropositionAction({key, discussionId, content: ''}))
     }
   }
 }
 
 export const selectDiscussion = state => state.discussions
-export const {updatePropositionFocus} = discussionsSlice.actions
+export const {updateProposition} = discussionsSlice.actions
 export default discussionsSlice.reducer
