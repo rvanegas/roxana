@@ -235,12 +235,13 @@ export function replacePropositionAction(value) {
   return dispatch => dispatch(enqueueEvent(action))
 }
 
-export function focusOnProposition(newIndex) {
+export function focusOnNextProposition(currentKey) {
   const {addProposition} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
     const discussionId = state.discussions.discussionId
-    let proposition = state.discussions.propositions.find(p => p.index === newIndex)
+    let nextPos = currentKey ? state.discussions.propositions.findIndex(p => p.key === currentKey) + 1 : 0
+    let proposition = state.discussions.propositions[nextPos]
     if (proposition) {
       dispatch(updateProposition({key: proposition.key, autoFocus: true}))
     }
