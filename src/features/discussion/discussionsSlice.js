@@ -173,27 +173,27 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
   }
 }
 
-function replaceProposition({key, discussionId, content}) {
+function replaceSentence({key, section, discussionId, content}) {
   return async (dispatch, getState) => {
     const state = getState()
-    const propositions = state.discussions.propositions
-    const proposition = propositions.find(p => p.key === key)
-    if (!proposition) {
-      console.error('not found', key, state.discussions.propositions.slice())
-      throw new Error('proposition not found')
+    const sentences = state.discussions[section]
+    const sentence = sentences.find(s => s.key === key)
+    if (!sentence) {
+      console.error('not found', key, state.discussions.sentences.slice())
+      throw new Error('sentence not found')
     }
     const input = {input: {content, discussionPropositionsId: discussionId}}
     const response = await API.graphql(graphqlOperation(mutations.createProposition, input))
-    const newPropositionId = response.data.createProposition.id
+    const newSentenceId = response.data.createProposition.id
     try {
-      const index = nextUniqueIndex(proposition, propositions)
-      const newProposition = {key, index, content, id: newPropositionId}
-      const layoutPropositions = propositions.filter(p => p.id)
-        .map(p => p.key === proposition.key ? newProposition : p)
-      if (!proposition.id) layoutPropositions.push(newProposition)
-      const layout = JSON.stringify(layoutPropositions.map(p => ({index: p.index, id: p.id})))
+      const index = nextUniqueIndex(sentence, sentences)
+      const newSentence = {key, index, content, id: newSentenceId}
+      const layoutSentences = sentences.filter(s => s.id)
+        .map(s => s.key === sentence.key ? newSentence : s)
+      if (!sentence.id) layoutSentences.push(newSentence)
+      const layout = JSON.stringify(layoutSentences.map(s => ({index: s.index, id: s.id})))
       await dispatch(updateDiscussionLayout(discussionId, layout))
-      dispatch(updateSentence({section: 'propositions', newSentence: newProposition}))
+      dispatch(updateSentence({section: 'propositions', newSentence: newSentence}))
     }
     catch (e) {
       if (e.message !== 'unexpected layout') {
@@ -201,7 +201,7 @@ function replaceProposition({key, discussionId, content}) {
       }
       else {
         console.warn('try again')
-        dispatch(replacePropositionAction({key, discussionId, content}))
+        dispatch(replaceSentenceAction({key, section, discussionId, content}))
       }
     }
   }
@@ -209,7 +209,7 @@ function replaceProposition({key, discussionId, content}) {
 
 const eventHandlerFunctions = {
   getDiscussion,
-  replaceProposition,
+  replaceSentence,
 }
 
 function enqueueEvent(action) {
@@ -237,8 +237,8 @@ export function getDiscussionAction(discussion) {
   const action = {handler: 'getDiscussion', payload: discussion}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function replacePropositionAction(value) {
-  const action = {handler: 'replaceProposition', payload: value}
+export function replaceSentenceAction(value) {
+  const action = {handler: 'replaceSentence', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 
@@ -256,7 +256,7 @@ export function focusOnNextProposition(currentKey) {
       const key = nanoid()
       dispatch(addSentence({section: 'propositions', key}))
       dispatch(updateSentence({section: 'propositions', newSentence: {key, autoFocus: true}}))
-      await dispatch(replacePropositionAction({key, discussionId, content: ''}))
+      await dispatch(replaceSentenceAction({key, section: 'propositions', discussionId, content: ''}))
     }
   }
 }
