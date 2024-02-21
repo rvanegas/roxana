@@ -3,7 +3,7 @@ import {useDispatch} from 'react-redux'
 import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
-  updateProposition,
+  updateSentence,
   focusOnNextProposition,
   replacePropositionAction,
 } from './discussionsSlice'
@@ -46,7 +46,7 @@ export function Proposition({discussionId, proposition, readOnly}) {
   useEffect(() => {
     if (proposition.autoFocus) {
       editorRef.current.focus()
-      dispatch(updateProposition({key: proposition.key, autoFocus: false}))
+      dispatch(updateSentence({section: 'propositions', newSentence: {key: proposition.key, autoFocus: false}}))
     }
   })
 
