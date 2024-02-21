@@ -54,13 +54,13 @@ const discussionsSlice = createSlice({
 
 const {update} = discussionsSlice.actions
 
-function nextIndex(propositions) {
-  return propositions.reduce((max, p) => Math.max(max, p.index), 0) + 1
+function nextIndex(sentences) {
+  return sentences.reduce((max, p) => Math.max(max, p.index), 0) + 1
 }
 
-function nextUniqueIndex(proposition, propositions) {
-  const indexUnique = propositions.filter(p => p.index === proposition.index).length === 1
-  return indexUnique ? proposition.index : nextIndex(propositions)
+function nextUniqueIndex(sentence, sentences) {
+  const indexUnique = sentences.filter(p => p.index === sentence.index).length === 1
+  return indexUnique ? sentence.index : nextIndex(sentences)
 }
 
 function updateDiscussionLayout(discussionId, layout) {
@@ -87,8 +87,8 @@ function updateDiscussionLayout(discussionId, layout) {
 
 function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
   return async (dispatch, getState) => {
-    const loadedPropositions = []
-    const newPropositions = []
+    const loadedSentences = []
+    const newSentences = []
     let discussion
     let layout
 
@@ -125,39 +125,39 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
         nextToken = discussion.propositions.nextToken
         if (!discussion) throw new Error('no such discussion')
         if (!layout) await parseLayout()
-        loadedPropositions.push(...discussion.propositions.items)
+        loadedSentences.push(...discussion.propositions.items)
       } while (nextToken && !isReload)
     }
 
-    async function getProposition(id) {
+    async function getSentence(id) {
       const response = await API.graphql(graphqlOperation(queries.getProposition, {id}))
       return response.data.getProposition
     }
 
-    async function removeProposition(pos, message) {
+    async function removeSentence(pos, message) {
       layout.splice(pos, 1)
       await resetLayout(layout, message)
     }
 
-    async function readLayout() {
-      const currentPropositions = state.discussions.propositions
+    async function readLayout(section) {
+      const currentSentences = state.discussions[section]
       for (let pos = 0; pos < layout.length; pos++) {
         const layoutEntry = layout[pos]
-        let proposition = currentPropositions.find(p => p.id === layoutEntry.id)
-          || loadedPropositions.find(p => p.id === layoutEntry.id)
-          || await getProposition(layoutEntry.id)
-        if (!proposition) await removeProposition(pos, 'invalid proposition id, fixing layout')
-        const notUnique = newPropositions.some(p => p.id === proposition.id)
-        if (notUnique) await removeProposition(pos, 'non-unique proposition id, fixing layout')
-        const newProposition = {
-          id: proposition.id,
-          key: proposition.key || nanoid(),
+        let sentence = currentSentences.find(s => s.id === layoutEntry.id)
+          || loadedSentences.find(s => s.id === layoutEntry.id)
+          || await getSentence(layoutEntry.id)
+        if (!sentence) await removeSentence(pos, 'invalid sentence id, fixing layout')
+        const notUnique = newSentences.some(s => s.id === sentence.id)
+        if (notUnique) await removeSentence(pos, 'non-unique sentence id, fixing layout')
+        const newSentence = {
+          id: sentence.id,
+          key: sentence.key || nanoid(),
           index: layoutEntry.index,
-          content: proposition.content
+          content: sentence.content
         }
-        newPropositions.push(newProposition)
+        newSentences.push(newSentence)
       }
-      newPropositions.push(...currentPropositions.filter(p => !p.id))
+      newSentences.push(...currentSentences.filter(p => !p.id))
     }
 
     const state = getState()
@@ -167,8 +167,9 @@ function getDiscussion({id: discussionId, layout: subscriptionLayout}) {
     if (eqLayout) return
 
     await loadDiscussion()
-    await readLayout()
-    await dispatch(update({layout: discussion.layout, propositions: newPropositions, discussionId}))
+    await readLayout('propositions')
+    // await readLayout('arguments')
+    await dispatch(update({layout: discussion.layout, propositions: newSentences, discussionId}))
   }
 }
 
