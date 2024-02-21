@@ -6,7 +6,7 @@ function newArgument(index) {
 
 export const argumentsSlice = createSlice({
   name: 'arguments',
-  initialState: [newArgument(0)],
+  initialState: [newArgument(1)],
   reducers: {
     updateArgument(state, action) {
       const argument = state.find(argument => action.payload.id === argument.id)

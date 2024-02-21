@@ -3,13 +3,13 @@ export const getDiscussionPaginated = /* GraphQL */ `
     getDiscussion(id: $id) {
       id
       layout
-      propositions(limit: $limit, nextToken: $nextToken) {
+      sentences(limit: $limit, nextToken: $nextToken) {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }

@@ -6,13 +6,13 @@ export const getDiscussion = /* GraphQL */ `
     getDiscussion(id: $id) {
       id
       layout
-      propositions {
+      sentences {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }
@@ -41,7 +41,7 @@ export const listDiscussions = /* GraphQL */ `
       items {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -62,7 +62,7 @@ export const getLayoutState = /* GraphQL */ `
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -101,15 +101,15 @@ export const listLayoutStates = /* GraphQL */ `
     }
   }
 `;
-export const getProposition = /* GraphQL */ `
-  query GetProposition($id: ID!) {
-    getProposition(id: $id) {
+export const getSentence = /* GraphQL */ `
+  query GetSentence($id: ID!) {
+    getSentence(id: $id) {
       id
       content
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -120,17 +120,17 @@ export const getProposition = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionPropositionsId
+      discussionSentencesId
     }
   }
 `;
-export const listPropositions = /* GraphQL */ `
-  query ListPropositions(
-    $filter: ModelPropositionFilterInput
+export const listSentences = /* GraphQL */ `
+  query ListSentences(
+    $filter: ModelSentenceFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listPropositions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listSentences(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
         content
@@ -142,7 +142,7 @@ export const listPropositions = /* GraphQL */ `
         }
         createdAt
         updatedAt
-        discussionPropositionsId
+        discussionSentencesId
       }
       nextToken
     }

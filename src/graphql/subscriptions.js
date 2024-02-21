@@ -6,13 +6,13 @@ export const onCreateDiscussion = /* GraphQL */ `
     onCreateDiscussion {
       id
       layout
-      propositions {
+      sentences {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }
@@ -36,13 +36,13 @@ export const onUpdateDiscussion = /* GraphQL */ `
     onUpdateDiscussion {
       id
       layout
-      propositions {
+      sentences {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }
@@ -66,13 +66,13 @@ export const onDeleteDiscussion = /* GraphQL */ `
     onDeleteDiscussion {
       id
       layout
-      propositions {
+      sentences {
         items {
           id
           content
           createdAt
           updatedAt
-          discussionPropositionsId
+          discussionSentencesId
         }
         nextToken
       }
@@ -99,7 +99,7 @@ export const onCreateLayoutState = /* GraphQL */ `
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -122,7 +122,7 @@ export const onUpdateLayoutState = /* GraphQL */ `
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -145,7 +145,7 @@ export const onDeleteLayoutState = /* GraphQL */ `
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -160,15 +160,15 @@ export const onDeleteLayoutState = /* GraphQL */ `
     }
   }
 `;
-export const onCreateProposition = /* GraphQL */ `
-  subscription OnCreateProposition {
-    onCreateProposition {
+export const onCreateSentence = /* GraphQL */ `
+  subscription OnCreateSentence {
+    onCreateSentence {
       id
       content
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -179,19 +179,19 @@ export const onCreateProposition = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionPropositionsId
+      discussionSentencesId
     }
   }
 `;
-export const onUpdateProposition = /* GraphQL */ `
-  subscription OnUpdateProposition {
-    onUpdateProposition {
+export const onUpdateSentence = /* GraphQL */ `
+  subscription OnUpdateSentence {
+    onUpdateSentence {
       id
       content
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -202,19 +202,19 @@ export const onUpdateProposition = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionPropositionsId
+      discussionSentencesId
     }
   }
 `;
-export const onDeleteProposition = /* GraphQL */ `
-  subscription OnDeleteProposition {
-    onDeleteProposition {
+export const onDeleteSentence = /* GraphQL */ `
+  subscription OnDeleteSentence {
+    onDeleteSentence {
       id
       content
       discussion {
         id
         layout
-        propositions {
+        sentences {
           nextToken
         }
         layoutStates {
@@ -225,7 +225,7 @@ export const onDeleteProposition = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionPropositionsId
+      discussionSentencesId
     }
   }
 `;
