@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Divider, View} from '@aws-amplify/ui-react'
+import {Divider, View, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {selectDiscussions} from './discussionsSlice'
 import {updateArgument, focusOnArgument} from './argumentsSlice'
@@ -151,6 +151,7 @@ export function Argument({argument, readOnly}) {
         {toAlphaIndex(argument.index)}
       </View>
       <View>
+        <Text color="lightgray">{buildArgumentCode()}</Text>
         <Editor editorState={editorState} onChange={handleChange}
           keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
           onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
