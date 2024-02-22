@@ -1,19 +1,19 @@
 import React, {useState} from 'react'
 import {useSelector} from 'react-redux'
 import {Heading} from '@aws-amplify/ui-react'
-import {selectArguments} from './argumentsSlice'
+import {selectDiscussions} from './discussionsSlice'
 import {Argument} from './Argument'
 
-export function ArgumentsList() {
+export function ArgumentsList(discussionId) {
   const [readOnly] = useState(false)
-  const arguments_ = useSelector(selectArguments)
+  const discussions = useSelector(selectDiscussions)
 
-  if (!arguments_) {
+  if (!discussions.arguments) {
     return null;
   }
 
-  const argumentElements = arguments_.map(argument => (
-    <Argument key={argument.id} argument={argument} readOnly={readOnly} />
+  const argumentElements = discussions.arguments.map(argument => (
+    <Argument key={argument.key} discussionId={discussionId} argument={argument} readOnly={readOnly} />
   ))
 
   return (
