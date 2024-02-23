@@ -23,15 +23,15 @@ function toAlphaIndex(numberIndex) {
 }
 
 export function Argument({argument, discussionId, readOnly}) {
-  console.log('argument')
   const propositionById = id => propositions.find(p => p.id === id)
   const propositionByIndex = index => propositions.find(p => p.index === index)
+  const propositionIds = argument.content ? argument.content.split(' ') : []
 
   const editorRef = React.createRef()
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
-  const [displayPropositionIds, setDisplayPropositionIds] = useState(argument.content.split(' '))
+  const [displayPropositionIds, setDisplayPropositionIds] = useState(propositionIds)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
   const [placeholder, setPlaceholder] = useState(
