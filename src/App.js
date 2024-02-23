@@ -3,12 +3,9 @@ import {Authenticator, AmplifyProvider} from '@aws-amplify/ui-react'
 import {Grid, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css';
-import {PropositionsList} from './features/discussion/PropositionsList'
-import {ArgumentsList} from './features/discussion/ArgumentsList'
+import {Discussion} from './features/discussion/Discussion'
 import {theme} from './theme'
 // import DragTest from './DragTest'
-
-const discussionId = 'a1283cfc-61fa-4e4e-a93d-c82cd9d7350a'
 
 function App() {
   return (
@@ -31,13 +28,7 @@ function App() {
               </Grid>
             </View>
             <View>
-              <Grid
-                templateColumns="1rem 2rem 1fr 3rem"
-                gap="var(--amplify-space-small)"
-              >
-                <PropositionsList discussionId={discussionId} />
-                <ArgumentsList discussionId={discussionId} />
-              </Grid>
+              <Discussion/>
             </View>
           </View>
         )}
