@@ -7,6 +7,7 @@ import {ArgumentsList} from './ArgumentsList'
 import * as custom from '../../graphql/custom'
 import {
   focusOnNextSentence,
+  initializeDiscussion,
   getDiscussionAction,
   selectDiscussions,
 } from './discussionsSlice'
@@ -18,13 +19,11 @@ export function Discussion() {
   const discussions = useSelector(selectDiscussions)
   const discussionStatus = discussions.status
   const propositionsEmpty = discussions.propositions.length === 0
-  const argumentsEmpty = discussions.arguments.length === 0
 
   useEffect(() => {
     if (discussionStatus === 'init') {
-      dispatch(getDiscussionAction({discussionId}))
-    } else if (discussionStatus === 'idle') {
-      if (argumentsEmpty) dispatch(focusOnNextSentence('arguments'))
+      dispatch(initializeDiscussion({discussionId}))
+    } else if (discussionStatus === 'idle' && !propositionsEmpty) {
       if (propositionsEmpty) dispatch(focusOnNextSentence('propositions'))
     }
     const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
@@ -36,7 +35,7 @@ export function Discussion() {
       error: error => console.error(error),
     })
     return () => subscription.unsubscribe()
-  }, [dispatch, discussionStatus, argumentsEmpty, propositionsEmpty])
+  }, [dispatch, discussionStatus, propositionsEmpty])
 
   return (
     <Grid
