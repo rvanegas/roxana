@@ -254,10 +254,12 @@ function replaceSentence({key, section, discussionId, content}) {
 }
 
 function addNewSentence(section, andFocus) {
-  return (dispatch, getState) => {
+  return async (dispatch, getState) => {
     const {addSentence} = discussionsSlice.actions
+    const discussionId = getState().discussions.discussionId
     const key = nanoid()
     dispatch(addSentence({section, key}))
+    dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
   }
 }
 
@@ -265,14 +267,10 @@ function initializeDiscussion({discussionId}) {
   return async (dispatch, getState) => {
     await dispatch(getDiscussion({discussionId}))
     if (getState().discussions.propositions.length === 0) {
-      dispatch(addNewSentence('propositions'))
-      const key = getState().discussions.propositions[0].key
-      dispatch(replaceSentenceAction({key, section: 'propositions', discussionId, content: ''}))
+      await dispatch(addNewSentence('propositions'))
     }
     if (getState().discussions.arguments.length === 0) {
-      dispatch(addNewSentence('arguments'))
-      const key = getState().discussions.arguments[0].key
-      dispatch(replaceSentenceAction({key, section: 'arguments', discussionId, content: ''}))
+      await dispatch(addNewSentence('arguments'))
     }
     dispatch(focusOnSentence('propositions', 0))
   }
@@ -344,11 +342,7 @@ export function focusOnSentence(section, position) {
     }
     let sentence = state.discussions[section][position]
     if (!sentence) {
-      dispatch(addNewSentence(section))
-      state = getState()
-      const discussionId = state.discussions.discussionId
-      const key = state.discussions[section][position].key
-      dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
+      await dispatch(addNewSentence(section))
     }
     dispatch(setFocus({section, position}))
   }
