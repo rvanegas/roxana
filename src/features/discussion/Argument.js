@@ -4,29 +4,16 @@ import {Divider, View, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   selectDiscussions,
-  focusOnNextSentence,
+  focusOnSentence,
   updateSentence,
   replaceSentenceAction
 } from './discussionsSlice'
 
-function toAlphaIndex(numberIndex) {
-  numberIndex--
-  const base = 'A'.charCodeAt()
-  const divisor = 'Z'.charCodeAt() - base + 1
-  let alphas = []
-  while (numberIndex >= 0) {
-    const remainder = numberIndex % divisor
-    alphas.unshift(String.fromCharCode(remainder + base))
-    numberIndex = (numberIndex - remainder) / divisor - 1
-  }
-  return alphas.join('')
-}
-
-export function Argument({argument, discussionId, readOnly}) {
+export function Argument({position, argument, discussionId, readOnly}) {
   const propositionById = id => propositions.find(p => p.id === id)
   const propositionByIndex = index => propositions.find(p => p.index === index)
   const propositionIds = argument.content ? argument.content.split(' ') : []
-
+  // console.log('argument', argument.content, propositionIds)
   const editorRef = React.createRef()
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
@@ -39,7 +26,21 @@ export function Argument({argument, discussionId, readOnly}) {
     'Type a sequence of proposition numbers. For example, "0 :1".' : null
   )
 
+  function toAlphaIndex(numberIndex) {
+    numberIndex--
+    const base = 'A'.charCodeAt()
+    const divisor = 'Z'.charCodeAt() - base + 1
+    let alphas = []
+    while (numberIndex >= 0) {
+      const remainder = numberIndex % divisor
+      alphas.unshift(String.fromCharCode(remainder + base))
+      numberIndex = (numberIndex - remainder) / divisor - 1
+    }
+    return alphas.join('')
+  }
+
   function buildArgumentCode() {
+    // console.log('build1', displayPropositionIds)
     const displayPropositions = displayPropositionIds.map(id => propositionById(id))
     let argumentCode = ''
     if (displayPropositions.length > 0) {
@@ -50,6 +51,7 @@ export function Argument({argument, discussionId, readOnly}) {
       const premiseIndexes = displayPropositions.map(p => p.index).join(' ')
       argumentCode = `${premiseIndexes} ${argumentCode}`
     }
+    // console.log('build2', argumentCode)
     return argumentCode
   }
 
@@ -64,6 +66,7 @@ export function Argument({argument, discussionId, readOnly}) {
     const invalidPattern = /[^\d\s:]/
     const separatorPattern = /[\s:]+/
 
+    // console.log('setDisplay', argumentCode)
     if (invalidPattern.test(argumentCode)) {
       setArgumentCodeInvalid(true)
       return
@@ -81,6 +84,7 @@ export function Argument({argument, discussionId, readOnly}) {
     }
     const displayPropositionIds = displayPropositions.map(p => p.id)
     setArgumentCodeInvalid(false)
+    // console.log('ids', displayPropositionIds)
     setDisplayPropositionIds(displayPropositionIds)
   }
 
@@ -94,8 +98,9 @@ export function Argument({argument, discussionId, readOnly}) {
       setArgumentCodeInvalid(false)
     }
     const key = argument.key
-    const content = argumentCode
+    const content = displayPropositionIds.join(' ')
     const section = 'arguments'
+    // debugger
     dispatch(replaceSentenceAction({key, section, discussionId, content}))
     if (placeholder && Boolean(content)) {
       setPlaceholder(null)
@@ -133,7 +138,7 @@ export function Argument({argument, discussionId, readOnly}) {
   function handleKeyCommand(command) {
     if (command === 'next-line') {
       editorRef.current.blur()
-      dispatch(focusOnNextSentence('arguments', argument.key))
+      dispatch(focusOnSentence('arguments', position + 1))
       return 'handled'
     }
     return 'not-handled'
@@ -146,17 +151,20 @@ export function Argument({argument, discussionId, readOnly}) {
     }
   })
 
-  const conclusion = propositionById(displayPropositionIds[displayPropositionIds.length - 1])
-  const conclusionElement = !Boolean(conclusion) ? null : (
-    <React.Fragment key={conclusion.id}>
-      <View columnStart={1} style={{justifySelf: 'end'}}>:.</View>
-      <View>{conclusion.index}</View>
-      <View columnEnd={-2}>{conclusion.content}</View>
-    </React.Fragment>
-  )
+  const conclusionIds = displayPropositionIds.slice(-1)
+  const conclusionElements = conclusionIds.length === 0 ? null : conclusionIds.map(conclusionId => {
+    const conclusion = propositionById(conclusionId)
+    return (
+      <React.Fragment key={conclusion.id}>
+        <View columnStart={1} style={{justifySelf: 'end'}}>:.</View>
+        <View>{conclusion.index}</View>
+        <View columnEnd={-2}>{conclusion.content}</View>
+      </React.Fragment>
+    )
+  })
 
-  const premises = displayPropositionIds.slice(0, displayPropositionIds.length - 1)
-  const premiseElements = premises.length === 0 ? null : premises.map(premiseId => {
+  const premiseIds = displayPropositionIds.slice(0, displayPropositionIds.length - 1)
+  const premiseElements = premiseIds.length === 0 ? null : premiseIds.map(premiseId => {
     const premise = propositionById(premiseId)
     return (
       <React.Fragment key={premise.id}>
@@ -181,7 +189,7 @@ export function Argument({argument, discussionId, readOnly}) {
         <Divider style={argumentCodeInvalid ? {borderColor: 'red'} : null}/>
       </View>
       {premiseElements}
-      {conclusionElement}
+      {conclusionElements}
       <View style={{paddingBottom: '20px'}} columnSpan={4} />
     </React.Fragment>
   )

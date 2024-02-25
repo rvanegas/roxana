@@ -4,11 +4,11 @@ import {View, Divider, Text} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   updateSentence,
-  focusOnNextSentence,
+  focusOnSentence,
   replaceSentenceAction,
 } from './discussionsSlice'
 
-export function Proposition({discussionId, proposition, readOnly}) {
+export function Proposition({position, discussionId, proposition, readOnly}) {
   const dispatch = useDispatch()
   const editorRef = React.createRef()
   const [editorState, setEditorState] = useState(initEditorState)
@@ -38,21 +38,23 @@ export function Proposition({discussionId, proposition, readOnly}) {
   function handleKeyCommand(command) {
     if (command === 'next-line') {
       editorRef.current.blur()
-      dispatch(focusOnNextSentence('propositions', proposition.key))
+      dispatch(focusOnSentence('propositions', position + 1))
       return 'handled'
     }
     return 'not-handled'
   }
   useEffect(() => {
     if (proposition.autoFocus) {
+      // console.log('useEffect', proposition)
       editorRef.current.focus()
       dispatch(updateSentence({section: 'propositions', newSentence: {key: proposition.key, autoFocus: false}}))
     }
   })
 
+  const gray = `${proposition.content} [${proposition.key}] [${proposition.id}]`
   return (
     <View>
-      <Text color="lightgray">{proposition.content}</Text>
+      <Text color="lightgray">{gray}</Text>
       <Editor editorState={editorState} onChange={setEditorState}
         keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
         onBlur={handleBlur} readOnly={readOnly} ref={editorRef}

@@ -3,16 +3,27 @@ import {createSlice, nanoid} from '@reduxjs/toolkit'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
+// import {sleep} from '../../app/util'
+
+import Cookies from 'universal-cookie';
+const cookies = new Cookies();
+
+// cookies.set('myCat', 'Pacman', { path: '/' });
+// console.log(cookies.get('myCat')); // Pacman
+
 
 const initialState = {
-  discussionId: null,
+  eventQueue: [],
+  status: 'init',
+  error: null,
+  discussionId: cookies.get('roxanaDiscussionId'),
   propositions: [],
   arguments: [],
   layout: '',
-  eventQueue: [],
-  status: 'init',
-  error: null
 }
+
+// cookies.set('roxanaDiscussionId', '22fac86c-13a1-4df6-87e7-732f06e5e53d')
+console.log('cookie:', cookies.get('roxanaDiscussionId'))
 
 // do this in TS
 // function validateSection(section) {
@@ -30,12 +41,18 @@ const discussionsSlice = createSlice({
       state[section].push(sentence)
     },
     updateSentence(state, action) {
+      // if (action.payload.newSentence.autoFocus)
+      //   console.log('update focus', action.payload)
       const {section, newSentence} = action.payload
       const sentence = state[section].find(p => p.key === newSentence.key)
       if (sentence) {
         Object.assign(sentence, newSentence)
         if (sentence.autoFocus === false) delete sentence.autoFocus
       }
+    },
+    setFocus(state, action) {
+      const {section, position} = action.payload
+      state[section][position].autoFocus = true
     },
     setStatus(state, action) {
       state.status = action.payload
@@ -65,10 +82,11 @@ function nextUniqueIndex(sentence, sentences) {
 
 function updateDiscussionLayout(discussionId, layout) {
   return async (dispatch, getState) => {
+    const layoutOld = getState().discussions.layout
     try {
       const variables = {
         input: {id: discussionId, layout},
-        condition: {layout: {eq: getState().discussions.layout}},
+        condition: {layout: {eq: layoutOld}},
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       dispatch(update({discussionId, layout}))
@@ -76,6 +94,7 @@ function updateDiscussionLayout(discussionId, layout) {
     catch (exception) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
       if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
+        console.log('layouts', layoutOld, layout)
         const newException = new Error()
         newException.name = 'UnexpectedLayout'
         throw newException
@@ -89,6 +108,7 @@ function updateDiscussionLayout(discussionId, layout) {
 
 function getDiscussion({discussionId, layout: subscriptionLayout}) {
   return async (dispatch, getState) => {
+    // console.log('get')
     const loadedSentences = []
     const newDiscussionSentences = {}
     let discussion
@@ -213,14 +233,20 @@ function replaceSentence({key, section, discussionId, content}) {
         propositions: discussionSentences.propositions.filter(s => s.id),
         arguments: discussionSentences.arguments.filter(s => s.id),
       }
-      // if (!sentence.id) layoutSentences.push(newSentence)
+      // if (!sentence.id)
+      //   layoutSentences.push(newSentence)
       const makeLayoutEntry = sentence => ({index: sentence.index, id: sentence.id})
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
       })
+      console.log('state', getState())
+      // debugger
+
       await dispatch(updateDiscussionLayout(discussionId, layout))
+      // await sleep(2000)
       dispatch(updateSentence({section, newSentence: newSentence}))
+      // console.log('replace end')
     }
     catch (exception) {
       if (exception.name === 'UnexpectedLayout') {
@@ -234,26 +260,46 @@ function replaceSentence({key, section, discussionId, content}) {
   }
 }
 
-export function initializeDiscussion({discussionId, layout}) {
-  return async (dispatch, getState) => {
-    async function initializeSection(section) {
-      const state = getState()
-      console.log(state.discussions)
-      const {addSentence} = discussionsSlice.actions
-      if (state.discussions[section].length === 0) {
-        const key = nanoid()
-        dispatch(addSentence({section, key}))
-        await dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
-      }
-    }
-    await dispatch(getDiscussionAction({discussionId, layout}))
-    await initializeSection('propositions')
-    await initializeSection('arguments')
+function addNewSentence(section, andFocus) {
+  return (dispatch, getState) => {
+    const {addSentence} = discussionsSlice.actions
+    const key = nanoid()
+    dispatch(addSentence({section, key}))
   }
 }
 
+function initializeDiscussion({discussionId}) {
+  return async (dispatch, getState) => {
+    await dispatch(getDiscussion({discussionId}))
+    if (getState().discussions.propositions.length === 0) {
+      dispatch(addNewSentence('propositions'))
+      const key = getState().discussions.propositions[0].key
+      dispatch(replaceSentence({key, section: 'propositions', discussionId, content: ''}))
+    }
+    if (getState().discussions.arguments.length === 0) {
+      dispatch(addNewSentence('arguments'))
+      const key = getState().discussions.arguments[0].key
+      dispatch(replaceSentence({key, section: 'arguments', discussionId, content: ''}))
+    }
+    dispatch(focusOnSentence('propositions', 0))
+  }
+}
+
+function newDiscussion() {
+  return async (dispatch) => {
+    const layout = JSON.stringify({propositions: [], arguments: []})
+    const variables = {input: {layout}}
+    console.log('variables', variables)
+    const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
+    const discussionId = response.data.createDiscussion.id
+    cookies.set('roxanaDiscussionId', discussionId)
+    dispatch(update({layout, discussionId, propositions: [], arguments: []}))
+    dispatch(initializeDiscussionAction({discussionId}))
+  }
+}
 
 const eventHandlerFunctions = {
+  newDiscussion,
   initializeDiscussion,
   getDiscussion,
   replaceSentence,
@@ -280,6 +326,10 @@ function enqueueEvent(action) {
   }
 }
 
+export function newDiscussionAction() {
+  const action = {handler: 'newDiscussion'}
+  return dispatch => dispatch(enqueueEvent(action))
+}
 export function initializeDiscussionAction(discussion) {
   const action = {handler: 'initializeDiscussion', payload: discussion}
   return dispatch => dispatch(enqueueEvent(action))
@@ -293,14 +343,22 @@ export function replaceSentenceAction(value) {
   return dispatch => dispatch(enqueueEvent(action))
 }
 
-export function focusOnNextSentence(section, currentKey) {
+export function focusOnSentence(section, position) {
+  const {setFocus} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const state = getState()
-    let nextPos = currentKey ? state.discussions[section].findIndex(p => p.key === currentKey) + 1 : 0
-    let sentence = state.discussions[section][nextPos]
-    if (sentence) {
-      dispatch(updateSentence({section, newSentence: {key: sentence.key, autoFocus: true}}))
+    let state = getState()
+    if (state.discussions[section].length < position) {
+      throw new Error('position too high')
     }
+    let sentence = state.discussions[section][position]
+    if (!sentence) {
+      dispatch(addNewSentence(section))
+      state = getState()
+      const discussionId = state.discussions.discussionId
+      const key = state.discussions[section][position].key
+      dispatch(replaceSentence({key, section, discussionId, content: ''}))
+    }
+    dispatch(setFocus({section, position}))
   }
 }
 
