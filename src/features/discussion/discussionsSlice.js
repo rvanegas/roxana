@@ -94,7 +94,7 @@ function updateDiscussionLayout(discussionId, layout) {
     catch (exception) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
       if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
-        console.log('layouts', layoutOld, layout)
+        // console.log('layouts', layoutOld, layout)
         const newException = new Error()
         newException.name = 'UnexpectedLayout'
         throw newException
@@ -233,20 +233,13 @@ function replaceSentence({key, section, discussionId, content}) {
         propositions: discussionSentences.propositions.filter(s => s.id),
         arguments: discussionSentences.arguments.filter(s => s.id),
       }
-      // if (!sentence.id)
-      //   layoutSentences.push(newSentence)
       const makeLayoutEntry = sentence => ({index: sentence.index, id: sentence.id})
       const layout = JSON.stringify({
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
       })
-      console.log('state', getState())
-      // debugger
-
       await dispatch(updateDiscussionLayout(discussionId, layout))
-      // await sleep(2000)
       dispatch(updateSentence({section, newSentence: newSentence}))
-      // console.log('replace end')
     }
     catch (exception) {
       if (exception.name === 'UnexpectedLayout') {
@@ -274,12 +267,12 @@ function initializeDiscussion({discussionId}) {
     if (getState().discussions.propositions.length === 0) {
       dispatch(addNewSentence('propositions'))
       const key = getState().discussions.propositions[0].key
-      dispatch(replaceSentence({key, section: 'propositions', discussionId, content: ''}))
+      dispatch(replaceSentenceAction({key, section: 'propositions', discussionId, content: ''}))
     }
     if (getState().discussions.arguments.length === 0) {
       dispatch(addNewSentence('arguments'))
       const key = getState().discussions.arguments[0].key
-      dispatch(replaceSentence({key, section: 'arguments', discussionId, content: ''}))
+      dispatch(replaceSentenceAction({key, section: 'arguments', discussionId, content: ''}))
     }
     dispatch(focusOnSentence('propositions', 0))
   }
@@ -289,7 +282,6 @@ function newDiscussion() {
   return async (dispatch) => {
     const layout = JSON.stringify({propositions: [], arguments: []})
     const variables = {input: {layout}}
-    console.log('variables', variables)
     const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
     const discussionId = response.data.createDiscussion.id
     cookies.set('roxanaDiscussionId', discussionId)
@@ -356,7 +348,7 @@ export function focusOnSentence(section, position) {
       state = getState()
       const discussionId = state.discussions.discussionId
       const key = state.discussions[section][position].key
-      dispatch(replaceSentence({key, section, discussionId, content: ''}))
+      dispatch(replaceSentenceAction({key, section, discussionId, content: ''}))
     }
     dispatch(setFocus({section, position}))
   }
