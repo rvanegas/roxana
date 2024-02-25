@@ -45,13 +45,12 @@ export function Proposition({position, discussionId, proposition, readOnly}) {
   }
   useEffect(() => {
     if (proposition.autoFocus) {
-      // console.log('useEffect', proposition)
       editorRef.current.focus()
       dispatch(updateSentence({section: 'propositions', newSentence: {key: proposition.key, autoFocus: false}}))
     }
   })
 
-  const gray = `${proposition.content} [${proposition.key}] [${proposition.id}]`
+  const gray = null // `${proposition.content} [${proposition.key}] [${proposition.id}]`
   return (
     <View>
       <Text color="lightgray">{gray}</Text>

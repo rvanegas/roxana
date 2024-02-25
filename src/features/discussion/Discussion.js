@@ -24,10 +24,8 @@ export function Discussion() {
   }
 
   useEffect(() => {
-    // console.log('ue', discussionStatus)
     if (discussionId) {
       if (discussionStatus === 'init') {
-        // console.log('init')
         dispatch(initializeDiscussionAction({discussionId}))
       }
       const subscription = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout))
