@@ -5,7 +5,7 @@ import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   selectDiscussions,
   focusOnSentence,
-  updateSentence,
+  unsetFocus,
   replaceSentenceAction
 } from './discussionsSlice'
 
@@ -125,7 +125,7 @@ export function Argument({position, argument, discussionId, readOnly}) {
   useEffect(() => {
     if (argument.autoFocus) {
       editorRef.current.focus()
-      dispatch(updateSentence({id: argument.id, autoFocus: false}))
+      dispatch(unsetFocus({section: 'arguments', position}))
     }
   })
 

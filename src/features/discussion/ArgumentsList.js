@@ -8,8 +8,9 @@ export function ArgumentsList() {
   const [readOnly] = useState(false)
   const discussions = useSelector(selectDiscussions)
   const discussionId = discussions.discussionId
+  const arguments_ = discussions.arguments
 
-  const argumentElements = discussions.arguments.map(argument => (
+  const argumentElements = !arguments_ ? null : arguments_.map(argument => (
     <Argument key={argument.key} discussionId={discussionId} argument={argument} readOnly={readOnly} />
   ))
 

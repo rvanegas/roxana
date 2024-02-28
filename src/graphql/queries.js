@@ -5,24 +5,39 @@ export const getDiscussion = /* GraphQL */ `
   query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
+      shortId
       layout
-      sentences {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionSentencesId
-        }
-        nextToken
-      }
+      version
       layoutStates {
         items {
           id
           layout
+          version
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      currentSentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -40,11 +55,16 @@ export const listDiscussions = /* GraphQL */ `
     listDiscussions(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -59,13 +79,19 @@ export const getLayoutState = /* GraphQL */ `
     getLayoutState(id: $id) {
       id
       layout
+      version
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -87,9 +113,12 @@ export const listLayoutStates = /* GraphQL */ `
       items {
         id
         layout
+        version
         discussion {
           id
+          shortId
           layout
+          version
           createdAt
           updatedAt
         }
@@ -106,13 +135,37 @@ export const getSentence = /* GraphQL */ `
     getSentence(id: $id) {
       id
       content
+      discussionId
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      currentDiscussionId
+      currentDiscussion {
+        id
+        shortId
+        layout
+        version
         layoutStates {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
           nextToken
         }
         createdAt
@@ -120,7 +173,6 @@ export const getSentence = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionSentencesId
     }
   }
 `;
@@ -134,15 +186,26 @@ export const listSentences = /* GraphQL */ `
       items {
         id
         content
+        discussionId
         discussion {
           id
+          shortId
           layout
+          version
+          createdAt
+          updatedAt
+        }
+        currentDiscussionId
+        currentDiscussion {
+          id
+          shortId
+          layout
+          version
           createdAt
           updatedAt
         }
         createdAt
         updatedAt
-        discussionSentencesId
       }
       nextToken
     }

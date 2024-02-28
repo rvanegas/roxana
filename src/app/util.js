@@ -6,6 +6,6 @@ export async function sleep(ms) {
   await new Promise(res => setTimeout(res, ms))
 }
 
-export function generateId() {
+export function generateShortId() {
   return cryptoRandomString({length: 6, type: 'distinguishable'}).toLowerCase();
 }

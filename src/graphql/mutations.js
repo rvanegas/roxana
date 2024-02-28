@@ -8,24 +8,39 @@ export const createDiscussion = /* GraphQL */ `
   ) {
     createDiscussion(input: $input, condition: $condition) {
       id
+      shortId
       layout
-      sentences {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionSentencesId
-        }
-        nextToken
-      }
+      version
       layoutStates {
         items {
           id
           layout
+          version
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      currentSentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -41,24 +56,39 @@ export const updateDiscussion = /* GraphQL */ `
   ) {
     updateDiscussion(input: $input, condition: $condition) {
       id
+      shortId
       layout
-      sentences {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionSentencesId
-        }
-        nextToken
-      }
+      version
       layoutStates {
         items {
           id
           layout
+          version
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      currentSentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -74,24 +104,39 @@ export const deleteDiscussion = /* GraphQL */ `
   ) {
     deleteDiscussion(input: $input, condition: $condition) {
       id
+      shortId
       layout
-      sentences {
-        items {
-          id
-          content
-          createdAt
-          updatedAt
-          discussionSentencesId
-        }
-        nextToken
-      }
+      version
       layoutStates {
         items {
           id
           layout
+          version
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      sentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      currentSentences {
+        items {
+          id
+          content
+          discussionId
+          currentDiscussionId
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -108,13 +153,19 @@ export const createLayoutState = /* GraphQL */ `
     createLayoutState(input: $input, condition: $condition) {
       id
       layout
+      version
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -134,13 +185,19 @@ export const updateLayoutState = /* GraphQL */ `
     updateLayoutState(input: $input, condition: $condition) {
       id
       layout
+      version
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -160,13 +217,19 @@ export const deleteLayoutState = /* GraphQL */ `
     deleteLayoutState(input: $input, condition: $condition) {
       id
       layout
+      version
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
-        layoutStates {
+        currentSentences {
           nextToken
         }
         createdAt
@@ -186,13 +249,37 @@ export const createSentence = /* GraphQL */ `
     createSentence(input: $input, condition: $condition) {
       id
       content
+      discussionId
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      currentDiscussionId
+      currentDiscussion {
+        id
+        shortId
+        layout
+        version
         layoutStates {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
           nextToken
         }
         createdAt
@@ -200,7 +287,6 @@ export const createSentence = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionSentencesId
     }
   }
 `;
@@ -212,13 +298,37 @@ export const updateSentence = /* GraphQL */ `
     updateSentence(input: $input, condition: $condition) {
       id
       content
+      discussionId
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      currentDiscussionId
+      currentDiscussion {
+        id
+        shortId
+        layout
+        version
         layoutStates {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
           nextToken
         }
         createdAt
@@ -226,7 +336,6 @@ export const updateSentence = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionSentencesId
     }
   }
 `;
@@ -238,13 +347,37 @@ export const deleteSentence = /* GraphQL */ `
     deleteSentence(input: $input, condition: $condition) {
       id
       content
+      discussionId
       discussion {
         id
+        shortId
         layout
+        version
+        layoutStates {
+          nextToken
+        }
         sentences {
           nextToken
         }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      currentDiscussionId
+      currentDiscussion {
+        id
+        shortId
+        layout
+        version
         layoutStates {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
           nextToken
         }
         createdAt
@@ -252,7 +385,6 @@ export const deleteSentence = /* GraphQL */ `
       }
       createdAt
       updatedAt
-      discussionSentencesId
     }
   }
 `;
