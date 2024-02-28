@@ -225,7 +225,7 @@ function getDiscussion({discussionId, layout, version}) {
 function initializeDiscussion({discussionId}) {
   return async (dispatch, getState) => {
     if (!discussionId) {
-      discussionId = util.discussionIdFromQuery()
+      discussionId = util.discussionIdFromUrl()
       if (discussionId) {
         cookies.set(cookieKey, discussionId)
       }
@@ -233,15 +233,21 @@ function initializeDiscussion({discussionId}) {
     if (!discussionId) {
       discussionId = cookies.get(cookieKey)
       if (discussionId) {
-        util.redirectToDiscussionIdQuery(discussionId)
+        util.redirectToDiscussionId(discussionId)
       }
       else {
         await dispatch(createNewDiscussionAction())
       }
       return
     }
-    dispatch(update({discussionId, version: 0, propositions: [], arguments: []}))
-    await dispatch(getDiscussion({discussionId}))
+    try {
+      dispatch(update({discussionId, version: 0, propositions: [], arguments: []}))
+      await dispatch(getDiscussion({discussionId}))
+    }
+    catch {
+      await dispatch(createNewDiscussionAction())
+      return
+    }
     if (getState().discussions.propositions.length === 0) {
       await dispatch(addNewSentence('propositions'))
     }
@@ -261,7 +267,7 @@ function createNewDiscussion() {
     const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
     const discussionId = response.data.createDiscussion.id
     cookies.set(cookieKey, discussionId)
-    util.redirectToDiscussionIdQuery(discussionId)
+    util.redirectToDiscussionId(discussionId)
   }
 }
 

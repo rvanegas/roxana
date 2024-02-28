@@ -133,7 +133,7 @@ export function Argument({position, argument, discussionId, readOnly}) {
   const premiseElements = premiseIds.length === 0 ? null : premiseIds.map(premiseId => {
     const premise = propositionById(premiseId)
     return (
-      <React.Fragment key={premise.id}>
+      <React.Fragment key={premise.key}>
         <View columnStart={2}>{premise.index}</View>
         <View columnEnd={-2}>{premise.content}</View>
       </React.Fragment>
@@ -144,7 +144,7 @@ export function Argument({position, argument, discussionId, readOnly}) {
   const conclusionElements = conclusionIds.length === 0 ? null : conclusionIds.map(conclusionId => {
     const conclusion = propositionById(conclusionId)
     return (
-      <React.Fragment key={conclusion.id}>
+      <React.Fragment key={conclusion.key}>
         <View columnStart={1} style={{justifySelf: 'end'}}>:.</View>
         <View>{conclusion.index}</View>
         <View columnEnd={-2}>{conclusion.content}</View>
