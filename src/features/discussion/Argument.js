@@ -6,13 +6,14 @@ import {
   selectDiscussions,
   focusOnSentence,
   unsetFocus,
-  replaceSentenceAction
+  replaceSentenceAction,
+  propositionIdsFromArgument,
 } from './discussionsSlice'
 
 export function Argument({position, argument, discussionId, readOnly}) {
   const propositionById = id => propositions.find(p => p.id === id)
   const propositionByIndex = index => propositions.find(p => p.index === index)
-  const propositionIds = argument.content ? argument.content.split(' ') : []
+  const propositionIds = propositionIdsFromArgument(argument)
   const editorRef = React.createRef()
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
