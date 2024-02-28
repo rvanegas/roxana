@@ -226,7 +226,9 @@ function initializeDiscussion({discussionId}) {
   return async (dispatch, getState) => {
     if (!discussionId) {
       discussionId = util.discussionIdFromQuery()
-      cookies.set(cookieKey, discussionId)
+      if (discussionId) {
+        cookies.set(cookieKey, discussionId)
+      }
     }
     if (!discussionId) {
       discussionId = cookies.get(cookieKey)
