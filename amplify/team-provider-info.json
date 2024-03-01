@@ -46,5 +46,29 @@
         "roxana31481408": {}
       }
     }
+  },
+  "pebbles": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-roxana-pebbles-141211-authRole",
+      "UnauthRoleArn": "arn:aws:iam::390364897292:role/amplify-roxana-pebbles-141211-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::390364897292:role/amplify-roxana-pebbles-141211-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-roxana-pebbles-141211-deployment",
+      "UnauthRoleName": "amplify-roxana-pebbles-141211-unauthRole",
+      "StackName": "amplify-roxana-pebbles-141211",
+      "StackId": "arn:aws:cloudformation:us-west-2:390364897292:stack/amplify-roxana-pebbles-141211/7aa0a7f0-98e3-11ec-9002-06b3205ac39b",
+      "AmplifyAppId": "d1gtwcafz2d83t"
+    },
+    "categories": {
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d1gtwcafz2d83t",
+          "type": "manual"
+        }
+      },
+      "auth": {
+        "roxana31481408": {}
+      }
+    }
   }
 }

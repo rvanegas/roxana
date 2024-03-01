@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Divider, View, Text} from '@aws-amplify/ui-react'
+import {Divider, View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {
   selectDiscussions,
@@ -25,6 +25,8 @@ export function Argument({position, argument, discussionId, readOnly}) {
     argument.index === 0 ?
     'Type a sequence of proposition numbers. For example, "0 :1".' : null
   )
+
+  let canonicalArgumentCode
 
   function toAlphaIndex(numberIndex) {
     numberIndex--
@@ -88,9 +90,7 @@ export function Argument({position, argument, discussionId, readOnly}) {
   function handleBlur() {
     const argumentCode = buildArgumentCode()
     if (editorState.getCurrentContent().getPlainText() !== argumentCode) {
-      const contentState = ContentState.createFromText(argumentCode)
-      setEditorState(EditorState.createWithContent(contentState))
-      setArgumentCodeInvalid(false)
+      canonicalArgumentCode = argumentCode
     }
     const key = argument.key
     const content = displayPropositionIds.join(' ')
@@ -101,10 +101,18 @@ export function Argument({position, argument, discussionId, readOnly}) {
     }
   }
 
-  function handleChange(value) {
-    const argumentCode = value.getCurrentContent().getPlainText()
+  function handleChange(editorState) {
+    const argumentCode = editorState.getCurrentContent().getPlainText()
     setDisplayFromArgumentCode(argumentCode)
-    setEditorState(value)
+    if (canonicalArgumentCode) {
+      const contentState = ContentState.createFromText(canonicalArgumentCode)
+      setEditorState(EditorState.createWithContent(contentState))
+      setArgumentCodeInvalid(false)
+      canonicalArgumentCode = null
+    }
+    else {
+      setEditorState(editorState)
+    }
   }
 
   function myKeyBindingFn(e) {
@@ -159,7 +167,6 @@ export function Argument({position, argument, discussionId, readOnly}) {
         {toAlphaIndex(argument.index)}
       </View>
       <View>
-        <Text color="lightgray">{buildArgumentCode()}</Text>
         <Editor editorState={editorState} onChange={handleChange}
           keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
           onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
