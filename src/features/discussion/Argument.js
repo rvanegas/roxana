@@ -22,8 +22,8 @@ export function Argument({position, argument, discussionId, readOnly}) {
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
   const [placeholder, setPlaceholder] = useState(
-    argument.index === 0 ?
-    'Type a sequence of proposition numbers. For example, "0 :1".' : null
+    argument.index === 1 ?
+    'Type a sequence of proposition numbers. For example, "1 2 :3".' : null
   )
 
   let canonicalArgumentCode
