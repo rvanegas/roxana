@@ -154,7 +154,7 @@ export function Argument({position, argument, discussionId, readOnly}) {
     const conclusion = propositionById(conclusionId)
     return (
       <React.Fragment key={conclusion.key}>
-        <View columnStart={1} style={{justifySelf: 'end'}}>:.</View>
+        <View columnStart={1} style={{justifySelf: 'end'}}>{'\u2234'}</View>
         <View>{conclusion.index}</View>
         <View columnEnd={-2}>{conclusion.content}</View>
       </React.Fragment>
