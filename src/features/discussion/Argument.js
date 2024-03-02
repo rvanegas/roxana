@@ -21,10 +21,8 @@ export function Argument({position, argument, discussionId, readOnly}) {
   const [displayPropositionIds, setDisplayPropositionIds] = useState(propositionIds)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
-  const [placeholder, setPlaceholder] = useState(
-    argument.index === 1 ?
+  const placeholder = argument.index === 1 ?
     'Type a sequence of proposition numbers. For example, "1 2 :3".' : null
-  )
 
   let canonicalArgumentCode
 
@@ -96,9 +94,6 @@ export function Argument({position, argument, discussionId, readOnly}) {
     const content = displayPropositionIds.join(' ')
     const section = 'arguments'
     dispatch(replaceSentenceAction({key, section, discussionId, content}))
-    if (placeholder && Boolean(content)) {
-      setPlaceholder(null)
-    }
   }
 
   function handleChange(editorState) {
