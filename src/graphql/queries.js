@@ -5,7 +5,6 @@ export const getDiscussion = /* GraphQL */ `
   query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
-      shortId
       layout
       version
       layoutStates {
@@ -16,6 +15,16 @@ export const getDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -55,10 +64,12 @@ export const listDiscussions = /* GraphQL */ `
     listDiscussions(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -82,10 +93,12 @@ export const getLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -116,7 +129,6 @@ export const listLayoutStates = /* GraphQL */ `
         version
         discussion {
           id
-          shortId
           layout
           version
           createdAt
@@ -138,10 +150,12 @@ export const getSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -156,10 +170,12 @@ export const getSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -189,7 +205,6 @@ export const listSentences = /* GraphQL */ `
         discussionId
         discussion {
           id
-          shortId
           layout
           version
           createdAt
@@ -198,9 +213,122 @@ export const listSentences = /* GraphQL */ `
         currentDiscussionId
         currentDiscussion {
           id
-          shortId
           layout
           version
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const getUser = /* GraphQL */ `
+  query GetUser($username: ID!) {
+    getUser(username: $username) {
+      username
+      discussions {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listUsers = /* GraphQL */ `
+  query ListUsers(
+    $username: ID
+    $filter: ModelUserFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listUsers(
+      username: $username
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        username
+        discussions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const getDiscussionUsers = /* GraphQL */ `
+  query GetDiscussionUsers($id: ID!) {
+    getDiscussionUsers(id: $id) {
+      id
+      discussionID
+      userID
+      discussion {
+        id
+        layout
+        version
+        layoutStates {
+          nextToken
+        }
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      user {
+        username
+        discussions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listDiscussionUsers = /* GraphQL */ `
+  query ListDiscussionUsers(
+    $filter: ModelDiscussionUsersFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listDiscussionUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        discussionID
+        userID
+        discussion {
+          id
+          layout
+          version
+          createdAt
+          updatedAt
+        }
+        user {
+          username
           createdAt
           updatedAt
         }

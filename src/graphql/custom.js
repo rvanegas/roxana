@@ -2,7 +2,6 @@ export const getDiscussionSimple = /* GraphQL */ `
   query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
-      shortId
       layout
       version
       currentSentences {

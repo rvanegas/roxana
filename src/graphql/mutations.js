@@ -8,7 +8,6 @@ export const createDiscussion = /* GraphQL */ `
   ) {
     createDiscussion(input: $input, condition: $condition) {
       id
-      shortId
       layout
       version
       layoutStates {
@@ -19,6 +18,16 @@ export const createDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -56,7 +65,6 @@ export const updateDiscussion = /* GraphQL */ `
   ) {
     updateDiscussion(input: $input, condition: $condition) {
       id
-      shortId
       layout
       version
       layoutStates {
@@ -67,6 +75,16 @@ export const updateDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -104,7 +122,6 @@ export const deleteDiscussion = /* GraphQL */ `
   ) {
     deleteDiscussion(input: $input, condition: $condition) {
       id
-      shortId
       layout
       version
       layoutStates {
@@ -115,6 +132,16 @@ export const deleteDiscussion = /* GraphQL */ `
           createdAt
           updatedAt
           discussionLayoutStatesId
+        }
+        nextToken
+      }
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
         }
         nextToken
       }
@@ -156,10 +183,12 @@ export const createLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -188,10 +217,12 @@ export const updateLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -220,10 +251,12 @@ export const deleteLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -252,10 +285,12 @@ export const createSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -270,10 +305,12 @@ export const createSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -301,10 +338,12 @@ export const updateSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -319,10 +358,12 @@ export const updateSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -350,10 +391,12 @@ export const deleteSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
@@ -368,16 +411,207 @@ export const deleteSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        shortId
         layout
         version
         layoutStates {
+          nextToken
+        }
+        users {
           nextToken
         }
         sentences {
           nextToken
         }
         currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createUser = /* GraphQL */ `
+  mutation CreateUser(
+    $input: CreateUserInput!
+    $condition: ModelUserConditionInput
+  ) {
+    createUser(input: $input, condition: $condition) {
+      username
+      discussions {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateUser = /* GraphQL */ `
+  mutation UpdateUser(
+    $input: UpdateUserInput!
+    $condition: ModelUserConditionInput
+  ) {
+    updateUser(input: $input, condition: $condition) {
+      username
+      discussions {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteUser = /* GraphQL */ `
+  mutation DeleteUser(
+    $input: DeleteUserInput!
+    $condition: ModelUserConditionInput
+  ) {
+    deleteUser(input: $input, condition: $condition) {
+      username
+      discussions {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createDiscussionUsers = /* GraphQL */ `
+  mutation CreateDiscussionUsers(
+    $input: CreateDiscussionUsersInput!
+    $condition: ModelDiscussionUsersConditionInput
+  ) {
+    createDiscussionUsers(input: $input, condition: $condition) {
+      id
+      discussionID
+      userID
+      discussion {
+        id
+        layout
+        version
+        layoutStates {
+          nextToken
+        }
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      user {
+        username
+        discussions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateDiscussionUsers = /* GraphQL */ `
+  mutation UpdateDiscussionUsers(
+    $input: UpdateDiscussionUsersInput!
+    $condition: ModelDiscussionUsersConditionInput
+  ) {
+    updateDiscussionUsers(input: $input, condition: $condition) {
+      id
+      discussionID
+      userID
+      discussion {
+        id
+        layout
+        version
+        layoutStates {
+          nextToken
+        }
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      user {
+        username
+        discussions {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteDiscussionUsers = /* GraphQL */ `
+  mutation DeleteDiscussionUsers(
+    $input: DeleteDiscussionUsersInput!
+    $condition: ModelDiscussionUsersConditionInput
+  ) {
+    deleteDiscussionUsers(input: $input, condition: $condition) {
+      id
+      discussionID
+      userID
+      discussion {
+        id
+        layout
+        version
+        layoutStates {
+          nextToken
+        }
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        currentSentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      user {
+        username
+        discussions {
           nextToken
         }
         createdAt
