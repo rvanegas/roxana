@@ -107,7 +107,6 @@ function updateDiscussionLayout({layout, isReset}) {
         version: {layout: {eq: {oldVersion}}},
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-      // update previous discussionLayout to mark it as invalid
       dispatch(update({version}))
     }
     catch (exception) {
@@ -337,7 +336,6 @@ function replaceSentence({key, section, discussionId, content}) {
   }
 }
 
-// fold into slice
 function addNewSentence(section, andFocus) {
   return async (dispatch, getState) => {
     const discussionId = getState().discussions.discussionId
