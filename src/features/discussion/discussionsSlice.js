@@ -22,7 +22,6 @@ const initialState = {
   version: null,
   propositions: null,
   arguments: null,
-  layout: null,
 }
 
 // do this in TS
@@ -74,8 +73,7 @@ const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {layout, version, newSentences} = action.payload
-      state.layout = layout
+      const {version, newSentences} = action.payload
       state.version = version
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
@@ -97,18 +95,20 @@ function nextUniqueIndex(sentence, sentences) {
   return indexUnique ? sentence.index : nextIndex(sentences)
 }
 
-function updateDiscussionLayout({discussionId, layout, isReset}) {
+function updateDiscussionLayout({layout, isReset}) {
   return async (dispatch, getState) => {
     try {
-      const oldVersion = getState().discussions.version
+      const state = getState()
+      const id = state.discussions.discussionId
+      const oldVersion = state.discussions.version
       const version = oldVersion + 1
       const variables = {
-        input: {id: discussionId, layout, version},
+        input: {id, layout, version},
         version: {layout: {eq: {oldVersion}}},
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       // update previous discussionLayout to mark it as invalid
-      dispatch(update({discussionId, layout, version}))
+      dispatch(update({version}))
     }
     catch (exception) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
@@ -133,7 +133,7 @@ function getDiscussion({discussionId, layout, version}) {
 
 
     async function resetLayout(message) {
-      await dispatch(updateDiscussionLayout({discussionId, layout: JSON.stringify(layoutEntries), isReset: true}))
+      await dispatch(updateDiscussionLayout({layout: JSON.stringify(layoutEntries), isReset: true}))
       // discussion will reload in response to update event picked up by discussion subscription
       console.error('system error: ', message)
       dispatch(getDiscussionAction({discussionId}))
@@ -217,7 +217,7 @@ function getDiscussion({discussionId, layout, version}) {
       await readLayout('propositions')
       await readLayout('arguments')
       const {updateSentences} = discussionsSlice.actions
-      dispatch(updateSentences({layout, version, newSentences}))
+      dispatch(updateSentences({version, newSentences}))
     }
     catch (exception) {
       if (exception.message !== 'resetLayout') {
@@ -322,7 +322,7 @@ function replaceSentence({key, section, discussionId, content}) {
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
       })
-      await dispatch(updateDiscussionLayout({discussionId, layout}))
+      await dispatch(updateDiscussionLayout({layout}))
       dispatch(updateSentence({section, newSentence}))
     }
     catch (exception) {
