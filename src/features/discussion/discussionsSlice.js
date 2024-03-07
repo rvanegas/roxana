@@ -269,9 +269,9 @@ function createNewDiscussion() {
     const variables = {input: {layout, version}}
     for (;;) {
       try {
-        variables.input.id = generateDiscussionId()
+        const discussionId = generateDiscussionId()
+        variables.input.id = discussionId
         const response = await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
-        const discussionId = response.data.createDiscussion.id
         cookies.set(cookieKey, discussionId)
         redirectToDiscussionId(discussionId)
         break
