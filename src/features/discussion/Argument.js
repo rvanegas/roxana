@@ -92,8 +92,9 @@ export function Argument({position, argument, discussionId, readOnly}) {
     }
     const key = argument.key
     const content = displayPropositionIds.join(' ')
-    const section = 'arguments'
-    dispatch(replaceSentenceAction({key, section, discussionId, content}))
+    if (content !== argument.content) {
+      dispatch(replaceSentenceAction({key, section: 'arguments', discussionId, content}))
+    }
   }
 
   function handleChange(editorState) {
