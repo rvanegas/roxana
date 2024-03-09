@@ -345,6 +345,13 @@ function createNewDiscussion() {
   }
 }
 
+interface ReplaceSentenceInput {
+  key: string
+  section: Section
+  discussionId: string
+  content: string
+}
+
 function replaceSentence({key, section, discussionId, content}) {
   const {updateSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
