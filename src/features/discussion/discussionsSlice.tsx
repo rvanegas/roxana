@@ -14,8 +14,20 @@ import {
 const cookies = new Cookies()
 const cookieKey = 'roxanaDiscussionId'
 
+interface Event {
+  handler,
+  payload
+}
+
+interface Sentence {
+  id,
+  index,
+  key,
+  content,
+}
+
 const initialState = {
-  eventQueue: [],
+  eventQueue: [] as Event[],
   status: 'init',
   error: null,
   discussionId: null,
@@ -109,7 +121,7 @@ function updateDiscussionLayout({layout, isReset}) {
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       dispatch(update({version}))
     }
-    catch (exception) {
+    catch (exception: any) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
       if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
         const newException = new Error()
@@ -123,10 +135,16 @@ function updateDiscussionLayout({layout, isReset}) {
   }
 }
 
-function getDiscussion({discussionId, layout, version}) {
+interface GetDiscussionInput {
+  discussionId: string,
+  layout?: string,
+  version?: number,
+}
+
+function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
   return async (dispatch, getState) => {
     const newSentences = {propositions: [], arguments: []}
-    let currentSentences = []
+    let currentSentences = [] as Sentence[]
     let discussion
     let layoutEntries
 
@@ -141,6 +159,9 @@ function getDiscussion({discussionId, layout, version}) {
 
     async function parseLayout() {
       try {
+        if (!layout) {
+          throw new Error('missing layout')
+        }
         layoutEntries = JSON.parse(layout)
         for (let entry of layoutEntries.propositions.concat(layoutEntries.arguments)) {
           if (typeof entry.id !== 'string' || typeof entry.index !== 'number') {
@@ -156,7 +177,7 @@ function getDiscussion({discussionId, layout, version}) {
 
     async function loadDiscussion() {
       const input = {id: discussionId}
-      const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input))
+      const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as any
       discussion = response.data.getDiscussion
       if (!discussion) {
         throw new Error('no such discussion')
@@ -167,7 +188,7 @@ function getDiscussion({discussionId, layout, version}) {
     }
 
     async function getSentence(id) {
-      const response = await API.graphql(graphqlOperation(queries.getSentence, {id}))
+      const response = await API.graphql(graphqlOperation(queries.getSentence, {id})) as any
       return response.data.getSentence
     }
 
@@ -209,7 +230,7 @@ function getDiscussion({discussionId, layout, version}) {
     }
 
     try {
-      if (!version || version === 0) {
+      if (!layout) {
         await loadDiscussion()
       }
       await parseLayout()
@@ -218,7 +239,7 @@ function getDiscussion({discussionId, layout, version}) {
       const {updateSentences} = discussionsSlice.actions
       dispatch(updateSentences({version, newSentences}))
     }
-    catch (exception) {
+    catch (exception: any) {
       if (exception.message !== 'resetLayout') {
         throw exception
       }
@@ -266,7 +287,7 @@ function createNewDiscussion() {
   return async (dispatch) => {
     const layout = JSON.stringify({propositions: [], arguments: []})
     const version = 1
-    const variables = {input: {layout, version}}
+    const variables = {input: {layout, version}} as {input: {id, layout, version}}
     for (;;) {
       try {
         const discussionId = generateDiscussionId()
@@ -276,7 +297,7 @@ function createNewDiscussion() {
         redirectToDiscussionId(discussionId)
         break
       }
-      catch (exception) {
+      catch (exception: any) {
         const errorType = exception.errors ? exception.errors[0].errorType : null
         if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
           // console.log('failed create, retrying...')
@@ -306,7 +327,7 @@ function replaceSentence({key, section, discussionId, content}) {
         throw new Error('sentence not found')
       }
       const variables = {input: {content, discussionId, currentDiscussionId: discussionId}}
-      const response = await API.graphql(graphqlOperation(mutations.createSentence, variables))
+      const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as any
       const newSentenceId = response.data.createSentence.id
       const index = nextUniqueIndex(sentence, sentences)
       const newSentence = {key, index, content, id: newSentenceId}
@@ -321,10 +342,10 @@ function replaceSentence({key, section, discussionId, content}) {
         propositions: discussionSentences.propositions.map(makeLayoutEntry),
         arguments: discussionSentences.arguments.map(makeLayoutEntry)
       })
-      await dispatch(updateDiscussionLayout({layout}))
+      await dispatch(updateDiscussionLayout({layout, isReset: false}))
       dispatch(updateSentence({section, newSentence}))
     }
-    catch (exception) {
+    catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutVersion') {
         console.warn('try again')
         dispatch(replaceSentenceAction({key, section, discussionId, content}))
@@ -336,7 +357,7 @@ function replaceSentence({key, section, discussionId, content}) {
   }
 }
 
-function addNewSentence(section, andFocus) {
+function addNewSentence(section) {
   return async (dispatch, getState) => {
     const discussionId = getState().discussions.discussionId
     const {addSentence} = discussionsSlice.actions
@@ -371,7 +392,7 @@ function enqueueEvent(action) {
         }
         const handler = eventHandlerFunctions[event.handler]
         await dispatch(handler(event.payload))
-        dispatch(eventDequeue())
+        dispatch(eventDequeue(null))
       }
       dispatch(setStatus('idle'))
     }
