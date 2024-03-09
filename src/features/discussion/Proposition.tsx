@@ -51,6 +51,11 @@ export function Proposition({position, discussionId, proposition}) {
     }
   })
 
+  let statusLine = `status: ${proposition.status}`
+  if (proposition.owner) {
+    statusLine += `, owner: ${proposition.owner}`
+  }
+
   const gray = null // `${proposition.content} [${proposition.key}] [${proposition.id}]`
   return (
     <React.Fragment>
@@ -60,7 +65,7 @@ export function Proposition({position, discussionId, proposition}) {
       </View>
       <View columnSpan={2}>
         <Text alignSelf="center" style={{justifySelf: 'start', lineHeight: '40px'}}>
-          draft
+          {statusLine}
         </Text>
       </View>
       <View columnStart={2}>

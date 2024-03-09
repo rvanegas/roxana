@@ -51,7 +51,7 @@ export function Discussion() {
       templateColumns="2rem 2rem 1fr 3rem"
       gap="var(--amplify-space-small)"
     >
-      <Button columnSpan={2} onClick={handleButton}>New</Button>
+      <Button columnSpan={2} onClick={handleButton}>new</Button>
       <Text alignSelf="center" style={{justifySelf: 'start'}}>
         {isSyncing && 'syncing...'}
       </Text>

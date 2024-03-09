@@ -1,15 +1,21 @@
 import React from 'react'
-import {useSelector} from 'react-redux'
-import {Text, Heading} from '@aws-amplify/ui-react'
+import {useDispatch, useSelector} from 'react-redux'
+import {Text, Heading, View, Button} from '@aws-amplify/ui-react'
 import {Proposition} from './Proposition'
 import '@aws-amplify/ui-react/styles.css'
 import {
   selectDiscussions,
+  focusOnSentence,
 } from './discussionsSlice'
 
 export function PropositionsList() {
+  const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
+
+  function handleNew() {
+    dispatch(focusOnSentence('propositions', propositions.length))
+  }
 
   const propositionEntities = !propositions ? null : propositions.map((proposition, position) => (
     <Proposition key={proposition.key} position={position} discussionId={discussions.discussionId}
@@ -23,6 +29,9 @@ export function PropositionsList() {
         <Text>Propositions</Text>
       </Heading>
       {propositionEntities}
+      <View columnSpan={2}>
+        <Button variation="link" size="small" onClick={handleNew}>new</Button>
+      </View>
     </React.Fragment>
   )
 }
