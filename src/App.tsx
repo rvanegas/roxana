@@ -12,7 +12,7 @@ function App() {
   return (
     <AmplifyProvider theme={theme}>
       <Authenticator>
-        {({signOut, user}) => (
+        {({signOut, user}: {signOut, user}) => (
           <CurrentUserContext.Provider value={user}>
             <View padding="20px">
               <View>
