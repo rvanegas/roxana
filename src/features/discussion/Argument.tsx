@@ -4,6 +4,7 @@ import {Divider, View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
 import {SentenceMeta} from './SentenceMeta'
+import {SentenceMode, ElementRef} from './discussion.d'
 import {
   selectDiscussions,
   focusOnSentence,
@@ -16,7 +17,7 @@ export function Argument({position, argument, discussionId}) {
   const propositionById = id => propositions.find(p => p.id === id)
   const propositionByIndex = index => propositions.find(p => p.index === index)
   const propositionIds = propositionIdsFromArgument(argument)
-  const editorRef = React.createRef() as {current: {blur(): void, focus(): void}}
+  const editorRef = React.createRef() as ElementRef
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
@@ -28,6 +29,7 @@ export function Argument({position, argument, discussionId}) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
   const readOnly = argument.status === 'draft' && argument.owner !== username
+  const [mode, setMode] = useState<SentenceMode>('')
 
   let canonicalArgumentCode
 
@@ -63,8 +65,6 @@ export function Argument({position, argument, discussionId}) {
     return EditorState.createWithContent(contentState)
   }
 
-  // "1 :2" => ["abc", "def"] into useState, not store
-  // parse, validate, and display propositions
   function setDisplayFromArgumentCode(argumentCode) {
     const invalidPattern = /[^\d\s:]/
     const separatorPattern = /[\s:]+/
@@ -89,7 +89,9 @@ export function Argument({position, argument, discussionId}) {
     setDisplayPropositionIds(displayPropositionIds)
   }
 
-  // ["abc", "def"] => store
+  function handleFocus() {
+    setMode('editing')
+  }
   function handleBlur() {
     const argumentCode = buildArgumentCode()
     if (editorState.getCurrentContent().getPlainText() !== argumentCode) {
@@ -98,7 +100,13 @@ export function Argument({position, argument, discussionId}) {
     const key = argument.key
     const content = displayPropositionIds.join(' ')
     if (content !== argument.content) {
-      dispatch(replaceSentenceAction({key, section: 'arguments', discussionId, content}))
+      const value = {key, section: 'arguments', discussionId, content}
+      // @ts-ignore
+      dispatch(replaceSentenceAction(value)).then(() => setMode(''))
+      setMode('saving')
+    }
+    else {
+      setMode('')
     }
   }
 
@@ -118,15 +126,16 @@ export function Argument({position, argument, discussionId}) {
 
   function myKeyBindingFn(e) {
     if (e.keyCode === 13) {
-      return 'next-line'
+      return e.shiftKey ? 'next-line' : 'blur-line'
     }
     return getDefaultKeyBinding(e)
   }
-
   function handleKeyCommand(command) {
-    if (command === 'next-line') {
+    if (command === 'next-line' || command === 'blur-line') {
       editorRef.current.blur()
-      dispatch(focusOnSentence('arguments', position + 1))
+      if (command === 'next-line') {
+        dispatch(focusOnSentence('arguments', position + 1))
+      }
       return 'handled'
     }
     return 'not-handled'
@@ -164,14 +173,14 @@ export function Argument({position, argument, discussionId}) {
 
   return (
     <React.Fragment key={argument.key}>
-      <SentenceMeta sentence={argument} />
+      <SentenceMeta sentence={argument} mode={mode} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
         {toAlphaIndex(argument.index)}
       </View>
       <View>
         <Editor editorState={editorState} onChange={handleChange}
           keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
-          onBlur={handleBlur} readOnly={readOnly} ref={editorRef}
+          onBlur={handleBlur} onFocus={handleFocus} readOnly={readOnly} ref={editorRef}
           placeholder={placeholder}
         />
         <Divider style={argumentCodeInvalid ? {borderColor: 'red'} : undefined}/>

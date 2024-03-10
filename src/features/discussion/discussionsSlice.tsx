@@ -5,6 +5,7 @@ import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 import {pick} from '../../app/util'
+import {Section, Sentence} from './discussion.d'
 import {
   discussionIdFromUrl,
   redirectToDiscussionId,
@@ -19,20 +20,6 @@ interface Event {
   handler: string
   payload: any
 }
-
-type SentenceStatus = 'draft' | 'editable' | 'readOnly' | 'referenced'
-
-interface Sentence {
-  key: string
-  index: number
-  id?: string
-  content: string
-  autoFocus?: boolean
-  status: SentenceStatus
-  owner?: string
-}
-
-type Section = 'propositions' | 'arguments'
 
 interface State {
   eventQueue: Event[]
@@ -314,7 +301,7 @@ function initializeDiscussion({discussionId}) {
     if (getState().discussions.arguments.length === 0) {
       await dispatch(addNewSentence('arguments'))
     }
-    dispatch(focusOnSentence('propositions', 0))
+    // dispatch(focusOnSentence('propositions', 0))
   }
 }
 

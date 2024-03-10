@@ -1,8 +1,17 @@
 import React from 'react'
 import {Button, View, Text} from '@aws-amplify/ui-react'
+import {Sentence, SentenceMode} from './discussion.d'
 
-export function SentenceMeta({sentence}) {
+interface SentenceMetaProps {
+  sentence: Sentence
+  mode: SentenceMode
+}
+
+export function SentenceMeta({sentence, mode}: SentenceMetaProps) {
   let statusLine = `status: ${sentence.status}`
+  if (mode) {
+    statusLine += `, mode: ${mode}`
+  }
   if (sentence.owner) {
     statusLine += `, owner: ${sentence.owner}`
   }
