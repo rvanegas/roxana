@@ -1,13 +1,21 @@
 import React from 'react'
-import {useSelector} from 'react-redux'
-import {Heading} from '@aws-amplify/ui-react'
+import {useDispatch, useSelector} from 'react-redux'
+import {View, Button, Heading} from '@aws-amplify/ui-react'
 import {selectDiscussions} from './discussionsSlice'
 import {Argument} from './Argument'
+import {
+  focusOnSentence,
+} from './discussionsSlice'
 
 export function ArgumentsList() {
+  const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const discussionId = discussions.discussionId
   const arguments_ = discussions.arguments
+
+  function handleNew() {
+    dispatch(focusOnSentence('arguments', arguments_.length))
+  }
 
   const argumentElements = !arguments_ ? null : arguments_.map((argument, position) => (
     <Argument position={position} key={argument.key} discussionId={discussionId}
@@ -21,6 +29,9 @@ export function ArgumentsList() {
         Arguments
       </Heading>
       {argumentElements}
+      <View columnSpan={2}>
+        <Button variation="link" size="small" onClick={handleNew}>new</Button>
+      </View>
     </React.Fragment>
   )
 }
