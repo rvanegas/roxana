@@ -21,3 +21,11 @@ export function discussionIdFromUrl() {
 export function redirectToDiscussionId(discussionId) {
   window.location.search = `?d=${discussionId}`
 }
+
+export function pick(object: object, keys: string[]) {
+  const newObject = {}
+  for (let key of keys) {
+    newObject[key] = object[key]
+  }
+  return newObject
+}
