@@ -1,7 +1,8 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Divider, View} from '@aws-amplify/ui-react'
+import {Button, Text, Divider, View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
+import {CurrentUserContext} from '../user/User'
 import {
   selectDiscussions,
   focusOnSentence,
@@ -10,7 +11,7 @@ import {
   propositionIdsFromArgument,
 } from './discussionsSlice'
 
-export function Argument({position, argument, discussionId, readOnly}) {
+export function Argument({position, argument, discussionId}) {
   const propositionById = id => propositions.find(p => p.id === id)
   const propositionByIndex = index => propositions.find(p => p.index === index)
   const propositionIds = propositionIdsFromArgument(argument)
@@ -23,6 +24,9 @@ export function Argument({position, argument, discussionId, readOnly}) {
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
   const placeholder = argument.index === 1 ?
     'Type a sequence of proposition numbers. For example, "1 2 :3".' : null
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser.username
+  const readOnly = argument.status === 'draft' && argument.owner !== username
 
   let canonicalArgumentCode
 
@@ -157,8 +161,22 @@ export function Argument({position, argument, discussionId, readOnly}) {
     )
   })
 
+  let statusLine = `status: ${argument.status}`
+  if (argument.owner) {
+    statusLine += `, owner: ${argument.owner}`
+  }
+
   return (
     <React.Fragment key={argument.id}>
+      <View columnSpan={2}>
+        <Button variation="link" size="small">y</Button>
+        <Button variation="link" size="small">n</Button>
+      </View>
+      <View columnSpan={2}>
+        <Text alignSelf="center" style={{justifySelf: 'start', lineHeight: '40px'}}>
+          {statusLine}
+        </Text>
+      </View>
       <View columnStart={2}>
         {toAlphaIndex(argument.index)}
       </View>
