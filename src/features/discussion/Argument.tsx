@@ -101,8 +101,8 @@ export function Argument({position, argument, discussionId}) {
     const content = displayPropositionIds.join(' ')
     if (content !== argument.content) {
       const value = {key, section: 'arguments', discussionId, content}
-      // @ts-ignore
-      dispatch(replaceSentenceAction(value)).then(() => setMode(''))
+      const response = dispatch(replaceSentenceAction(value)) as unknown as {then(any)}
+      response.then(() => setMode(''))
       setMode('saving')
     }
     else {

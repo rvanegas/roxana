@@ -34,8 +34,8 @@ export function Proposition({position, discussionId, proposition}) {
     const content = editorState.getCurrentContent().getPlainText()
     if (proposition.content !== content) {
       const value = {key: proposition.key, section: 'propositions', discussionId, content}
-      // @ts-ignore
-      dispatch(replaceSentenceAction(value)).then(() => setMode(''))
+      const response = dispatch(replaceSentenceAction(value)) as unknown as {then(any)}
+      response.then(() => setMode(''))
       setMode('saving')
     }
     else {
