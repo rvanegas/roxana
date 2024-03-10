@@ -3,8 +3,9 @@ import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
+import {toAlphaIndex} from '../../app/util'
 import {SentenceMeta} from './SentenceMeta'
-import {SentenceMode, ElementRef} from './discussion.d'
+import {Section, SentenceMode, ElementRef} from './discussion.d'
 import {
   selectDiscussions,
   focusOnSentence,
@@ -14,6 +15,9 @@ import {
 } from './discussionsSlice'
 
 export function Argument({position, argument, discussionId}) {
+  const section: Section = 'arguments'
+  // @ts-ignore
+  const isArguments = section === 'arguments'
   const propositionById = id => propositions.find(p => p.id === id)
   const propositionByIndex = index => propositions.find(p => p.index === index)
   const propositionIds = propositionIdsFromArgument(argument)
@@ -32,19 +36,6 @@ export function Argument({position, argument, discussionId}) {
   const [mode, setMode] = useState<SentenceMode>('')
 
   let canonicalArgumentCode
-
-  function toAlphaIndex(numberIndex) {
-    numberIndex--
-    const base = 'A'.charCodeAt(0)
-    const divisor = 'Z'.charCodeAt(0) - base + 1
-    let alphas = [] as string[]
-    while (numberIndex >= 0) {
-      const remainder = numberIndex % divisor
-      alphas.unshift(String.fromCharCode(remainder + base))
-      numberIndex = (numberIndex - remainder) / divisor - 1
-    }
-    return alphas.join('')
-  }
 
   function buildArgumentCode() {
     const displayPropositions = displayPropositionIds.map(id => propositionById(id))
@@ -148,6 +139,8 @@ export function Argument({position, argument, discussionId}) {
     }
   })
 
+  //////////////////
+
   const premiseIds = displayPropositionIds.slice(0, displayPropositionIds.length - 1)
   const premiseElements = premiseIds.length === 0 ? null : premiseIds.map(premiseId => {
     const premise = propositionById(premiseId)
@@ -171,23 +164,32 @@ export function Argument({position, argument, discussionId}) {
     )
   })
 
-  return (
-    <React.Fragment key={argument.key}>
-      <SentenceMeta sentence={argument} mode={mode} />
-      <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
-        {toAlphaIndex(argument.index)}
-      </View>
-      <View>
-        <Editor editorState={editorState} onChange={handleChange}
-          keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
-          onBlur={handleBlur} onFocus={handleFocus} readOnly={readOnly} ref={editorRef}
-          placeholder={placeholder}
-        />
-        <Divider style={argumentCodeInvalid ? {borderColor: 'red'} : undefined}/>
-      </View>
+  const dividerStyle = argumentCodeInvalid ? {borderColor: 'red'} : undefined
+  const postSentence = (    // <ArgumentSentences />
+    <React.Fragment>
       {premiseElements}
       {conclusionElements}
       <View style={{paddingBottom: '10px'}} columnSpan={4} />
+    </React.Fragment>
+  )
+
+  return (
+    <React.Fragment>
+      <SentenceMeta sentence={argument} mode={mode} />
+      <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
+        {isArguments ? toAlphaIndex(argument.index) : argument.index}
+      </View>
+      <View columnStart={3}>
+        <Editor
+          editorState={editorState} onChange={handleChange}
+          keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
+          onBlur={handleBlur} onFocus={handleFocus}
+          readOnly={readOnly} ref={editorRef}
+          placeholder={placeholder}
+        />
+        <Divider style={dividerStyle} />
+      </View>
+      {postSentence}
     </React.Fragment>
   )
 }

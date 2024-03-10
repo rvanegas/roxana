@@ -1,10 +1,11 @@
 import React, {useState, useEffect, useContext} from 'react'
 import {useDispatch} from 'react-redux'
-import {View, Divider, Text} from '@aws-amplify/ui-react'
+import {View, Divider} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
+import {toAlphaIndex} from '../../app/util'
 import {SentenceMeta} from './SentenceMeta'
-import {ElementRef, SentenceMode} from './discussion.d'
+import {Section, SentenceMode, ElementRef} from './discussion.d'
 import {
   unsetFocus,
   focusOnSentence,
@@ -12,6 +13,9 @@ import {
 } from './discussionsSlice'
 
 export function Proposition({position, discussionId, proposition}) {
+  const section: Section = 'propositions'
+  // @ts-ignore
+  const isArguments = section === 'arguments'
   const dispatch = useDispatch()
   const editorRef = React.createRef() as ElementRef
   const [editorState, setEditorState] = useState(initEditorState)
@@ -42,6 +46,11 @@ export function Proposition({position, discussionId, proposition}) {
       setMode('')
     }
   }
+
+  function handleChange(editorState) {
+    setEditorState(editorState)
+  }
+
   function myKeyBindingFn(e) {
     if (e.keyCode === 13) {
       return e.shiftKey ? 'next-line' : 'blur-line'
@@ -66,22 +75,28 @@ export function Proposition({position, discussionId, proposition}) {
     }
   })
 
-  const gray = null // `${proposition.content} [${proposition.key}] [${proposition.id}]`
+  ///////////////////
+
+  const dividerStyle = undefined
+  const postSentence = undefined
+
   return (
     <React.Fragment>
       <SentenceMeta sentence={proposition} mode={mode} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
-        {proposition.index}
+        {isArguments ? toAlphaIndex(proposition.index) : proposition.index}
       </View>
       <View columnStart={3}>
-        <Text color="lightgray">{gray}</Text>
-        <Editor editorState={editorState} onChange={setEditorState}
+        <Editor
+          editorState={editorState} onChange={handleChange}
           keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
-          onBlur={handleBlur} onFocus={handleFocus} readOnly={readOnly} ref={editorRef}
+          onBlur={handleBlur} onFocus={handleFocus}
+          readOnly={readOnly} ref={editorRef}
           placeholder={placeholder}
         />
-        <Divider/>
+        <Divider style={dividerStyle} />
       </View>
+      {postSentence}
     </React.Fragment>
   )
 }

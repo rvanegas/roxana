@@ -29,3 +29,16 @@ export function pick(object: object, keys: string[]) {
   }
   return newObject
 }
+
+export function toAlphaIndex(numberIndex) {
+  numberIndex--
+  const base = 'A'.charCodeAt(0)
+  const divisor = 'Z'.charCodeAt(0) - base + 1
+  let alphas: string[] = []
+  while (numberIndex >= 0) {
+    const remainder = numberIndex % divisor
+    alphas.unshift(String.fromCharCode(remainder + base))
+    numberIndex = (numberIndex - remainder) / divisor - 1
+  }
+  return alphas.join('')
+}
