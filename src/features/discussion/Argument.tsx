@@ -11,6 +11,7 @@ import {
   focusOnSentence,
   unsetFocus,
   replaceSentenceAction,
+  ReplaceSentenceInput,
   propositionIdsFromArgument,
 } from './discussionsSlice'
 
@@ -91,7 +92,7 @@ export function Argument({position, argument, discussionId}) {
     const key = argument.key
     const content = displayPropositionIds.join(' ')
     if (content !== argument.content) {
-      const value = {key, section: 'arguments', discussionId, content}
+      const value: ReplaceSentenceInput = {key, section: 'arguments', content}
       const response = dispatch(replaceSentenceAction(value)) as unknown as {then(any)}
       response.then(() => setMode(''))
       setMode('saving')
