@@ -29,7 +29,7 @@ export function PropositionsList() {
         <Text>Propositions</Text>
       </Heading>
       {propositionEntities}
-      <View columnSpan={2}>
+      <View columnSpan={2} style={{placeSelf: 'center end'}}>
         <Button variation="link" size="small" onClick={handleNew}>new</Button>
       </View>
     </React.Fragment>

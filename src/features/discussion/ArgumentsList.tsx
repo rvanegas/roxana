@@ -29,7 +29,7 @@ export function ArgumentsList() {
         Arguments
       </Heading>
       {argumentElements}
-      <View columnSpan={2}>
+      <View columnSpan={2} style={{placeSelf: 'center end'}}>
         <Button variation="link" size="small" onClick={handleNew}>new</Button>
       </View>
     </React.Fragment>
