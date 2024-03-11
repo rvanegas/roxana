@@ -42,12 +42,8 @@ export function Argument({position, argument, discussionId}) {
     const displayPropositions = displayPropositionIds.map(id => propositionById(id))
     let argumentCode = ''
     if (displayPropositions.length > 0) {
-      const conclusionIndex = displayPropositions.pop().index
-      argumentCode = `:${conclusionIndex}`
-    }
-    if (displayPropositions.length > 0) {
-      const premiseIndexes = displayPropositions.map(p => p.index).join(' ')
-      argumentCode = `${premiseIndexes} ${argumentCode}`
+      const indexes = displayPropositions.map(p => p.index).join(' ')
+      argumentCode = `${indexes} ${argumentCode}`
     }
     return argumentCode
   }
@@ -176,7 +172,7 @@ export function Argument({position, argument, discussionId}) {
 
   return (
     <React.Fragment>
-      <SentenceMeta sentence={argument} mode={mode} />
+      <SentenceMeta sentence={argument} mode={mode} section={section} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
         {isArguments ? toAlphaIndex(argument.index) : argument.index}
       </View>

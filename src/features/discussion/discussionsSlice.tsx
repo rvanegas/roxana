@@ -339,7 +339,8 @@ export interface ReplaceSentenceInput {
   content: string
 }
 
-function replaceSentence({key, section, content}) {
+function replaceSentence(input: ReplaceSentenceInput) {
+  const {key, section, content} = input
   const {updateSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     try {
@@ -387,6 +388,55 @@ function replaceSentence({key, section, content}) {
   }
 }
 
+interface ChangeSentenceStatusInput {
+  key: string
+  section: Section
+  change: 'commit' | 'accept' | 'reject'
+}
+
+function changeSentenceStatus(input: ChangeSentenceStatusInput) {
+  const {key, section, change} = input
+  const {updateSentence} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    try {
+      const state = getState()
+      let discussionSentences = {
+        propositions: state.discussions.propositions,
+        arguments: state.discussions.arguments,
+      }
+      const sentences = discussionSentences[section]
+      const sentence = sentences.find(s => s.key === key)
+      if (!sentence) {
+        console.error('not found', key, section, discussionSentences)
+        throw new Error('sentence not found')
+      }
+      let newSentence
+      if (change === 'commit') {
+        newSentence = {}
+        Object.assign(newSentence, sentence, {status: 'committed', owner: undefined})
+      }
+      const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
+      discussionSentences[section] = layoutSentences
+      const makeLayoutEntry = sentence => pick(sentence, ['index', 'id', 'status', 'owner'])
+      const layout = JSON.stringify({
+        propositions: discussionSentences.propositions.map(makeLayoutEntry),
+        arguments: discussionSentences.arguments.map(makeLayoutEntry)
+      })
+      await dispatch(updateDiscussionLayout({layout, isReset: false}))
+      dispatch(updateSentence({section, newSentence}))
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutVersion') {
+        console.warn('try again')
+        dispatch(changeSentenceStatus(input))
+      }
+      else {
+        throw exception
+      }
+    }
+  }
+}
+
 function addNewSentence(section : Section) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -402,6 +452,7 @@ const eventHandlerFunctions = {
   initializeDiscussion,
   getDiscussion,
   replaceSentence,
+  changeSentenceStatus,
 }
 
 function enqueueEvent(action) {
@@ -443,6 +494,10 @@ export function getDiscussionAction(discussion) {
 }
 export function replaceSentenceAction(value: ReplaceSentenceInput) {
   const action = {handler: 'replaceSentence', payload: value}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
+  const action = {handler: 'changeSentenceStatus', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 
