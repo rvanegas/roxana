@@ -410,10 +410,9 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         console.error('not found', key, section, discussionSentences)
         throw new Error('sentence not found')
       }
-      let newSentence
-      if (change === 'commit') {
-        newSentence = {}
-        Object.assign(newSentence, sentence, {status: 'committed', owner: undefined})
+      let newSentence: Sentence
+      if (change === 'commit' || true) {
+        newSentence = {...sentence, status: 'committed', owner: undefined}
       }
       const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
       discussionSentences[section] = layoutSentences
