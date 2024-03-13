@@ -24,7 +24,7 @@ export function Proposition({position, discussionId, proposition}) {
     'Type a proposition. For example, "Socrates is a man."' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
-  const readOnly = proposition.status === 'draft' && proposition.owner !== username
+  const readOnly = !(proposition.status === 'draft' && proposition.owner === username)
   const [mode, setMode] = useState<SentenceMode>('')
 
   function initEditorState() {
