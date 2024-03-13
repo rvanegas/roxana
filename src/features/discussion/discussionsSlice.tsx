@@ -246,13 +246,16 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
         if (notUnique) {
           await removeSentence(section, pos, 'non-unique sentence id, fixing layout')
         }
-        const newSentence = {
+        const newSentence: Sentence = {
           id: sentence.id,
           key: sentence.key || nanoid(),
           index: layoutEntry.index,
           content: sentence.content,
           status: layoutEntry.status,
-          owner: layoutEntry.owner
+          owner: layoutEntry.owner,
+          accepted: [],
+          rejected: [],
+          inArgument: false
         }
         newSentences[section].push(newSentence)
       }
@@ -286,6 +289,9 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
 function initializeDiscussion({discussionId}) {
   const {initialize} = discussionsSlice.actions
   return async (dispatch, getState) => {
+    if (discussionId) {
+      throw new Error("found discussionId")
+    }
     if (!discussionId) {
       discussionId = discussionIdFromUrl()
       if (discussionId) {
