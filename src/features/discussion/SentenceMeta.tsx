@@ -15,8 +15,8 @@ interface SentenceMetaProps {
 export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
   const dispatch = useDispatch()
 
-  function handleCommit() {
-    dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'commit'}))
+  function handleChangeStatus(change) {
+    dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
   }
 
   let statusLine = `status: ${sentence.status}`
@@ -30,9 +30,10 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
   return (
     <React.Fragment>
       <View columnSpan={2} style={{placeSelf: 'center end'}}>
-        <Button variation="link" size="small" onClick={handleCommit}>c</Button>
-        <Button variation="link" size="small">a</Button>
-        <Button variation="link" size="small">r</Button>
+        <Button variation="link" size="small" onClick={() => handleChangeStatus('edit')}>e</Button>
+        <Button variation="link" size="small" onClick={() => handleChangeStatus('commit')}>c</Button>
+        <Button variation="link" size="small" onClick={() => handleChangeStatus('accept')}>a</Button>
+        <Button variation="link" size="small" onClick={() => handleChangeStatus('reject')}>r</Button>
       </View>
       <View columnSpan={2}>
         <Text alignSelf="center" style={{justifySelf: 'start', lineHeight: '40px'}}>

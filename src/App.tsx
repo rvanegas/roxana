@@ -17,7 +17,7 @@ function App() {
             <View padding="20px">
               <View>
                 <Grid
-                  templateColumns="3fr 1fr 7rem"
+                  templateColumns="4fr 1fr 7rem"
                   gap="var(--amplify-space-small)"
                 >
                   <Heading alignSelf="flex-start" level={3}>
