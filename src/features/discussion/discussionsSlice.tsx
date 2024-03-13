@@ -253,8 +253,8 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
           content: sentence.content,
           status: layoutEntry.status,
           owner: layoutEntry.owner,
-          accepted: [],
-          rejected: [],
+          accepted: layoutEntry.accepted,
+          rejected: layoutEntry.rejected,
           inArgument: false
         }
         newSentences[section].push(newSentence)
