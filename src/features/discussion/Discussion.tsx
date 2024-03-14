@@ -1,7 +1,7 @@
 import React, {useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {API, graphqlOperation} from 'aws-amplify'
-import {Heading, Button, Grid, Text} from '@aws-amplify/ui-react'
+import {SwitchField, View, Heading, Button, Grid, Text} from '@aws-amplify/ui-react'
 import {PropositionsList} from './PropositionsList'
 import {ArgumentsList} from './ArgumentsList'
 import {CurrentUserContext} from '../user/User'
@@ -13,6 +13,7 @@ import {
   getDiscussionAction,
   selectDiscussions,
   setUsername,
+  setIsCompact,
 } from './discussionsSlice'
 
 export function Discussion() {
@@ -56,15 +57,26 @@ export function Discussion() {
   }
   const statusLine = statusSegments.join('; ')
 
+  function handleSwitch(e) {
+    dispatch(setIsCompact(e.target.checked))
+  }
+
   return (
     <React.Fragment>
       <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
         Discussion
       </Heading>
       <Button columnSpan={2} variation="link" size="small" onClick={handleButton}>new</Button>
-      <Text columnSpan={2} style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
-        {isSyncing && 'syncing...'}
-      </Text>
+      <View columnSpan={2} style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
+        <SwitchField style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
+          label="hide detail"
+          defaultChecked={false}
+          onChange={handleSwitch}
+        />
+        <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
+          {isSyncing && 'syncing...'}
+        </Text>
+      </View>
       <Text columnStart="1" columnEnd="-1" style={{paddingLeft: '10px'}}>
         {statusLine}
       </Text>
