@@ -303,19 +303,14 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
   }
 }
 
-function initializeDiscussion({discussionId}) {
+function initializeDiscussion() {
   const {initialize} = discussionsSlice.actions
   return async (dispatch, getState) => {
+    let discussionId = discussionIdFromUrl()
     if (discussionId) {
-      throw new Error("found discussionId")
+      cookies.set(cookieKey, discussionId)
     }
-    if (!discussionId) {
-      discussionId = discussionIdFromUrl()
-      if (discussionId) {
-        cookies.set(cookieKey, discussionId)
-      }
-    }
-    if (!discussionId) {
+    else {
       discussionId = cookies.get(cookieKey)
       if (discussionId) {
         redirectToDiscussionId(discussionId)
@@ -555,8 +550,8 @@ export function createNewDiscussionAction() {
   const action = {handler: 'createNewDiscussion'}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function initializeDiscussionAction(discussion) {
-  const action = {handler: 'initializeDiscussion', payload: discussion}
+export function initializeDiscussionAction() {
+  const action = {handler: 'initializeDiscussion'}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function getDiscussionAction(discussion) {

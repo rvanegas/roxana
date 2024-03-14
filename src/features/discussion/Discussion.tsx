@@ -32,7 +32,7 @@ export function Discussion() {
   useEffect(() => {
     if (discussionStatusInit) {
       dispatch(setUsername(username))
-      dispatch(initializeDiscussionAction({discussionId}))
+      dispatch(initializeDiscussionAction())
     }
     if (discussionId) {
       const request = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)) as unknown as {subscribe(any)}
