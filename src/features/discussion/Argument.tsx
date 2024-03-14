@@ -30,7 +30,7 @@ export function Argument({position, argument, discussionId}) {
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentCodeInvalid, setArgumentCodeInvalid] = useState(false)
   const placeholder = argument.index === 1 ?
-    'Type a sequence of proposition numbers. For example, "1 2 :3".' : null
+    'Type a sequence of proposition numbers. For example, "1 2 3".' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
   const readOnly = argument.status === 'draft' && argument.owner !== username
@@ -161,7 +161,7 @@ export function Argument({position, argument, discussionId}) {
   })
 
   const dividerStyle = argumentCodeInvalid ? {borderColor: 'red'} : undefined
-  const postSentence = (    // <ArgumentSentences />
+  const postSentence = (
     <React.Fragment>
       {premiseElements}
       {conclusionElements}
