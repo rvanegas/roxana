@@ -430,7 +430,8 @@ function replaceSentence(input: ReplaceSentenceInput) {
 
 export const isEditable = (sentence: Sentence) => sentence.status === 'committed' && !sentence.inArgument
   && sentence.accepted.length === 0 && sentence.rejected.length === 0
-export const isCommittable = (sentence: Sentence) => sentence.status === 'draft'
+export const isCommittable = (sentence: Sentence, username) => sentence.status === 'draft'
+  && sentence.owner === username
 export const isAcceptable = (sentence: Sentence) => sentence.status === 'committed'
 export const isRejectable = (sentence: Sentence) => sentence.status === 'committed'
 
@@ -461,7 +462,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       if (change === 'edit' && isEditable(sentence)) {
         newSentence = {...sentence, status: 'draft', owner: username}
       }
-      else if (change === 'commit' && isCommittable(sentence)) {
+      else if (change === 'commit' && isCommittable(sentence, username)) {
         newSentence = {...sentence, status: 'committed', owner: undefined}
       }
       else if (change === 'accept' && isAcceptable(sentence)) {

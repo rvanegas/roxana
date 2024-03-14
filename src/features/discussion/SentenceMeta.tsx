@@ -1,7 +1,8 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import {Button, View, Text} from '@aws-amplify/ui-react'
 import {Section, Sentence, SentenceMode} from './discussion.d'
+import {CurrentUserContext} from '../user/User'
 import {
   changeSentenceStatusAction,
   selectDiscussions,
@@ -20,6 +21,8 @@ interface SentenceMetaProps {
 export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser.username
 
   if (discussions.isCompact) {
     return null
@@ -54,7 +57,7 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
     <React.Fragment>
       <View columnSpan={4} style={{placeSelf: 'center start'}}>
         <Button variation="link" size="small" isDisabled={!isEditable(sentence)} onClick={() => handleChangeStatus('edit')}>edit</Button>
-        <Button variation="link" size="small" isDisabled={!isCommittable(sentence)} onClick={() => handleChangeStatus('commit')}>commit</Button>
+        <Button variation="link" size="small" isDisabled={!isCommittable(sentence, username)} onClick={() => handleChangeStatus('commit')}>commit</Button>
         <Button variation="link" size="small" isDisabled={!isAcceptable(sentence)} onClick={() => handleChangeStatus('accept')}>accept</Button>
         <Button variation="link" size="small" isDisabled={!isRejectable(sentence)} onClick={() => handleChangeStatus('reject')}>reject</Button>
         <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
