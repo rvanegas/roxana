@@ -32,26 +32,28 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
   }
 
-  const statusSegments: string[] = []
-  statusSegments.push(`status: ${sentence.status}`)
-  if (mode) {
-    statusSegments.push(`mode: ${mode}`)
+  function statusLine() {
+    const statusSegments: string[] = []
+    statusSegments.push(`status: ${sentence.status}`)
+    if (mode) {
+      statusSegments.push(`mode: ${mode}`)
+    }
+    if (sentence.owner) {
+      statusSegments.push(`owner: ${sentence.owner}`)
+    }
+    if (sentence.accepted.length !== 0) {
+      const acceptedUsernames = sentence.accepted.join(', ')
+      statusSegments.push(`accepted: ${acceptedUsernames}`)
+    }
+    if (sentence.rejected.length !== 0) {
+      const rejectedUsernames = sentence.rejected.join(', ')
+      statusSegments.push(`rejected: ${rejectedUsernames}`)
+    }
+    if (sentence.inArgument) {
+      statusSegments.push(`in argument`)
+    }
+    return statusSegments.join('; ')
   }
-  if (sentence.owner) {
-    statusSegments.push(`owner: ${sentence.owner}`)
-  }
-  if (sentence.accepted.length !== 0) {
-    const acceptedUsernames = sentence.accepted.join(', ')
-    statusSegments.push(`accepted: ${acceptedUsernames}`)
-  }
-  if (sentence.rejected.length !== 0) {
-    const rejectedUsernames = sentence.rejected.join(', ')
-    statusSegments.push(`rejected: ${rejectedUsernames}`)
-  }
-  if (sentence.inArgument) {
-    statusSegments.push(`in argument`)
-  }
-  const statusLine = statusSegments.join(', ')
 
   return (
     <React.Fragment>
@@ -61,7 +63,7 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
         <Button variation="link" size="small" isDisabled={!isAcceptable(sentence)} onClick={() => handleChangeStatus('accept')}>accept</Button>
         <Button variation="link" size="small" isDisabled={!isRejectable(sentence)} onClick={() => handleChangeStatus('reject')}>reject</Button>
         <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
-          {statusLine}
+          {statusLine()}
         </Text>
       </View>
     </React.Fragment>

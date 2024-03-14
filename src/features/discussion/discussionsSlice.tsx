@@ -280,7 +280,7 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
 
     const state = getState()
     if (state.discussions.discussionId && state.discussions.discussionId !== discussionId) {
-      throw new Error('not implemented')
+      return // ignore updates from other discussions
     }
     if (version && version <= state.discussions.version) {
       return
