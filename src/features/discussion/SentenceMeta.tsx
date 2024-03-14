@@ -3,7 +3,11 @@ import {useDispatch} from 'react-redux'
 import {Button, View, Text} from '@aws-amplify/ui-react'
 import {Section, Sentence, SentenceMode} from './discussion.d'
 import {
-  changeSentenceStatusAction
+  changeSentenceStatusAction,
+  isEditable,
+  isCommittable,
+  isAcceptable,
+  isRejectable
 } from './discussionsSlice'
 
 interface SentenceMetaProps {
@@ -19,35 +23,35 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
   }
 
-  let statusLine = `status: ${sentence.status}`
+  const statusSegments: string[] = []
+  statusSegments.push(`status: ${sentence.status}`)
   if (mode) {
-    statusLine += `, mode: ${mode}`
+    statusSegments.push(`mode: ${mode}`)
   }
   if (sentence.owner) {
-    statusLine += `, owner: ${sentence.owner}`
+    statusSegments.push(`owner: ${sentence.owner}`)
   }
   if (sentence.accepted.length !== 0) {
     const acceptedUsernames = sentence.accepted.join(', ')
-    statusLine += `, accepted: ${acceptedUsernames}`
+    statusSegments.push(`accepted: ${acceptedUsernames}`)
   }
   if (sentence.rejected.length !== 0) {
     const rejectedUsernames = sentence.rejected.join(', ')
-    statusLine += `, rejected: ${rejectedUsernames}`
+    statusSegments.push(`rejected: ${rejectedUsernames}`)
   }
   if (sentence.inArgument) {
-    statusLine += `, inArgument`
+    statusSegments.push(`inArgument`)
   }
+  const statusLine = statusSegments.join(', ')
 
   return (
     <React.Fragment>
-      <View columnSpan={2} style={{placeSelf: 'center end'}}>
-        <Button variation="link" size="small" onClick={() => handleChangeStatus('edit')}>e</Button>
-        <Button variation="link" size="small" onClick={() => handleChangeStatus('commit')}>c</Button>
-        <Button variation="link" size="small" onClick={() => handleChangeStatus('accept')}>a</Button>
-        <Button variation="link" size="small" onClick={() => handleChangeStatus('reject')}>r</Button>
-      </View>
-      <View columnSpan={2}>
-        <Text alignSelf="center" style={{justifySelf: 'start', lineHeight: '40px'}}>
+      <View columnSpan={4} style={{placeSelf: 'center start'}}>
+        <Button variation="link" size="small" isDisabled={!isEditable(sentence)} onClick={() => handleChangeStatus('edit')}>edit</Button>
+        <Button variation="link" size="small" isDisabled={!isCommittable(sentence)} onClick={() => handleChangeStatus('commit')}>commit</Button>
+        <Button variation="link" size="small" isDisabled={!isAcceptable(sentence)} onClick={() => handleChangeStatus('accept')}>accept</Button>
+        <Button variation="link" size="small" isDisabled={!isRejectable(sentence)} onClick={() => handleChangeStatus('reject')}>reject</Button>
+        <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
           {statusLine}
         </Text>
       </View>

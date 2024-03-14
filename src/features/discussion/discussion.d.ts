@@ -1,4 +1,4 @@
-export type SentenceStatus = 'draft' | 'editable' | 'readOnly' | 'referenced'
+export type SentenceStatus = 'draft' | 'committed'
 
 export type Sentence = {
   key: string
