@@ -217,6 +217,7 @@ function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussion
           || typeof entry.status !== 'string'
           || (entry.status === 'draft' && typeof entry.owner !== 'string')
         if (invalidEntry) {
+          console.error('entry', entry)
           throw new Error('invalid entry')
         }
       }
