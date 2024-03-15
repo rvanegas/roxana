@@ -33,7 +33,7 @@ export function Argument({position, argument, discussionId}) {
     'Type a sequence of proposition numbers. For example, "1 2 3".' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
-  const readOnly = argument.status === 'draft' && argument.owner !== username
+  const readOnly = !(argument.status === 'draft' && argument.owner === username)
   const [mode, setMode] = useState<SentenceMode>('')
 
   let canonicalArgumentCode
