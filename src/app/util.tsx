@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import cryptoRandomString from 'crypto-random-string'
 import parse from 'url-parse'
 
@@ -42,6 +43,10 @@ export function toAlphaIndex(numberIndex) {
     numberIndex = (numberIndex - remainder) / divisor - 1
   }
   return alphas.join('')
+}
+
+export function hoursAgo(ago) {
+  return dayjs().diff(dayjs(ago), 'hour')
 }
 
 // function toLetters(index) {

@@ -38,8 +38,8 @@ export function Discussion() {
       const request = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)) as unknown as {subscribe(any)}
       const subscription = request.subscribe({
         next: next => {
-          const {id: discussionId, layout, version} = next.value.data.onUpdateDiscussion
-          dispatch(getDiscussionAction({discussionId, layout, version}))
+          const {id: discussionId, layout, version, updatedAt} = next.value.data.onUpdateDiscussion
+          dispatch(getDiscussionAction({discussionId, layout, version, updatedAt}))
         },
         error: error => console.error(error),
       })

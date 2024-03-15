@@ -10,7 +10,8 @@ import {
   discussionIdFromUrl,
   redirectToDiscussionId,
   generateDiscussionId,
-  incrementDiscussionIdLength
+  incrementDiscussionIdLength,
+  hoursAgo,
 } from '../../app/util'
 
 const cookies = new Cookies()
@@ -44,7 +45,7 @@ const initialState: State = {
   propositions: [],
   arguments: [],
   discussants: [],
-  isCompact: false
+  isCompact: false,
 }
 
 function unpdateSentenceDerivatives(state) {
@@ -154,11 +155,17 @@ function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
   return indexUnique ? sentence.index : nextIndex(sentences)
 }
 
-function updateDiscussionLayout({layout, isReset}) {
+function updateDiscussionLayout() {
   const {incrementVersion} = discussionsSlice.actions
+  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
+  const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
   return async (dispatch, getState) => {
     try {
       const state = getState()
+      const layout = JSON.stringify({
+        propositions: state.discussions.propositions.map(makeLayoutEntry),
+        arguments: state.discussions.arguments.map(makeLayoutEntry)
+      })
       const id = state.discussions.discussionId
       const oldVersion = state.discussions.version
       const version = oldVersion + 1
@@ -187,43 +194,31 @@ interface GetDiscussionInput {
   discussionId: string,
   layout?: string,
   version?: number,
+  updatedAt?: any,
 }
 
-function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
+function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussionInput) {
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const newSentences = {propositions: [], arguments: []}
-    let currentSentences = [] as Sentence[]
+    let currentSentences: Sentence[] = []
     let discussion
     let layoutEntries
-
-    async function resetLayout(message) {
-      await dispatch(updateDiscussionLayout({layout: JSON.stringify(layoutEntries), isReset: true}))
-      // discussion will reload in response to update event picked up by discussion subscription
-      console.error('system error: ', message)
-      dispatch(getDiscussionAction({discussionId}))
-      throw new Error('resetLayout')
-    }
+    let layoutUpdated
 
     async function parseLayout() {
-      try {
-        if (!layout) {
-          throw new Error('missing layout')
-        }
-        layoutEntries = JSON.parse(layout)
-        for (let entry of layoutEntries.propositions.concat(layoutEntries.arguments)) {
-          const invalidEntry = typeof entry.id !== 'string'
-            || typeof entry.index !== 'number'
-            || typeof entry.status !== 'string'
-            || (entry.status === 'draft' && typeof entry.owner !== 'string')
-          if (invalidEntry) {
-            throw new Error('invalid entry')
-          }
-        }
+      if (!layout) {
+        throw new Error('missing layout')
       }
-      catch {
-        layoutEntries = {propositions: [], arguments: []}
-        await resetLayout('invalid layout, parse error')
+      layoutEntries = JSON.parse(layout)
+      for (let entry of layoutEntries.propositions.concat(layoutEntries.arguments)) {
+        const invalidEntry = typeof entry.id !== 'string'
+          || typeof entry.index !== 'number'
+          || typeof entry.status !== 'string'
+          || (entry.status === 'draft' && typeof entry.owner !== 'string')
+        if (invalidEntry) {
+          throw new Error('invalid entry')
+        }
       }
     }
 
@@ -237,6 +232,7 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
       currentSentences = discussion.currentSentences.items
       version = discussion.version
       layout = discussion.layout
+      updatedAt = discussion.updatedAt
     }
 
     async function getSentence(id) {
@@ -244,12 +240,8 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
       return response.data.getSentence
     }
 
-    async function removeSentence(section, pos, message) {
-      layoutEntries[section].splice(pos, 1)
-      await resetLayout(message)
-    }
-
     async function readLayout(section) {
+      const expireIdleDrafts = hoursAgo(updatedAt) > 1
       const stateSentences = state.discussions[section]
       for (let pos = 0; pos < layoutEntries[section].length; pos++) {
         const layoutEntry = layoutEntries[section][pos]
@@ -257,11 +249,11 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
           || currentSentences.find(s => s.id === layoutEntry.id)
           || await getSentence(layoutEntry.id)
         if (!sentence) {
-          await removeSentence(section, pos, 'invalid sentence id, fixing layout')
+          throw new Error('invalid sentence id, fixing layout')
         }
         const notUnique = newSentences[section].some(s => s.id === sentence.id)
         if (notUnique) {
-          await removeSentence(section, pos, 'non-unique sentence id, fixing layout')
+          throw new Error('non-unique sentence id, fixing layout')
         }
         const newSentence: Sentence = {
           id: sentence.id,
@@ -273,6 +265,11 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
           accepted: layoutEntry.accepted || [],
           rejected: layoutEntry.rejected || [],
           inArgument: false
+        }
+        if (newSentence.status === 'draft' && expireIdleDrafts) {
+          newSentence.status = 'committed'
+          newSentence.owner = undefined
+          layoutUpdated = true
         }
         newSentences[section].push(newSentence)
       }
@@ -286,19 +283,15 @@ function getDiscussion({discussionId, layout, version}: GetDiscussionInput) {
       return
     }
 
-    try {
-      if (!layout) {
-        await loadDiscussion()
-      }
-      await parseLayout()
-      await readLayout('propositions')
-      await readLayout('arguments')
-      dispatch(updateSentences({version, newSentences}))
+    if (!layout) {
+      await loadDiscussion()
     }
-    catch (exception: any) {
-      if (exception.message !== 'resetLayout') {
-        throw exception
-      }
+    await parseLayout()
+    await readLayout('propositions')
+    await readLayout('arguments')
+    dispatch(updateSentences({version, updatedAt, newSentences}))
+    if (layoutUpdated) {
+      await dispatch(updateDiscussionLayout())
     }
   }
 }
@@ -394,21 +387,9 @@ function replaceSentence(input: ReplaceSentenceInput) {
       const index = nextUniqueIndex(sentence, sentences)
       const {status, owner} = sentence
       const newSentence = {key, index, content, id: newSentenceId, status, owner}
-      const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
-      discussionSentences[section] = layoutSentences
-      discussionSentences = {
-        propositions: discussionSentences.propositions.filter(s => s.id),
-        arguments: discussionSentences.arguments.filter(s => s.id),
-      }
       //// duplicated - begin
-      const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
-      const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
-      const layout = JSON.stringify({
-        propositions: discussionSentences.propositions.map(makeLayoutEntry),
-        arguments: discussionSentences.arguments.map(makeLayoutEntry)
-      })
-      await dispatch(updateDiscussionLayout({layout, isReset: false}))
       dispatch(updateSentence({section, newSentence}))
+      await dispatch(updateDiscussionLayout())
       //// duplicated - end
     }
     catch (exception: any) {
@@ -478,17 +459,9 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         console.warn('unknown action or invalid conditions:', change, sentence)
         return
       }
-      const layoutSentences = sentences.map(s => s.key === newSentence.key ? newSentence : s)
-      discussionSentences[section] = layoutSentences
       //// duplicated - begin
-      const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
-      const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
-      const layout = JSON.stringify({
-        propositions: discussionSentences.propositions.map(makeLayoutEntry),
-        arguments: discussionSentences.arguments.map(makeLayoutEntry)
-      })
-      await dispatch(updateDiscussionLayout({layout, isReset: false}))
       dispatch(updateSentence({section, newSentence}))
+      await dispatch(updateDiscussionLayout())
       //// duplicated - end
     }
     catch (exception: any) {
