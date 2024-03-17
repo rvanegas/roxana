@@ -49,7 +49,7 @@ const initialState: State = {
 }
 
 function unpdateSentenceDerivatives(state) {
-  const ids = new Set<string>()
+  const indexes = new Set<number>()
   const sentences = state.propositions.concat(state.arguments)
   const discussants = new Set<string>()
   for (let sentence of sentences) {
@@ -60,12 +60,12 @@ function unpdateSentenceDerivatives(state) {
   }
   state.discussants = Array.from(discussants)
   for (let argument of state.arguments) {
-    for (let id of propositionIdsFromArgument(argument)) {
-      ids.add(id)
+    for (let index of propositionIndexesFromArgument(argument)) {
+      indexes.add(index)
     }
   }
-  for (let proposition of state.propositions) {
-    proposition.inArgument = proposition.id ? ids.has(proposition.id) : false
+  for (let index = 0; index < state.propositions.length; index++) {
+    state.propositions[index].inArgument = indexes.has(index)
   }
 }
 
@@ -558,7 +558,7 @@ export function focusOnSentence(section: Section, position: number) {
   }
 }
 
-export function propositionIdsFromArgument(argument) {
+export function propositionIndexesFromArgument(argument) {
   return argument.content ? argument.content.split(' ') : []
 }
 
