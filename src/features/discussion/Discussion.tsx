@@ -10,6 +10,7 @@ import * as custom from '../../graphql/custom'
 import {
   createNewDiscussionAction,
   initializeDiscussionAction,
+  GetDiscussionInput,
   getDiscussionAction,
   selectDiscussions,
   setUsername,
@@ -38,8 +39,8 @@ export function Discussion() {
       const request = API.graphql(graphqlOperation(custom.onUpdateDiscussionLayout)) as unknown as {subscribe(any)}
       const subscription = request.subscribe({
         next: next => {
-          const {id: discussionId, layout, version, updatedAt} = next.value.data.onUpdateDiscussion
-          dispatch(getDiscussionAction({discussionId, layout, version, updatedAt}))
+          const discussion: GetDiscussionInput = next.value.data.onUpdateDiscussion
+          dispatch(getDiscussionAction(discussion))
         },
         error: error => console.error(error),
       })

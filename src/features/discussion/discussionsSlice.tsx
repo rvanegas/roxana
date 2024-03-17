@@ -159,12 +159,14 @@ function updateDiscussionLayout() {
   const {incrementVersion} = discussionsSlice.actions
   const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
+  const layoutFilter = sentence => sentence.id !== undefined
+  const sentencesToEntries = sentences => sentences.filter(layoutFilter).map(makeLayoutEntry)
   return async (dispatch, getState) => {
     try {
       const state = getState()
       const layout = JSON.stringify({
-        propositions: state.discussions.propositions.map(makeLayoutEntry),
-        arguments: state.discussions.arguments.map(makeLayoutEntry)
+        propositions: sentencesToEntries(state.discussions.propositions),
+        arguments: sentencesToEntries(state.discussions.arguments)
       })
       const id = state.discussions.discussionId
       const oldVersion = state.discussions.version
@@ -190,27 +192,29 @@ function updateDiscussionLayout() {
   }
 }
 
-interface GetDiscussionInput {
-  discussionId: string,
+export interface GetDiscussionInput {
+  id: string,
+  revision?: number,
   layout?: string,
   version?: number,
   updatedAt?: any,
+  currentSentences?: any
 }
 
-function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussionInput) {
+function getDiscussion(discussion: GetDiscussionInput) {
+  // discussion = {id, revision, layout, version, updatedAt}
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const newSentences = {propositions: [], arguments: []}
     let currentSentences: Sentence[] = []
-    let discussion
     let layoutEntries
     let layoutUpdated
 
     async function parseLayout() {
-      if (!layout) {
+      if (!discussion.layout) {
         throw new Error('missing layout')
       }
-      layoutEntries = JSON.parse(layout)
+      layoutEntries = JSON.parse(discussion.layout)
       for (let entry of layoutEntries.propositions.concat(layoutEntries.arguments)) {
         const invalidEntry = typeof entry.id !== 'string'
           || typeof entry.index !== 'number'
@@ -226,16 +230,13 @@ function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussion
     }
 
     async function loadDiscussion() {
-      const input = {id: discussionId}
+      const input = {id: discussion.id}
       const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as any
       discussion = response.data.getDiscussion
       if (!discussion) {
         throw new Error('no such discussion')
       }
       currentSentences = discussion.currentSentences.items
-      version = discussion.version
-      layout = discussion.layout
-      updatedAt = discussion.updatedAt
     }
 
     async function getSentence(id) {
@@ -244,7 +245,7 @@ function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussion
     }
 
     async function readLayout(section) {
-      const expireIdleDrafts = hoursAgo(updatedAt) > 1
+      const expireIdleDrafts = hoursAgo(discussion.updatedAt) > 1
       const stateSentences = state.discussions[section]
       for (let pos = 0; pos < layoutEntries[section].length; pos++) {
         const layoutEntry = layoutEntries[section][pos]
@@ -279,20 +280,23 @@ function getDiscussion({discussionId, layout, version, updatedAt}: GetDiscussion
     }
 
     const state = getState()
-    if (state.discussions.discussionId && state.discussions.discussionId !== discussionId) {
+    if (state.discussions.discussionId && state.discussions.discussionId !== discussion.id) {
       return // ignore updates from other discussions
     }
-    if (version && version <= state.discussions.version) {
+    if (discussion.version && discussion.version <= state.discussions.version) {
       return
     }
+    // if (state.version !== 2 || state.revision === undefined) {
+    //   throw new Error('bad data')
+    // }
 
-    if (!layout) {
+    if (!discussion.layout) {
       await loadDiscussion()
     }
     await parseLayout()
     await readLayout('propositions')
     await readLayout('arguments')
-    dispatch(updateSentences({version, newSentences}))
+    dispatch(updateSentences({version: discussion.version, newSentences}))
     if (layoutUpdated) {
       await dispatch(updateDiscussionLayout())
     }
@@ -318,7 +322,7 @@ function initializeDiscussion() {
     }
     try {
       dispatch(initialize(discussionId))
-      await dispatch(getDiscussion({discussionId}))
+      await dispatch(getDiscussion({id: discussionId}))
     }
     catch {
       await dispatch(createNewDiscussionAction())
