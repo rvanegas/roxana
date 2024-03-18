@@ -20,7 +20,7 @@ export function Proposition({position, discussionId, proposition}) {
   const dispatch = useDispatch()
   const editorRef = React.createRef() as ElementRef
   const [editorState, setEditorState] = useState(initEditorState)
-  const placeholder = proposition.index === 1 ?
+  const placeholder = position === 0 ?
     'Type a proposition. For example, "Socrates is a man."' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
@@ -85,7 +85,7 @@ export function Proposition({position, discussionId, proposition}) {
     <React.Fragment>
       <SentenceMeta sentence={proposition} mode={mode} section={section} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
-        {isArguments ? toAlphaIndex(proposition.index) : proposition.index}
+        {isArguments ? toAlphaIndex(position) : position+1}
       </View>
       <View columnStart={3}>
         <Editor

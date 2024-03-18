@@ -64,8 +64,8 @@ function unpdateSentenceDerivatives(state) {
       indexes.add(index)
     }
   }
-  for (let index = 0; index < state.propositions.length; index++) {
-    state.propositions[index].inArgument = indexes.has(index)
+  for (let index = 1; index <= state.propositions.length; index++) {
+    state.propositions[index-1].inArgument = indexes.has(index)
   }
 }
 
@@ -564,7 +564,7 @@ export function focusOnSentence(section: Section, position: number) {
 }
 
 export function propositionIndexesFromArgument(argument) {
-  return argument.content ? argument.content.split(' ') : []
+  return argument.content ? argument.content.split(' ').map(i => parseInt(i)) : []
 }
 
 export const selectDiscussions = state => state.discussions
