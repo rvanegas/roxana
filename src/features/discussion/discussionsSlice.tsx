@@ -28,7 +28,7 @@ interface State {
   error?: string
   discussionId?: string
   username?: string
-  version?: number
+  revision?: number
   propositions: Sentence[]
   arguments: Sentence[]
   discussants: string[]
@@ -41,7 +41,7 @@ const initialState: State = {
   error: undefined,
   discussionId: undefined,
   username: undefined,
-  version: undefined,
+  revision: undefined,
   propositions: [],
   arguments: [],
   discussants: [],
@@ -75,18 +75,18 @@ const discussionsSlice = createSlice({
   reducers: {
     initialize(state, action) {
       const discussionId: string = action.payload
-      Object.assign(state, {discussionId, version: 0, propositions: [], arguments: []})
+      Object.assign(state, {discussionId, revision: 0, propositions: [], arguments: []})
     },
     setIsCompact(state, action) {
       const isCompact: boolean = action.payload
       state.isCompact = isCompact
     },
-    incrementVersion(state, action) {
-      const version: number = action.payload
-      if (state.version && version !== state.version + 1) {
-        throw new Error('bad version increment')
+    incrementRevision(state, action) {
+      const revision: number = action.payload
+      if (state.revision && state.revision + 1 !== revision) {
+        throw new Error('bad revision increment')
       }
-      state.version = version
+      state.revision = revision
     },
     addSentence(state, action) {
       const {section, key}: {section: Section, key: string} = action.payload
@@ -138,8 +138,8 @@ const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {version, newSentences}: {version: number, newSentences: Sentence[]} = action.payload
-      state.version = version
+      const {revision, newSentences}: {revision: number, newSentences: Sentence[]} = action.payload
+      state.revision = revision
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
       unpdateSentenceDerivatives(state)
@@ -156,7 +156,7 @@ function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
 }
 
 function updateDiscussionLayout() {
-  const {incrementVersion} = discussionsSlice.actions
+  const {incrementRevision} = discussionsSlice.actions
   const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
   const layoutFilter = sentence => sentence.id !== undefined
@@ -169,20 +169,23 @@ function updateDiscussionLayout() {
         arguments: sentencesToEntries(state.discussions.arguments)
       })
       const id = state.discussions.discussionId
-      const oldVersion = state.discussions.version
-      const version = oldVersion + 1
+      const oldRevision = state.discussions.revision
+      const revision = oldRevision + 1
       const variables = {
-        input: {id, layout, version},
-        version: {layout: {eq: {oldVersion}}},
+        input: {id, layout, revision},
+        condition: {
+          version: {eq: 2},
+          and: {revision: {eq: oldRevision}}
+        }
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-      dispatch(incrementVersion(version))
+      dispatch(incrementRevision(revision))
     }
     catch (exception: any) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
       if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
         const newException = new Error()
-        newException.name = 'UnexpectedLayoutVersion'
+        newException.name = 'UnexpectedLayoutRevision'
         throw newException
       }
       else {
@@ -202,7 +205,6 @@ export interface GetDiscussionInput {
 }
 
 function getDiscussion(discussion: GetDiscussionInput) {
-  // discussion = {id, revision, layout, version, updatedAt}
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const newSentences = {propositions: [], arguments: []}
@@ -283,7 +285,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
     if (state.discussions.discussionId && state.discussions.discussionId !== discussion.id) {
       return // ignore updates from other discussions
     }
-    if (discussion.version && discussion.version <= state.discussions.version) {
+    if (discussion.revision && discussion.revision <= state.discussions.revision) {
       return
     }
     // if (state.version !== 2 || state.revision === undefined) {
@@ -296,7 +298,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
     await parseLayout()
     await readLayout('propositions')
     await readLayout('arguments')
-    dispatch(updateSentences({version: discussion.version, newSentences}))
+    dispatch(updateSentences({revision: discussion.revision, newSentences}))
     if (layoutUpdated) {
       await dispatch(updateDiscussionLayout())
     }
@@ -340,8 +342,8 @@ function initializeDiscussion() {
 function createNewDiscussion() {
   return async (dispatch) => {
     const layout = JSON.stringify({propositions: [], arguments: []})
-    const version = 1
-    const variables = {input: {layout, version}} as {input: {id, layout, version}}
+    const revision = 1
+    const variables = {input: {layout, revision}} as {input: {id, layout, revision}}
     for (;;) {
       try {
         const discussionId = generateDiscussionId()
@@ -400,7 +402,7 @@ function replaceSentence(input: ReplaceSentenceInput) {
       //// duplicated - end
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutVersion') {
+      if (exception.name === 'UnexpectedLayoutRevision') {
         console.warn('try again')
         dispatch(replaceSentenceAction({key, section, content}))
       }
@@ -472,7 +474,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       //// duplicated - end
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutVersion') {
+      if (exception.name === 'UnexpectedLayoutRevision') {
         console.warn('try again')
         dispatch(changeSentenceStatus(input))
       }
