@@ -4,6 +4,7 @@ export const getDiscussionSimple = /* GraphQL */ `
       id
       layout
       version
+      revision
       currentSentences {
         items {
           id
@@ -25,6 +26,7 @@ export const onUpdateDiscussionLayout = /* GraphQL */ `
       id
       layout
       version
+      revision
       createdAt
       updatedAt
     }

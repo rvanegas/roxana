@@ -8,8 +8,9 @@ export const createDiscussion = /* GraphQL */ `
   ) {
     createDiscussion(input: $input, condition: $condition) {
       id
-      layout
       version
+      revision
+      layout
       layoutStates {
         items {
           id
@@ -65,8 +66,9 @@ export const updateDiscussion = /* GraphQL */ `
   ) {
     updateDiscussion(input: $input, condition: $condition) {
       id
-      layout
       version
+      revision
+      layout
       layoutStates {
         items {
           id
@@ -122,8 +124,9 @@ export const deleteDiscussion = /* GraphQL */ `
   ) {
     deleteDiscussion(input: $input, condition: $condition) {
       id
-      layout
       version
+      revision
+      layout
       layoutStates {
         items {
           id
@@ -183,8 +186,9 @@ export const createLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -217,8 +221,9 @@ export const updateLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -251,8 +256,9 @@ export const deleteLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -285,8 +291,9 @@ export const createSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -305,8 +312,9 @@ export const createSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -338,8 +346,9 @@ export const updateSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -358,8 +367,9 @@ export const updateSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -391,8 +401,9 @@ export const deleteSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -411,8 +422,9 @@ export const deleteSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -510,8 +522,9 @@ export const createDiscussionUsers = /* GraphQL */ `
       userID
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -551,8 +564,9 @@ export const updateDiscussionUsers = /* GraphQL */ `
       userID
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -592,8 +606,9 @@ export const deleteDiscussionUsers = /* GraphQL */ `
       userID
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }

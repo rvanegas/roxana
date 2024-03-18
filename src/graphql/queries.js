@@ -5,8 +5,9 @@ export const getDiscussion = /* GraphQL */ `
   query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
-      layout
       version
+      revision
+      layout
       layoutStates {
         items {
           id
@@ -64,8 +65,9 @@ export const listDiscussions = /* GraphQL */ `
     listDiscussions(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -93,8 +95,9 @@ export const getLayoutState = /* GraphQL */ `
       version
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -129,8 +132,9 @@ export const listLayoutStates = /* GraphQL */ `
         version
         discussion {
           id
-          layout
           version
+          revision
+          layout
           createdAt
           updatedAt
         }
@@ -150,8 +154,9 @@ export const getSentence = /* GraphQL */ `
       discussionId
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -170,8 +175,9 @@ export const getSentence = /* GraphQL */ `
       currentDiscussionId
       currentDiscussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -205,16 +211,18 @@ export const listSentences = /* GraphQL */ `
         discussionId
         discussion {
           id
-          layout
           version
+          revision
+          layout
           createdAt
           updatedAt
         }
         currentDiscussionId
         currentDiscussion {
           id
-          layout
           version
+          revision
+          layout
           createdAt
           updatedAt
         }
@@ -279,8 +287,9 @@ export const getDiscussionUsers = /* GraphQL */ `
       userID
       discussion {
         id
-        layout
         version
+        revision
+        layout
         layoutStates {
           nextToken
         }
@@ -322,8 +331,9 @@ export const listDiscussionUsers = /* GraphQL */ `
         userID
         discussion {
           id
-          layout
           version
+          revision
+          layout
           createdAt
           updatedAt
         }
