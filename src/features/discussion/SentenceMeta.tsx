@@ -57,13 +57,13 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
   }
 
   function annotations() {
-    const hasIrrational = sentence.irrational.length !== 0
-    if (hasIrrational) {
-      return <span style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>
-    }
-    return claimsSummary(sentence, discussions.discussants).map((claim, index) => (
+    const icons = claimsSummary(sentence, discussions.discussants).map((claim, index) => (
       <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
     ))
+    if (sentence.irrational.length !== 0) {
+      icons.push(<span key="i" style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>)
+    }
+    return icons
   }
 
   const actionStatusLine = discussions.isCompact ? null : (
