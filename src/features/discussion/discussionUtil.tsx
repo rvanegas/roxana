@@ -1,6 +1,6 @@
 import {Sentence} from './discussion.d'
 
-export function assertionSummary(sentence: Sentence, discussants: string[]) : boolean[] {
+export function claimsSummary(sentence: Sentence, discussants: string[]) : boolean[] {
   let acceptions = 0
   let rejections = 0
 
