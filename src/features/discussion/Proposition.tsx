@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react'
-import {useSelector, useDispatch} from 'react-redux'
+import {useDispatch} from 'react-redux'
 import {View, Divider} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
@@ -9,14 +9,11 @@ import {Section, SentenceMode, ElementRef} from './discussion.d'
 import {
   unsetFocus,
   focusOnSentence,
-  selectDiscussions,
   replaceSentenceAction,
   ReplaceSentenceInput,
 } from './discussionsSlice'
-import {claimsSummary} from './discussionUtil'
 
 export function Proposition({position, discussionId, proposition}) {
-  const discussions = useSelector(selectDiscussions)
   const section: Section = 'propositions'
   // @ts-ignore
   const isArguments = section === 'arguments'
@@ -83,19 +80,12 @@ export function Proposition({position, discussionId, proposition}) {
 
   ///////////////////
 
-  const claimsSummaryIcons = claimsSummary(proposition, discussions.discussants).map(claim => (
-    <span style={{color: (claim ? 'lightgreen' : 'red')}}>{claim ? '\u2714' : '\u2718'}</span>
-  ))
-
   const dividerStyle = undefined
   const postSentence = undefined
 
   return (
     <React.Fragment>
       <SentenceMeta sentence={proposition} mode={mode} section={section} />
-      <View columnStart={1} style={{placeSelf: 'start end'}}>
-        {claimsSummaryIcons}
-      </View>
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </View>

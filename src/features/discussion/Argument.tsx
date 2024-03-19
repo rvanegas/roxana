@@ -14,7 +14,6 @@ import {
   ReplaceSentenceInput,
   propositionIndexesFromArgument,
 } from './discussionsSlice'
-import {claimsSummary} from './discussionUtil'
 
 export function Argument({position, argument, discussionId}) {
   const section: Section = 'arguments'
@@ -148,10 +147,6 @@ export function Argument({position, argument, discussionId}) {
     })
   }
 
-  const claimsSummaryIcons = claimsSummary(argument, discussions.discussants).map(claim => (
-    <span style={{color: (claim ? 'lightgreen' : 'red')}}>{claim ? '\u2714' : '\u2718'}</span>
-  ))
-
   const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
   const postSentence = (
     <React.Fragment>
@@ -163,9 +158,6 @@ export function Argument({position, argument, discussionId}) {
   return (
     <React.Fragment>
       <SentenceMeta sentence={argument} mode={mode} section={section} />
-      <View columnStart={1} style={{placeSelf: 'start end'}}>
-        {claimsSummaryIcons}
-      </View>
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </View>

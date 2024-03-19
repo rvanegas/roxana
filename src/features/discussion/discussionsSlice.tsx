@@ -48,9 +48,8 @@ const initialState: State = {
   isCompact: false,
 }
 
-function unpdateSentenceDerivatives(state) {
+function updateSentenceDerivatives(state) {
   const discussants = new Set<string>()
-  const indexes = new Set<number>()
   const sentences = state.propositions.concat(state.arguments)
   for (let sentence of sentences) {
     const claimants = sentence.accepted.concat(sentence.rejected)
@@ -59,6 +58,8 @@ function unpdateSentenceDerivatives(state) {
     }
   }
   state.discussants = Array.from(discussants)
+
+  const indexes = new Set<number>()
   for (let argument of state.arguments) {
     for (let index of propositionIndexesFromArgument(argument)) {
       indexes.add(index)
@@ -66,6 +67,22 @@ function unpdateSentenceDerivatives(state) {
   }
   for (let index = 1; index <= state.propositions.length; index++) {
     state.propositions[index-1].inArgument = indexes.has(index)
+  }
+
+  for (let argument of state.arguments) {
+    argument.irrational = []
+    for (let discussant of state.discussants) {
+      const indexes = propositionIndexesFromArgument(argument)
+      const propositions = indexes.map(index => state.propositions[index-1])
+      const premises = propositions.slice(0, -1)
+      const conclusion = propositions.slice(-1)[0]
+      const irrational = premises.every(p => p.accepted.includes(discussant))
+        && conclusion.rejected.includes(discussant)
+        && argument.accepted.includes(discussant)
+      if (irrational) {
+        argument.irrational.push(discussant)
+      }
+    }
   }
 }
 
@@ -93,7 +110,7 @@ const discussionsSlice = createSlice({
       const sentence: Sentence = {
         key, content: '', index: nextIndex(state[section]),
         status: 'draft', owner: state.username,
-        accepted: [], rejected: [],
+        accepted: [], rejected: [], irrational: [],
         inArgument: false
       }
       state[section].push(sentence)
@@ -126,7 +143,7 @@ const discussionsSlice = createSlice({
       if (sentence) {
         Object.assign(sentence, newSentence)
       }
-      unpdateSentenceDerivatives(state)
+      updateSentenceDerivatives(state)
     },
     updateSentences(state, action) {
       function mergeInNewSentences(section: Section) {
@@ -142,7 +159,7 @@ const discussionsSlice = createSlice({
       state.revision = revision
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
-      unpdateSentenceDerivatives(state)
+      updateSentenceDerivatives(state)
     }
   }
 })
@@ -268,6 +285,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
           owner: layoutEntry.owner,
           accepted: layoutEntry.accepted || [],
           rejected: layoutEntry.rejected || [],
+          irrational: [],
           inArgument: false
         }
         if (newSentence.status === 'draft' && expireIdleDrafts) {
