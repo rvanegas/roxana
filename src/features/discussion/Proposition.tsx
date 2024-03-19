@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react'
-import {useDispatch} from 'react-redux'
+import {useSelector, useDispatch} from 'react-redux'
 import {View, Divider} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
@@ -9,11 +9,14 @@ import {Section, SentenceMode, ElementRef} from './discussion.d'
 import {
   unsetFocus,
   focusOnSentence,
+  selectDiscussions,
   replaceSentenceAction,
   ReplaceSentenceInput,
 } from './discussionsSlice'
+import {assertionSummary} from './discussionUtil'
 
 export function Proposition({position, discussionId, proposition}) {
+  const discussions = useSelector(selectDiscussions)
   const section: Section = 'propositions'
   // @ts-ignore
   const isArguments = section === 'arguments'
@@ -69,6 +72,8 @@ export function Proposition({position, discussionId, proposition}) {
     return 'not-handled'
   }
 
+
+
   useEffect(() => {
     if (proposition.autoFocus) {
       editorRef.current.focus()
@@ -78,13 +83,20 @@ export function Proposition({position, discussionId, proposition}) {
 
   ///////////////////
 
+  const assertionSummaryIcons = assertionSummary(proposition, discussions.discussants).map(assertion => (
+    <span style={{color: (assertion ? 'lightgreen' : 'red')}}>{assertion ? '\u2714' : '\u2718'}</span>
+  ))
+
   const dividerStyle = undefined
   const postSentence = undefined
 
   return (
     <React.Fragment>
       <SentenceMeta sentence={proposition} mode={mode} section={section} />
-      <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'center end'}}>
+      <View columnStart={1} style={{placeSelf: 'start end'}}>
+        {assertionSummaryIcons}
+      </View>
+      <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </View>
       <View columnStart={3}>
