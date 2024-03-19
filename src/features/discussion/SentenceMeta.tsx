@@ -25,10 +25,6 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
 
-  if (discussions.isCompact) {
-    return null
-  }
-
   function handleChangeStatus(change) {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
   }
@@ -70,20 +66,27 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
     ))
   }
 
+  const actionStatusLine = discussions.isCompact ? null : (
+    <View columnSpan={4} style={{placeSelf: 'center start'}}>
+      <Button variation="link" size="small" isDisabled={!isEditable(sentence)} onClick={() => handleChangeStatus('edit')}>edit</Button>
+      <Button variation="link" size="small" isDisabled={!isCommittable(sentence, username)} onClick={() => handleChangeStatus('commit')}>commit</Button>
+      <Button variation="link" size="small" isDisabled={!isAcceptable(sentence)} onClick={() => handleChangeStatus('accept')}>accept</Button>
+      <Button variation="link" size="small" isDisabled={!isRejectable(sentence)} onClick={() => handleChangeStatus('reject')}>reject</Button>
+      <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
+        {statusLine()}
+      </Text>
+    </View>
+  )
+  const annotationIcons = (
+    <View columnStart={1} style={{placeSelf: 'start end'}}>
+      {annotations()}
+    </View>
+  )
+
   return (
     <React.Fragment>
-      <View columnSpan={4} style={{placeSelf: 'center start'}}>
-        <Button variation="link" size="small" isDisabled={!isEditable(sentence)} onClick={() => handleChangeStatus('edit')}>edit</Button>
-        <Button variation="link" size="small" isDisabled={!isCommittable(sentence, username)} onClick={() => handleChangeStatus('commit')}>commit</Button>
-        <Button variation="link" size="small" isDisabled={!isAcceptable(sentence)} onClick={() => handleChangeStatus('accept')}>accept</Button>
-        <Button variation="link" size="small" isDisabled={!isRejectable(sentence)} onClick={() => handleChangeStatus('reject')}>reject</Button>
-        <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
-          {statusLine()}
-        </Text>
-      </View>
-      <View columnStart={1} style={{placeSelf: 'start end'}}>
-        {annotations()}
-      </View>
+      {actionStatusLine}
+      {annotationIcons}
     </React.Fragment>
   )
 }
