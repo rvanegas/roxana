@@ -4,7 +4,7 @@ import Cookies from 'universal-cookie'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
-import {pick} from '../../app/util'
+import {dlog, pick} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
 import {
   discussionIdFromUrl,
@@ -103,10 +103,10 @@ const discussionsSlice = createSlice({
     incrementRevision(state, action) {
       const revision: number = action.payload
       if (state.revision && state.revision + 1 !== revision) {
-        console.warn('revisions', state.revision, revision)
+        dlog.warn('revisions', state.revision, revision)
         throw new Error('bad revision increment')
       }
-      console.log('revision local', revision)
+      dlog('revision local', revision)
       state.revision = revision
     },
     addSentence(state, action) {
@@ -164,7 +164,7 @@ const discussionsSlice = createSlice({
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
       updateSentenceDerivatives(state)
-      console.log('revision remote', revision)
+      dlog('revision remote', revision)
     }
   }
 })
@@ -198,9 +198,9 @@ function updateDiscussionLayout(changeNote: string) {
         input: {id, version, revision, layout},
         condition: {revision: {eq: oldRevision}}
       }
-      console.log('updateLayout begin', revision, changeNote)
+      dlog('updateLayout begin', revision, changeNote)
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-      console.log('updateLayout end', revision, changeNote)
+      dlog('updateLayout end', revision, changeNote)
       dispatch(incrementRevision(revision))
     }
     catch (exception: any) {

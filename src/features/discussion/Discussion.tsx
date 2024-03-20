@@ -6,7 +6,7 @@ import {PropositionsList} from './PropositionsList'
 import {ArgumentsList} from './ArgumentsList'
 import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
-
+import {dlog} from '../../app/util'
 import {
   createNewDiscussionAction,
   initializeDiscussionAction,
@@ -33,6 +33,9 @@ export function Discussion() {
   useEffect(() => {
     if (discussionStatusInit) {
       dispatch(setUsername(username))
+      if (username === 'rodvandur') {
+        dlog.enabled = true
+      }
       dispatch(initializeDiscussionAction())
     }
     if (discussionId) {
