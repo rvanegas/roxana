@@ -14,9 +14,10 @@ interface SentenceMetaProps {
   sentence: Sentence
   section: Section
   mode: SentenceMode
+  editorLine: any
 }
 
-export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
+export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMetaProps) {
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
@@ -65,13 +66,17 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
 
   const buttons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
     isActionable[action](sentence, username) &&
-      <Button key={action} variation="link" size="small" onClick={() => handleChangeStatus(action)}>{action}</Button>
+      <Button
+        key={action} variation="link" size="small"
+        style={{paddingBlockStart: '0px', paddingBlockEnd: '0px'}}
+        onClick={() => handleChangeStatus(action)}
+      >{action}</Button>
   ))
 
   const actionStatusLine = discussions.isCompact ? null : (
     <View columnSpan={4} style={{placeSelf: 'center start'}}>
       {buttons}
-      <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
+      <Text style={{display: 'inline-block', paddingLeft: '20px', paddingBottom: '20px'}}>
         {statusLine()}
       </Text>
     </View>
@@ -84,8 +89,9 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
 
   return (
     <React.Fragment>
-      {actionStatusLine}
       {annotationIcons}
+      {editorLine}
+      {actionStatusLine}
     </React.Fragment>
   )
 }

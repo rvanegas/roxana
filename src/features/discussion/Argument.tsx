@@ -128,6 +128,8 @@ export function Argument({position, argument, discussionId}) {
     }
   })
 
+  const sentence = argument
+
   //////////////////
 
   let propositionElements
@@ -155,9 +157,8 @@ export function Argument({position, argument, discussionId}) {
     </React.Fragment>
   )
 
-  return (
+  const editorLine = (
     <React.Fragment>
-      <SentenceMeta sentence={argument} mode={mode} section={section} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </View>
@@ -172,6 +173,12 @@ export function Argument({position, argument, discussionId}) {
         <Divider style={dividerStyle} />
       </View>
       {postSentence}
+    </React.Fragment>
+  )
+
+  return (
+    <React.Fragment>
+      <SentenceMeta sentence={sentence} mode={mode} section={section} editorLine={editorLine} />
     </React.Fragment>
   )
 }

@@ -31,7 +31,7 @@ export function PropositionsList() {
 
   return (
     <React.Fragment key="propositions">
-      <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
+      <Heading style={{paddingTop: '30px', paddingBottom: '10px'}} columnStart="1" columnEnd="-1">
         Propositions
       </Heading>
       {propositionEntities}

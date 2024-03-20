@@ -78,14 +78,15 @@ export function Proposition({position, discussionId, proposition}) {
     }
   })
 
+  const sentence = proposition
+
   ///////////////////
 
   const dividerStyle = undefined
   const postSentence = undefined
 
-  return (
+  const editorLine = (
     <React.Fragment>
-      <SentenceMeta sentence={proposition} mode={mode} section={section} />
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </View>
@@ -100,6 +101,12 @@ export function Proposition({position, discussionId, proposition}) {
         <Divider style={dividerStyle} />
       </View>
       {postSentence}
+    </React.Fragment>
+  )
+
+  return (
+    <React.Fragment>
+      <SentenceMeta sentence={sentence} mode={mode} section={section} editorLine={editorLine} />
     </React.Fragment>
   )
 }
