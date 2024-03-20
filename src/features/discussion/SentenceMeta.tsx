@@ -6,10 +6,7 @@ import {CurrentUserContext} from '../user/User'
 import {
   changeSentenceStatusAction,
   selectDiscussions,
-  isEditable,
-  isCommittable,
-  isAcceptable,
-  isRejectable
+  isActionable
 } from './discussionsSlice'
 import {claimsSummary} from './discussionUtil'
 
@@ -68,10 +65,11 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
 
   const actionStatusLine = discussions.isCompact ? null : (
     <View columnSpan={4} style={{placeSelf: 'center start'}}>
-      <Button variation="link" size="small" isDisabled={!isEditable(sentence)} onClick={() => handleChangeStatus('edit')}>edit</Button>
-      <Button variation="link" size="small" isDisabled={!isCommittable(sentence, username)} onClick={() => handleChangeStatus('commit')}>commit</Button>
-      <Button variation="link" size="small" isDisabled={!isAcceptable(sentence)} onClick={() => handleChangeStatus('accept')}>accept</Button>
-      <Button variation="link" size="small" isDisabled={!isRejectable(sentence)} onClick={() => handleChangeStatus('reject')}>reject</Button>
+      <Button variation="link" size="small" isDisabled={!isActionable.edit(sentence)} onClick={() => handleChangeStatus('edit')}>edit</Button>
+      <Button variation="link" size="small" isDisabled={!isActionable.commit(sentence, username)} onClick={() => handleChangeStatus('commit')}>commit</Button>
+      <Button variation="link" size="small" isDisabled={!isActionable.accept(sentence, username)} onClick={() => handleChangeStatus('accept')}>accept</Button>
+      <Button variation="link" size="small" isDisabled={!isActionable.reject(sentence, username)} onClick={() => handleChangeStatus('reject')}>reject</Button>
+      <Button variation="link" size="small" isDisabled={!isActionable.clear(sentence, username)} onClick={() => handleChangeStatus('clear')}>clear</Button>
       <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '40px'}}>
         {statusLine()}
       </Text>
