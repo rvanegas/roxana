@@ -1,10 +1,11 @@
-import dayjs from 'dayjs'
 import cryptoRandomString from 'crypto-random-string'
 import parse from 'url-parse'
+import dayjs from 'dayjs'
 
-export const dlog: any = function(...msg) {dlog.enabled && console.log(...msg)}
+export const dlog = function(...msg) {dlog.enabled && console.log(...msg)}
 dlog.warn = function(...msg) {dlog.enabled && console.warn(...msg)}
 dlog.error = function(...msg) {dlog.enabled && console.error(...msg)}
+dlog.enabled = false
 
 export async function sleep(ms) {
   console.log('sleep', ms)
