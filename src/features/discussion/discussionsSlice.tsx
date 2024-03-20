@@ -103,6 +103,7 @@ const discussionsSlice = createSlice({
     incrementRevision(state, action) {
       const revision: number = action.payload
       if (state.revision && state.revision + 1 !== revision) {
+        console.warn('revisions', state.revision, revision)
         throw new Error('bad revision increment')
       }
       console.log('revision', revision)
