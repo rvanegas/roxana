@@ -153,7 +153,6 @@ export function Argument({position, argument, discussionId}) {
   const postSentence = (
     <React.Fragment>
       {propositionElements}
-      <View style={{paddingBottom: '10px'}} columnSpan={4} />
     </React.Fragment>
   )
 

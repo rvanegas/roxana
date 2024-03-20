@@ -24,14 +24,14 @@ export function ArgumentsList() {
   ))
 
   const newButton = discussions.isCompact ? null : (
-    <View columnSpan={2} style={{placeSelf: 'center start'}}>
+    <View columnSpan={2} style={{placeSelf: 'center start', paddingBottom: '20px'}}>
       <Button variation="link" size="small" onClick={handleNew}>new</Button>
     </View>
   )
 
   return (
     <React.Fragment key="arguments">
-      <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
+      <Heading style={{paddingTop: '30px', paddingBottom: '10px'}} columnStart="1" columnEnd="-1">
         Arguments
       </Heading>
       {argumentElements}
