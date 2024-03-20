@@ -8,17 +8,6 @@ export const onCreateDiscussion = /* GraphQL */ `
       version
       revision
       layout
-      layoutStates {
-        items {
-          id
-          layout
-          version
-          createdAt
-          updatedAt
-          discussionLayoutStatesId
-        }
-        nextToken
-      }
       users {
         items {
           id
@@ -34,18 +23,6 @@ export const onCreateDiscussion = /* GraphQL */ `
           id
           content
           discussionId
-          currentDiscussionId
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
-      currentSentences {
-        items {
-          id
-          content
-          discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }
@@ -63,17 +40,6 @@ export const onUpdateDiscussion = /* GraphQL */ `
       version
       revision
       layout
-      layoutStates {
-        items {
-          id
-          layout
-          version
-          createdAt
-          updatedAt
-          discussionLayoutStatesId
-        }
-        nextToken
-      }
       users {
         items {
           id
@@ -89,18 +55,6 @@ export const onUpdateDiscussion = /* GraphQL */ `
           id
           content
           discussionId
-          currentDiscussionId
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
-      currentSentences {
-        items {
-          id
-          content
-          discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }
@@ -118,17 +72,6 @@ export const onDeleteDiscussion = /* GraphQL */ `
       version
       revision
       layout
-      layoutStates {
-        items {
-          id
-          layout
-          version
-          createdAt
-          updatedAt
-          discussionLayoutStatesId
-        }
-        nextToken
-      }
       users {
         items {
           id
@@ -144,18 +87,6 @@ export const onDeleteDiscussion = /* GraphQL */ `
           id
           content
           discussionId
-          currentDiscussionId
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
-      currentSentences {
-        items {
-          id
-          content
-          discussionId
-          currentDiscussionId
           createdAt
           updatedAt
         }
@@ -163,102 +94,6 @@ export const onDeleteDiscussion = /* GraphQL */ `
       }
       createdAt
       updatedAt
-    }
-  }
-`;
-export const onCreateLayoutState = /* GraphQL */ `
-  subscription OnCreateLayoutState {
-    onCreateLayoutState {
-      id
-      layout
-      version
-      discussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionLayoutStatesId
-    }
-  }
-`;
-export const onUpdateLayoutState = /* GraphQL */ `
-  subscription OnUpdateLayoutState {
-    onUpdateLayoutState {
-      id
-      layout
-      version
-      discussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionLayoutStatesId
-    }
-  }
-`;
-export const onDeleteLayoutState = /* GraphQL */ `
-  subscription OnDeleteLayoutState {
-    onDeleteLayoutState {
-      id
-      layout
-      version
-      discussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
-      discussionLayoutStatesId
     }
   }
 `;
@@ -273,37 +108,10 @@ export const onCreateSentence = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      currentDiscussionId
-      currentDiscussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -325,37 +133,10 @@ export const onUpdateSentence = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      currentDiscussionId
-      currentDiscussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -377,37 +158,10 @@ export const onDeleteSentence = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
-          nextToken
-        }
-        createdAt
-        updatedAt
-      }
-      currentDiscussionId
-      currentDiscussion {
-        id
-        version
-        revision
-        layout
-        layoutStates {
-          nextToken
-        }
-        users {
-          nextToken
-        }
-        sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -486,16 +240,10 @@ export const onCreateDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -525,16 +273,10 @@ export const onUpdateDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt
@@ -564,16 +306,10 @@ export const onDeleteDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
-        layoutStates {
-          nextToken
-        }
         users {
           nextToken
         }
         sentences {
-          nextToken
-        }
-        currentSentences {
           nextToken
         }
         createdAt

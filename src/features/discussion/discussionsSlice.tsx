@@ -223,14 +223,14 @@ export interface GetDiscussionInput {
   layout?: string,
   version?: number,
   updatedAt?: any,
-  currentSentences?: any
+  sentences?: any
 }
 
 function getDiscussion(discussion: GetDiscussionInput) {
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const newSentences = {propositions: [], arguments: []}
-    let currentSentences: Sentence[] = []
+    let sentences: Sentence[] = []
     let layoutEntries
     let layoutUpdated
 
@@ -260,7 +260,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
       if (!discussion) {
         throw new Error('no such discussion')
       }
-      currentSentences = discussion.currentSentences.items
+      sentences = discussion.sentences.items
     }
 
     async function getSentence(id) {
@@ -274,7 +274,7 @@ function getDiscussion(discussion: GetDiscussionInput) {
       for (let pos = 0; pos < layoutEntries[section].length; pos++) {
         const layoutEntry = layoutEntries[section][pos]
         const sentence = stateSentences.find(s => s.id === layoutEntry.id)
-          || currentSentences.find(s => s.id === layoutEntry.id)
+          || sentences.find(s => s.id === layoutEntry.id)
           || await getSentence(layoutEntry.id)
         if (!sentence) {
           throw new Error('invalid sentence id, fixing layout')
@@ -414,7 +414,7 @@ function replaceSentence(input: ReplaceSentenceInput) {
         console.error('not found', key, section, discussionSentences)
         throw new Error('sentence not found')
       }
-      const variables = {input: {content, discussionId, currentDiscussionId: discussionId}}
+      const variables = {input: {content, discussionId}}
       const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as any
       const newSentenceId = response.data.createSentence.id
       const index = nextUniqueIndex(sentence, sentences)
