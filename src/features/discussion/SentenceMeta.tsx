@@ -65,7 +65,7 @@ export function SentenceMeta({sentence, section, mode}: SentenceMetaProps) {
 
   const buttons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
     isActionable[action](sentence, username) &&
-      <Button variation="link" size="small" onClick={() => handleChangeStatus(action)}>{action}</Button>
+      <Button key={action} variation="link" size="small" onClick={() => handleChangeStatus(action)}>{action}</Button>
   ))
 
   const actionStatusLine = discussions.isCompact ? null : (
