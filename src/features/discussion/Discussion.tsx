@@ -15,6 +15,7 @@ import {
   selectDiscussions,
   setUsername,
   setIsCompact,
+  toggleHideDiscussant,
 } from './discussionsSlice'
 
 export function Discussion() {
@@ -26,7 +27,7 @@ export function Discussion() {
   const discussionStatusInit = discussions.status === 'init'
   const discussionId = discussions.discussionId
 
-  function handleButton() {
+  function handleNewButton() {
     dispatch(createNewDiscussionAction())
   }
 
@@ -56,26 +57,27 @@ export function Discussion() {
     dispatch(setIsCompact(e.target.checked))
   }
 
-  function statusLine() {
-    const statusSegments: string[] = []
-    if (discussionId) {
-      statusSegments.push(`current: ${discussionId}`)
-    }
-    const discussants = discussions.discussants.join(', ')
-    if (discussants) {
-      statusSegments.push(`discussants: ${discussants}`)
-    }
-    return statusSegments.join('; ')
-  }
+  const discussantButtons = discussions.discussants.map(discussant => (
+    <SwitchField
+      style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
+      key={discussant}
+      labelPosition="end"
+      label={discussant}
+      defaultChecked={true}
+      onChange={() => dispatch(toggleHideDiscussant(discussant))}
+    />
+  ))
 
   return (
     <React.Fragment>
       <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
-        Discussion
+        Discussion: {discussionId}
       </Heading>
-      <Button columnSpan={2} variation="link" size="small" onClick={handleButton}>new</Button>
+      <Button columnSpan={2} variation="link" size="small" onClick={handleNewButton}>new</Button>
       <View columnSpan={2} style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
-        <SwitchField style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
+        <SwitchField
+          style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
+          labelPosition="end"
           label="hide detail"
           defaultChecked={false}
           onChange={handleSwitch}
@@ -84,9 +86,9 @@ export function Discussion() {
           {isSyncing && 'syncing...'}
         </Text>
       </View>
-      <Text columnStart="1" columnEnd="-1" style={{paddingLeft: '10px'}}>
-        {statusLine()}
-      </Text>
+      <View columnStart="1" columnEnd="-1">
+        {discussantButtons}
+      </View>
       <Grid
         templateColumns="3rem 2rem 1fr 3rem"
         gap="var(--amplify-space-small)"

@@ -32,6 +32,7 @@ interface State {
   propositions: Sentence[]
   arguments: Sentence[]
   discussants: string[]
+  hideDiscussants: object
   isCompact: boolean
 }
 
@@ -45,6 +46,7 @@ const initialState: State = {
   propositions: [],
   arguments: [],
   discussants: [],
+  hideDiscussants: {},
   isCompact: false,
 }
 
@@ -58,6 +60,11 @@ function updateSentenceDerivatives(state) {
     }
   }
   state.discussants = Array.from(discussants)
+  for (let discussant of state.discussants) {
+    if (state.hideDiscussants[discussant] !== undefined) {
+      state.hideDiscussants[discussant] = false
+    }
+  }
 
   const indexes = new Set<number>()
   for (let argument of state.arguments) {
@@ -140,6 +147,10 @@ const discussionsSlice = createSlice({
     },
     setStatus(state, action) {
       state.status = action.payload
+    },
+    toggleHideDiscussant(state, action) {
+      const discussant: string = action.payload
+      state.hideDiscussants[discussant] = !state.hideDiscussants[discussant]
     },
     setUsername(state, action) {
       const username: string = action.payload
@@ -617,5 +628,5 @@ export function propositionIndexesFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus, setUsername, setIsCompact} = discussionsSlice.actions
+export const {unsetFocus, setUsername, setIsCompact, toggleHideDiscussant} = discussionsSlice.actions
 export default discussionsSlice.reducer
