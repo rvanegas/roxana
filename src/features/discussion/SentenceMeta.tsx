@@ -80,7 +80,7 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
     : sentence.rejected.includes(username) ? false : null
   let underlined
   const annotations = claimsSummary().map((claim, index) => {
-    const underline = !underlined && claim === userClaim
+    const underline = !underlined && claim === userClaim && !discussions.hideDiscussants[username]
     underlined = underlined || underline
     let style = {
       color: (claim ? 'seagreen' : 'firebrick'),
@@ -90,7 +90,7 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
   })
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
-    let underline = irrational.includes(username)
+    let underline = irrational.includes(username) && !discussions.hideDiscussants[username]
     annotations.push(<span key="i" style={{color: 'red', fontWeight: 'bold', textDecoration: underline ? 'underline' : 'none'}}>{'\u2049'}</span>)
   }
   if (sentence.inArgument) {
