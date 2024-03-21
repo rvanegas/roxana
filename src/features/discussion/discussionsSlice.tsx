@@ -59,9 +59,9 @@ function updateSentenceDerivatives(state) {
       discussants.add(claimant)
     }
   }
-  state.discussants = Array.from(discussants)
+  state.discussants = Array.from(discussants).sort((a, b) => a.localeCompare(b))
   for (let discussant of state.discussants) {
-    if (state.hideDiscussants[discussant] !== undefined) {
+    if (state.hideDiscussants[discussant] === undefined) {
       state.hideDiscussants[discussant] = false
     }
   }
