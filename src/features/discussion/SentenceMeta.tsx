@@ -76,15 +76,25 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
     return statusSegments.join('; ')
   }
 
-  const annotations = claimsSummary().map((claim, index) => (
-    <span key={index} style={{color: (claim ? 'seagreen' : 'firebrick')}}>{claim ? '\u2714' : '\u2718'}</span>
-  ))
-  if (sentence.inArgument) {
-    annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
-  }
+  const userClaim = sentence.accepted.includes(username) ? true
+    : sentence.rejected.includes(username) ? false : null
+  let underlined
+  const annotations = claimsSummary().map((claim, index) => {
+    const underline = !underlined && claim === userClaim
+    underlined = underlined || underline
+    let style = {
+      color: (claim ? 'seagreen' : 'firebrick'),
+      textDecoration: underline ? 'underline' : 'none'
+    }
+    return <span key={index} style={style}>{claim ? '\u2714' : '\u2718'}</span>
+  })
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
-    annotations.push(<span key="i" style={{color: 'red', fontWeight: 'bold'}}>{'\u2049'}</span>)
+    let underline = irrational.includes(username)
+    annotations.push(<span key="i" style={{color: 'red', fontWeight: 'bold', textDecoration: underline ? 'underline' : 'none'}}>{'\u2049'}</span>)
+  }
+  if (sentence.inArgument) {
+    annotations.push(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
   }
   const annotationIcons = (
     <View columnStart={1} style={{placeSelf: 'start end'}}>
