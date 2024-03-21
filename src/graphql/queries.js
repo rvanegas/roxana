@@ -22,6 +22,7 @@ export const getDiscussion = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -63,6 +64,7 @@ export const getSentence = /* GraphQL */ `
     getSentence(id: $id) {
       id
       content
+      searchable
       discussionId
       discussion {
         id
@@ -93,6 +95,7 @@ export const listSentences = /* GraphQL */ `
       items {
         id
         content
+        searchable
         discussionId
         discussion {
           id

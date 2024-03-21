@@ -25,6 +25,7 @@ export const createDiscussion = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -60,6 +61,7 @@ export const updateDiscussion = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -95,6 +97,7 @@ export const deleteDiscussion = /* GraphQL */ `
         items {
           id
           content
+          searchable
           discussionId
           createdAt
           updatedAt
@@ -114,6 +117,7 @@ export const createSentence = /* GraphQL */ `
     createSentence(input: $input, condition: $condition) {
       id
       content
+      searchable
       discussionId
       discussion {
         id
@@ -142,6 +146,7 @@ export const updateSentence = /* GraphQL */ `
     updateSentence(input: $input, condition: $condition) {
       id
       content
+      searchable
       discussionId
       discussion {
         id
@@ -170,6 +175,7 @@ export const deleteSentence = /* GraphQL */ `
     deleteSentence(input: $input, condition: $condition) {
       id
       content
+      searchable
       discussionId
       discussion {
         id
