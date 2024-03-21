@@ -15,8 +15,8 @@ type Sentence @model {
   id: ID!
   content: String!  # immutable
   searchable: String
-  discussionId: ID! @index(name: "byDiscussion")
-  discussion: Discussion! @belongsTo(fields: ["discussionId"])
+  discussionId: ID @index(name: "byDiscussion")
+  discussion: Discussion @belongsTo(fields: ["discussionId"])
 }
 
 type User @model {

@@ -435,6 +435,15 @@ export interface ReplaceSentenceInput {
 function replaceSentence(input: ReplaceSentenceInput) {
   const {key, section, content} = input
   const {updateSentence} = discussionsSlice.actions
+  async function createNewSentence(content, discussionId) {
+    const variables = {input: {content, discussionId}}
+    const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as any
+    return response.data.createSentence.id
+  }
+  async function disassociateSentence(id) {
+    const variables = {input: {id, discussionId: null}}
+    API.graphql(graphqlOperation(mutations.updateSentence, variables))
+  }
   return async (dispatch, getState) => {
     try {
       const state = getState()
@@ -449,9 +458,10 @@ function replaceSentence(input: ReplaceSentenceInput) {
         console.error('not found', key, section, discussionSentences)
         throw new Error('sentence not found')
       }
-      const variables = {input: {content, discussionId}}
-      const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as any
-      const newSentenceId = response.data.createSentence.id
+      const newSentenceId = await createNewSentence(content, discussionId)
+      if (sentence.id) {
+        disassociateSentence(sentence.id)
+      }
       const index = nextUniqueIndex(sentence, sentences)
       const {status, owner} = sentence
       const newSentence = {key, index, content, id: newSentenceId, status, owner}
