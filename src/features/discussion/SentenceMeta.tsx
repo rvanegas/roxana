@@ -91,7 +91,12 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
     let underline = irrational.includes(username) && !discussions.hideDiscussants[username]
-    annotations.push(<span key="i" style={{color: 'red', fontWeight: 'bold', textDecoration: underline ? 'underline' : 'none'}}>{'\u2049'}</span>)
+    let style = {
+      color: 'red',
+      fontWeight: 'bold',
+      textDecoration: underline ? 'underline' : 'none'
+    }
+    annotations.push(<span key="i" style={style}>{'\u2049'}</span>)
   }
   if (sentence.inArgument) {
     annotations.push(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)

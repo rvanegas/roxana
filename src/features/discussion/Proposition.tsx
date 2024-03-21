@@ -76,6 +76,15 @@ export function Proposition({position, discussionId, proposition}) {
     }
   })
 
+  // function myBlockStyleFn(contentBlock) {
+  // const ownDraft = sentence.status === 'draft' && sentence.owner === username
+  // const editorStyle = ownDraft ? {backgroundColor: 'lightyellow'} : {}
+  //   const type = contentBlock.getType();
+  //   if (type === 'blockquote') {
+  //     return 'superFancyBlockquote';
+  //   }
+  // }
+
   const sentence = proposition
 
   ///////////////////
@@ -90,6 +99,7 @@ export function Proposition({position, discussionId, proposition}) {
       </View>
       <View columnStart={3}>
         <Editor
+          // blockStyleFn={myBlockStyleFn}
           editorState={editorState} onChange={handleChange}
           keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
           onBlur={handleBlur} onFocus={handleFocus}
