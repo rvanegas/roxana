@@ -14,7 +14,7 @@ import {
   getDiscussionAction,
   selectDiscussions,
   setUsername,
-  setIsCompact,
+  setShowDetail,
   toggleHideDiscussant,
 } from './discussionsSlice'
 
@@ -41,7 +41,8 @@ export function Discussion() {
     }
     if (discussionId) {
       const variables = {id: discussionId}
-      const request = API.graphql(graphqlOperation(custom.onDiscussionLayoutById, variables)) as unknown as {subscribe(any)}
+      const op = graphqlOperation(custom.onDiscussionLayoutById, variables)
+      const request = API.graphql(op) as unknown as {subscribe(any)}
       const subscription = request.subscribe({
         next: next => {
           const discussion: GetDiscussionInput = next.value.data.onDiscussionById
@@ -53,8 +54,8 @@ export function Discussion() {
     }
   }, [dispatch, discussionStatusInit, discussionId, username])
 
-  function handleSwitch(e) {
-    dispatch(setIsCompact(e.target.checked))
+  function handleDetail(e) {
+    dispatch(setShowDetail(e.target.checked))
   }
   function handleDiscussantSwitch(e, discussant) {
     e.preventDefault()
@@ -82,18 +83,18 @@ export function Discussion() {
       </Heading>
       <Button columnSpan={2} variation="link" size="small" onClick={handleNewButton}>new</Button>
       <View columnSpan={2} style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
-        <SwitchField
-          style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
-          labelPosition="end"
-          label="hide detail"
-          defaultChecked={false}
-          onChange={handleSwitch}
-        />
         <Text style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}>
           {isSyncing && 'syncing...'}
         </Text>
       </View>
       <View columnStart="1" columnEnd="-1">
+        <SwitchField
+          style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
+          labelPosition="end"
+          label="detail"
+          defaultChecked={true}
+          onChange={handleDetail}
+        />
         {discussantButtons}
       </View>
       <Grid

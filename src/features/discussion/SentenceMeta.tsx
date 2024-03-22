@@ -99,7 +99,7 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
     annotations.push(<span key="i" style={style}>{'\u2049'}</span>)
   }
   if (sentence.inArgument) {
-    annotations.push(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
+    annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
   }
   const annotationIcons = (
     <View columnStart={1} style={{placeSelf: 'start end'}}>
@@ -116,7 +116,7 @@ export function SentenceMeta({sentence, section, mode, editorLine}: SentenceMeta
       >{action}</Button>
   ))
 
-  const actionStatusLine = discussions.isCompact ? null : (
+  const actionStatusLine = !discussions.showDetail ? null : (
     <View columnSpan={4} style={{placeSelf: 'center start'}}>
       {buttons}
       <Text style={{display: 'inline-block', paddingLeft: '20px', paddingBottom: '20px'}}>

@@ -33,7 +33,7 @@ interface State {
   arguments: Sentence[]
   discussants: string[]
   hideDiscussants: object
-  isCompact: boolean
+  showDetail: boolean
 }
 
 const initialState: State = {
@@ -47,7 +47,7 @@ const initialState: State = {
   arguments: [],
   discussants: [],
   hideDiscussants: {},
-  isCompact: false,
+  showDetail: true,
 }
 
 function updateSentenceDerivatives(state) {
@@ -114,9 +114,9 @@ const discussionsSlice = createSlice({
       const discussionId: string = action.payload
       Object.assign(state, {discussionId, revision: 0, propositions: [], arguments: []})
     },
-    setIsCompact(state, action) {
-      const isCompact: boolean = action.payload
-      state.isCompact = isCompact
+    setShowDetail(state, action) {
+      const showDetail: boolean = action.payload
+      state.showDetail = showDetail
     },
     incrementRevision(state, action) {
       const revision: number = action.payload
@@ -647,5 +647,5 @@ export function propositionIndexesFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus, setUsername, setIsCompact, toggleHideDiscussant} = discussionsSlice.actions
+export const {unsetFocus, setUsername, setShowDetail, toggleHideDiscussant} = discussionsSlice.actions
 export default discussionsSlice.reducer

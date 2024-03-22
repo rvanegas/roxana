@@ -153,16 +153,18 @@ export function Argument({position, argument, discussionId}) {
   const postSentence = (
     <React.Fragment>
       {propositionElements}
-      <View style={{paddingBottom: '10px'}} columnSpan={4} />
     </React.Fragment>
   )
+
+  const ownDraft = sentence.status === 'draft' && sentence.owner === username
+  const editorStyle = ownDraft ? {backgroundColor: 'lightyellow'} : {}
 
   const editorLine = (
     <React.Fragment>
       <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </View>
-      <View columnStart={3}>
+      <View style={editorStyle} columnStart={3}>
         <Editor
           editorState={editorState} onChange={handleChange}
           keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
@@ -179,6 +181,7 @@ export function Argument({position, argument, discussionId}) {
   return (
     <React.Fragment>
       <SentenceMeta sentence={sentence} mode={mode} section={section} editorLine={editorLine} />
+      <View style={{paddingBottom: '10px'}} columnSpan={4} />
     </React.Fragment>
   )
 }
