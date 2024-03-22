@@ -1,25 +1,31 @@
 import React, {useState, useEffect, useContext} from 'react'
 import {useDispatch} from 'react-redux'
-import {View, Divider} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
-import {toAlphaIndex} from '../../app/util'
 import {SentenceMeta} from './SentenceMeta'
 import {Section, SentenceMode, ElementRef} from './discussion.d'
 import {
+
+
   unsetFocus,
   focusOnSentence,
   replaceSentenceAction,
   ReplaceSentenceInput,
 } from './discussionsSlice'
+import './discussion.css'
 
 export function Proposition({position, discussionId, proposition}) {
   const section: Section = 'propositions'
   // @ts-ignore
-  const isArguments = section === 'arguments'
-  const dispatch = useDispatch()
+
   const editorRef = React.createRef() as ElementRef
+
+  const dispatch = useDispatch()
+
+
+
   const [editorState, setEditorState] = useState(initEditorState)
+
   const placeholder = position === 0 ?
     'Type a proposition. For example, "Socrates is a man."' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
@@ -83,31 +89,22 @@ export function Proposition({position, discussionId, proposition}) {
   const dividerStyle = undefined
   const postSentence = undefined
 
-  const ownDraft = sentence.status === 'draft' && sentence.owner === username
-  const editorStyle = ownDraft ? {backgroundColor: 'lightyellow'} : {}
-
-  const editorLine = (
-    <React.Fragment>
-      <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
-        {isArguments ? toAlphaIndex(position) : position+1}
-      </View>
-      <View style={editorStyle} columnStart={3}>
-        <Editor
-          editorState={editorState} onChange={handleChange}
-          keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
-          onBlur={handleBlur} onFocus={handleFocus}
-          readOnly={readOnly} ref={editorRef}
-          placeholder={placeholder}
-        />
-        <Divider style={dividerStyle} />
-      </View>
-      {postSentence}
-    </React.Fragment>
+  const editorElement = (
+    <Editor
+      editorState={editorState} onChange={handleChange}
+      keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
+      onBlur={handleBlur} onFocus={handleFocus}
+      readOnly={readOnly} ref={editorRef}
+      placeholder={placeholder}
+    />
   )
 
   return (
     <React.Fragment>
-      <SentenceMeta sentence={sentence} mode={mode} section={section} editorLine={editorLine} />
+      <SentenceMeta
+        sentence={sentence} position={position} mode={mode} section={section}
+        postSentence={postSentence} dividerStyle={dividerStyle} editorElement={editorElement}
+      />
     </React.Fragment>
   )
 }
