@@ -23,7 +23,7 @@ export function PropositionsList() {
     />
   ))
 
-  const newButton = !discussions.showDetail ? null : (
+  const newButton = (
     <View columnSpan={2} style={{placeSelf: 'center start', paddingBottom: '20px'}}>
       <Button variation="link" size="small" onClick={handleNew}>new</Button>
     </View>
