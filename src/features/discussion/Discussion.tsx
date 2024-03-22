@@ -14,7 +14,6 @@ import {
   getDiscussionAction,
   selectDiscussions,
   setUsername,
-  setShowDetail,
   toggleHideDiscussant,
 } from './discussionsSlice'
 
@@ -54,9 +53,6 @@ export function Discussion() {
     }
   }, [dispatch, discussionStatusInit, discussionId, username])
 
-  function handleDetail(e) {
-    dispatch(setShowDetail(e.target.checked))
-  }
   function handleDiscussantSwitch(e, discussant) {
     e.preventDefault()
     dispatch(toggleHideDiscussant(discussant))
@@ -88,13 +84,6 @@ export function Discussion() {
         </Text>
       </View>
       <View columnStart="1" columnEnd="-1">
-        <SwitchField
-          style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
-          labelPosition="end"
-          label="detail"
-          defaultChecked={true}
-          onChange={handleDetail}
-        />
         {discussantButtons}
       </View>
       <Grid

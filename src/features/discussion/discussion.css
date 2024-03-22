@@ -3,6 +3,10 @@
   position: relative;
 }
 
+.discussion-editor:hover .discussion-actions {
+  color: blue;
+}
+
 .discussion-editor-draft {
   background-color: lightyellow;
 }
@@ -14,5 +18,9 @@
   top: 0;
   right: 0;
   padding: 0 5px;
-  color: darkred;
+  visibility: hidden;
+}
+
+.discussion-editor:hover .discussion-actions {
+  visibility: visible;
 }

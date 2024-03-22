@@ -1,6 +1,6 @@
 import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {Divider, Button, View, Text} from '@aws-amplify/ui-react'
+import {Divider, Button, View} from '@aws-amplify/ui-react'
 import classNames from 'classnames'
 import {Section, Sentence, SentenceMode} from './discussion.d'
 import {toAlphaIndex} from '../../app/util'
@@ -55,33 +55,6 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     }
   }
 
-  function statusLine() {
-    const statusSegments: string[] = []
-    statusSegments.push(`status: ${sentence.status}`)
-    if (mode) {
-      statusSegments.push(`mode: ${mode}`)
-    }
-    if (sentence.owner) {
-      statusSegments.push(`owner: ${sentence.owner}`)
-    }
-    if (sentence.accepted.length !== 0) {
-      const acceptedUsernames = sentence.accepted.join(', ')
-      statusSegments.push(`accepted: ${acceptedUsernames}`)
-    }
-    if (sentence.rejected.length !== 0) {
-      const rejectedUsernames = sentence.rejected.join(', ')
-      statusSegments.push(`rejected: ${rejectedUsernames}`)
-    }
-    if (sentence.irrational.length !== 0) {
-      const irrationalUsernames = sentence.irrational.join(', ')
-      statusSegments.push(`irrational: ${irrationalUsernames}`)
-    }
-    if (sentence.inArgument) {
-      statusSegments.push(`in argument`)
-    }
-    return statusSegments.join('; ')
-  }
-
   const userClaim = sentence.accepted.includes(username) ? true
     : sentence.rejected.includes(username) ? false : null
   let underlined
@@ -119,7 +92,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     </View>
   )
 
-  const buttons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
+  const actionButtons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
     isActionable[action](sentence, username) &&
       <Button
         key={action} variation="link" size="small"
@@ -127,15 +100,6 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
         onClick={() => handleChangeStatus(action)}
       >{action}</Button>
   ))
-
-  const actionStatusLine = !discussions.showDetail ? null : (
-    <View columnSpan={4} style={{placeSelf: 'center start'}}>
-      {buttons}
-      <Text style={{display: 'inline-block', paddingLeft: '20px', paddingBottom: '20px'}}>
-        {statusLine()}
-      </Text>
-    </View>
-  )
 
   const editorClassName = classNames({
     'discussion-editor': true,
@@ -149,7 +113,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
           {editorElement}
           <Divider style={dividerStyle} />
           <div className={'discussion-actions'}>
-            edit accept
+            {actionButtons}
           </div>
         </div>
       </View>
@@ -162,7 +126,6 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
       {annotationIcons}
       {indexLine}
       {editorLine}
-      {actionStatusLine}
       {isArguments && <View style={{paddingBottom: '10px'}} columnSpan={4} />}
     </React.Fragment>
   )
