@@ -36,8 +36,7 @@ export function Proposition({position, discussionId, proposition}) {
   const [mode, setMode] = useState<SentenceMode>('')
 
   function initEditorState() {
-    const content = proposition.status === 'draft' && proposition.owner !== username ? `${username} is thinking...` : proposition.content
-    const contentState = ContentState.createFromText(content)
+    const contentState = ContentState.createFromText(proposition.content)
     return EditorState.createWithContent(contentState)
   }
 
