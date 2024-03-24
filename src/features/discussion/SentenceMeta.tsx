@@ -1,6 +1,6 @@
 import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {Divider, Button, View} from '@aws-amplify/ui-react'
+import {Divider, View} from '@aws-amplify/ui-react'
 import classNames from 'classnames'
 import {Section, Sentence, SentenceMode} from './discussion.d'
 import {toAlphaIndex} from '../../app/util'
@@ -8,7 +8,6 @@ import {CurrentUserContext} from '../user/User'
 import {
   changeSentenceStatusAction,
   selectDiscussions,
-  isActionable
 } from './discussionsSlice'
 
 interface SentenceMetaProps {
@@ -28,10 +27,6 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
   const isArguments = section === 'arguments'
-
-  function handleChangeStatus(change) {
-    dispatch(changeSentenceStatusAction({key: sentence.key, section, change}))
-  }
 
   function handleStatusToggle() {
     if (sentence.status !== 'committed') {
@@ -122,29 +117,25 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     </View>
   )
 
-  const actionButtons = ['edit', 'commit', 'accept', 'reject', 'clear'].map(action => (
-    isActionable[action](sentence, username) &&
-      <Button
-        key={action} variation="link" size="small"
-        style={{paddingBlockStart: '0px', paddingBlockEnd: '0px'}}
-        onClick={() => handleChangeStatus(action)}
-      >{action}</Button>
-  ))
+  const editingStatus = (
+    <div className={'discussion-actions'}>
+      editing...
+    </div>
+  )
 
   const editorClassName = classNames({
     'discussion-editor': true,
     'discussion-editor-draft': sentence.status === 'draft' && sentence.owner === username
   })
 
+  const anothersDraft = sentence.status === 'draft' && sentence.owner !== username
+
   const editorLine = (
     <React.Fragment>
       <View columnStart={3}>
         <div className={editorClassName}>
-          {editorElement}
+          {anothersDraft ? editingStatus : editorElement}
           <Divider style={dividerStyle} />
-          <div className={'discussion-actions'}>
-            {actionButtons}
-          </div>
         </div>
       </View>
       {postSentence}
