@@ -80,7 +80,7 @@ export function Argument({position, argument, discussionId}) {
     if (editorState.getCurrentContent().getPlainText() !== argument.content) {
       canonicalContent = content
     }
-    if (content === argument.content) {
+    if (content === argument.content || argument.status === 'draft') {
       setMode('')
     }
     else {

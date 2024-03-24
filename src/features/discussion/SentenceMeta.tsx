@@ -81,13 +81,13 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
   }
   const annotationIcons = (
-    <View columnStart={1} style={{placeSelf: 'start end'}}>
+    <View columnStart={1} className="sentence-meta" style={{placeSelf: 'start end'}}>
       {annotations}
     </View>
   )
 
   const indexLine = (
-    <View columnStart={2} style={{fontFamily: 'Comic Sans', fontWeight: 'bold', paddingRight: '5px', placeSelf: 'start end'}}>
+    <View columnStart={2} className="sentence-meta" style={{fontFamily: 'Comic Sans', fontWeight: 'normal', paddingRight: '5px', placeSelf: 'start end'}}>
       {isArguments ? toAlphaIndex(position) : position+1}
     </View>
   )

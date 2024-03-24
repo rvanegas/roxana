@@ -43,7 +43,7 @@ export function Proposition({position, discussionId, proposition}) {
   }
   function handleBlur() {
     const content = editorState.getCurrentContent().getPlainText()
-    if (proposition.content !== content) {
+    if (proposition.content !== content || proposition.status === 'draft') {
       const input: ReplaceSentenceInput = {key: proposition.key, section: 'propositions', content}
       const response = dispatch(replaceSentenceAction(input)) as unknown as {then(any)}
       response.then(() => setMode(''))
