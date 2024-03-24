@@ -17,6 +17,8 @@ import {
 import './discussion.css'
 
 export function Argument({position, argument, discussionId}) {
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser.username
   const section: Section = 'arguments'
   // @ts-ignore
   const propositionIndexes = propositionIndexesFromArgument(argument)
@@ -30,15 +32,14 @@ export function Argument({position, argument, discussionId}) {
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
   const placeholder = position === 0 ?
     'Type a sequence of proposition numbers. For example, "1 2 3".' : null
-  const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser.username
   const readOnly = argument.accepted.length + argument.rejected.length > 0 || argument.inArgument
   const [mode, setMode] = useState<SentenceMode>('')
 
   let canonicalContent
 
   function initialEditorState() {
-    const contentState = ContentState.createFromText(argument.content)
+    const content = argument.status === 'draft' && argument.owner !== username ? `${username} is thinking...` : argument.content
+    const contentState = ContentState.createFromText(content)
     return EditorState.createWithContent(contentState)
   }
 

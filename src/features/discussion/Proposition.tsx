@@ -17,6 +17,8 @@ import {
 import './discussion.css'
 
 export function Proposition({position, discussionId, proposition}) {
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser.username
   const section: Section = 'propositions'
   // @ts-ignore
 
@@ -30,13 +32,12 @@ export function Proposition({position, discussionId, proposition}) {
 
   const placeholder = position === 0 ?
     'Type a proposition. For example, "Socrates is a man."' : null
-  const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser.username
   const readOnly = proposition.accepted.length + proposition.rejected.length > 0 || proposition.inArgument
   const [mode, setMode] = useState<SentenceMode>('')
 
   function initEditorState() {
-    const contentState = ContentState.createFromText(proposition.content)
+    const content = proposition.status === 'draft' && proposition.owner !== username ? `${username} is thinking...` : proposition.content
+    const contentState = ContentState.createFromText(content)
     return EditorState.createWithContent(contentState)
   }
 
