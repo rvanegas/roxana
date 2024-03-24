@@ -19,9 +19,10 @@ interface SentenceMetaProps {
   postSentence?: any
   dividerStyle: any
   editorElement: any
+  readOnly: boolean
 }
 
-export function SentenceMeta({sentence, position, section, mode, postSentence, dividerStyle, editorElement}: SentenceMetaProps) {
+export function SentenceMeta({sentence, position, section, mode, postSentence, dividerStyle, editorElement, readOnly}: SentenceMetaProps) {
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
@@ -55,7 +56,6 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     }
   }
 
-  const annotated = sentence.accepted.length + sentence.rejected.length > 0 || sentence.inArgument
   const userClaim = sentence.accepted.includes(username) ? true
     : sentence.rejected.includes(username) ? false : null
   let underlined
@@ -87,7 +87,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     </View>
   )
 
-  const fontWeight = annotated ? 'bold' : 'normal'
+  const fontWeight = readOnly ? 'bold' : 'normal'
   const indexLine = (
     <View columnStart={2} className="sentence-meta" style={{fontFamily: 'Comic Sans', fontWeight, paddingRight: '5px', placeSelf: 'start end'}}>
       {isArguments ? toAlphaIndex(position) : position+1}

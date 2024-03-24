@@ -11,6 +11,7 @@ import {
   unsetFocus,
   focusOnSentence,
   replaceSentenceAction,
+  changeSentenceStatusAction,
   ReplaceSentenceInput,
 } from './discussionsSlice'
 import './discussion.css'
@@ -31,7 +32,7 @@ export function Argument({position, argument, discussionId}) {
     'Type a sequence of proposition numbers. For example, "1 2 3".' : null
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser.username
-  const readOnly = !(argument.status === 'draft' && argument.owner === username)
+  const readOnly = argument.accepted.length + argument.rejected.length > 0 || argument.inArgument
   const [mode, setMode] = useState<SentenceMode>('')
 
   let canonicalContent
@@ -74,20 +75,22 @@ export function Argument({position, argument, discussionId}) {
 
   function handleFocus() {
     setMode('editing')
+    dispatch(changeSentenceStatusAction({key: argument.key, section, change: 'edit'}))
   }
+
   function handleBlur() {
     const content = displayPropositionIndexes.join(' ')
     if (editorState.getCurrentContent().getPlainText() !== argument.content) {
       canonicalContent = content
     }
-    if (content === argument.content || argument.status === 'draft') {
-      setMode('')
-    }
-    else {
+    if (content !== argument.content || argument.status === 'draft') {
       const value: ReplaceSentenceInput = {key: argument.key, section: 'arguments', content}
       const response = dispatch(replaceSentenceAction(value)) as unknown as {then(any)}
       response.then(() => setMode(''))
       setMode('saving')
+    }
+    else {
+      setMode('')
     }
   }
 
@@ -169,7 +172,7 @@ export function Argument({position, argument, discussionId}) {
   return (
     <React.Fragment>
       <SentenceMeta
-        sentence={sentence} position={position} mode={mode} section={section}
+        sentence={sentence} position={position} mode={mode} section={section} readOnly={readOnly}
         postSentence={postSentence} dividerStyle={dividerStyle} editorElement={editorElement}
       />
     </React.Fragment>
