@@ -119,7 +119,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
 
   const editingStatus = (
     <div className={'discussion-actions'}>
-      editing...
+      {sentence.owner} editing...
     </div>
   )
 
@@ -134,7 +134,8 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     <React.Fragment>
       <View columnStart={3}>
         <div className={editorClassName}>
-          {anothersDraft ? editingStatus : editorElement}
+          {editorElement}
+          {anothersDraft ? editingStatus : undefined}
           <Divider style={dividerStyle} />
         </div>
       </View>
