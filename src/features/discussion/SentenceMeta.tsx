@@ -87,7 +87,7 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
   )
 
   const indexLine = (
-    <View columnStart={2} style={{paddingRight: '10px', placeSelf: 'start end'}}>
+    <View columnStart={2} style={{fontFamily: 'Comic Sans', fontWeight: 'bold', paddingRight: '5px', placeSelf: 'start end'}}>
       {isArguments ? toAlphaIndex(position) : position+1}
     </View>
   )
