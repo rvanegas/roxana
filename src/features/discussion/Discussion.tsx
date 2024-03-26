@@ -72,6 +72,8 @@ export function Discussion() {
     )
   })
 
+  const argumentsList = discussions.arguments.length === 0 ? null : <ArgumentsList />
+
   return (
     <React.Fragment>
       <Heading style={{paddingTop: '30px'}} columnStart="1" columnEnd="-1">
@@ -91,7 +93,7 @@ export function Discussion() {
         gap="var(--amplify-space-small)"
       >
         <PropositionsList />
-        <ArgumentsList />
+        {argumentsList}
       </Grid>
     </React.Fragment>
   )
