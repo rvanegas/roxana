@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
-import { store } from './app/store';
-import { Provider } from 'react-redux';
-import * as serviceWorker from './serviceWorker';
+import {AmplifyProvider, Authenticator} from '@aws-amplify/ui-react'
 import Amplify from "aws-amplify";
+import {Provider} from 'react-redux';
+import App from './App';
+import {store} from './app/store';
+import {theme} from './theme'
+import * as serviceWorker from './serviceWorker';
 import awsExports from "./aws-exports";
 const packageJson = require('../package.json')
 
@@ -14,7 +16,11 @@ console.log('version', packageJson.version)
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <AmplifyProvider theme={theme}>
+        <Authenticator.Provider>
+          <App />
+        </Authenticator.Provider>
+      </AmplifyProvider>
     </Provider>
   </React.StrictMode>,
   document.getElementById('root')

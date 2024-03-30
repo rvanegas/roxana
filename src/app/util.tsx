@@ -1,5 +1,4 @@
 import cryptoRandomString from 'crypto-random-string'
-import parse from 'url-parse'
 import dayjs from 'dayjs'
 
 export const dlog = function(...msg) {dlog.enabled && console.log(...msg)}
@@ -20,16 +19,11 @@ export function generateDiscussionId() {
   return cryptoRandomString({length: discussionIdLength, type: 'distinguishable'}).toLowerCase();
 }
 
-export function discussionIdFromUrl() {
-  return parse(window.location.href, true).query.d
-}
-
 export function redirectToDiscussionId(discussionId) {
-  // console.log('redirect', discussionId)
-  window.location.search = `?d=${discussionId}`
+  window.location.href = '/discussions/' + discussionId
 }
 
-export function pick(object: object, keys: string[]) {
+export function pick(object: object, keys: string[]): any {
   const newObject = {}
   for (let key of keys) {
     newObject[key] = object[key]

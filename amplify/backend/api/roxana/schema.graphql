@@ -2,13 +2,15 @@
 # all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
 input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
 
-type Discussion @model {
+type Discussion @model @searchable {
   id: ID!
   version: Int!    # == 2
   revision: Int    # incremented on every update
   layout: String!
   users: [User] @manyToMany(relationName: "DiscussionUsers")
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 type Sentence @model {

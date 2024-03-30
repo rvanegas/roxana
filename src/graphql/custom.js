@@ -42,4 +42,14 @@ export const onDiscussionLayoutById = /* GraphQL */ `
       updatedAt
     }
   }
-`;
+`
+export const listRecentDiscussions = /* GraphQL */ `
+  query SearchDiscussions {
+    searchDiscussions(sort: {direction: desc, field: updatedAt}, limit: 10) {
+      items {
+        id
+        updatedAt
+      }
+    }
+  }
+`

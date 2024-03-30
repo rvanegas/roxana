@@ -1,13 +1,16 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import {View, Button, Heading} from '@aws-amplify/ui-react'
 import {selectDiscussions} from './discussionsSlice'
 import {Argument} from './Argument'
+import {CurrentUserContext} from '../user/User'
 import {
   focusOnSentence,
 } from './discussionsSlice'
 
 export function ArgumentsList() {
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser?.username
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const discussionId = discussions.discussionId
@@ -35,7 +38,7 @@ export function ArgumentsList() {
         Arguments
       </Heading>
       {argumentElements}
-      {newButton}
+      {username && newButton}
     </React.Fragment>
   )
 }

@@ -1,14 +1,17 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import {Heading, View, Button} from '@aws-amplify/ui-react'
-import {Proposition} from './Proposition'
 import '@aws-amplify/ui-react/styles.css'
+import {Proposition} from './Proposition'
+import {CurrentUserContext} from '../user/User'
 import {
   selectDiscussions,
   focusOnSentence,
 } from './discussionsSlice'
 
 export function PropositionsList() {
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser?.username
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
@@ -35,7 +38,7 @@ export function PropositionsList() {
         Propositions
       </Heading>
       {propositionEntities}
-      {newButton}
+      {username && newButton}
     </React.Fragment>
   )
 }
