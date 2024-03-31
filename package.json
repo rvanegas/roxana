@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@aws-amplify/ui-react": "^2.1.9",
+    "@bugsnag/js": "^7.16.2",
+    "@bugsnag/plugin-react": "^7.16.2",
     "@reduxjs/toolkit": "^1.7.1",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
