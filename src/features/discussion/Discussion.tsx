@@ -24,6 +24,7 @@ export function Discussion() {
   const params = useParams()
   const discussions = useSelector(selectDiscussions)
   const isSyncing = discussions.eventQueue.length !== 0
+  const discussionStatusInit = discussions.status === 'init'
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
 
@@ -33,10 +34,9 @@ export function Discussion() {
       if (username === 'rodvandur') {
         dlog.enabled = true
       }
-      dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
 
-    if (discussionId && discussionId !== params.discussionId) {
+    if (discussionStatusInit || (discussionId && discussionId !== params.discussionId)) {
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
 
@@ -53,7 +53,7 @@ export function Discussion() {
       })
       return () => subscription.unsubscribe()
     }
-  }, [dispatch, usernameChanged, discussionId, username, params])
+  }, [dispatch, discussionStatusInit, usernameChanged, discussionId, username, params])
 
   function handleDiscussantSwitch(e, discussant) {
     e.preventDefault()
