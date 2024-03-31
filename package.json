@@ -1,6 +1,6 @@
 {
   "name": "roxana",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "dependencies": {
     "@aws-amplify/ui-react": "^2.1.9",

@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react'
-import {BrowserRouter, Routes, Route, Outlet, useLocation, useSearchParams, useNavigate, Navigate} from 'react-router-dom'
+import React, {useEffect, useState} from 'react'
+import {BrowserRouter, Routes, Route, Outlet, useLocation, useSearchParams, useNavigate} from 'react-router-dom'
 import {Authenticator, useAuthenticator, Grid, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
@@ -9,44 +9,51 @@ import {DiscussionsList} from './features/discussion/DiscussionsList'
 // import DragTest from './DragTest'
 
 export default function App() {
+  const [reloadPath, setReloadPath] = useState('')
   // @ts-ignore
   const {user, signOut}: {user: any, signOut: () => {}} = useAuthenticator(context => [context.user])
 
   function SignIn() {
-    const [searchParams] = useSearchParams()
-    const path = decodeURI(searchParams.get('path') || '/')
+    const uri = `/?path=${encodeURI(reloadPath)}`
     return (
       <Authenticator>
-        {({signOut, user}: {signOut, user}) =>
-          <Navigate to={path} replace={true} />
-        }
+        {({signOut, user}: {signOut, user}) => {
+          window.location.href = uri
+          return <div/>
+        }}
       </Authenticator>
     )
   }
 
+// <Navigate to={path} replace={true} />
+
   function Home() {
     const location = useLocation()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const path = searchParams.get('path')
+
+    useEffect(() => {
+      if (path) {
+        navigate(path)
+      }
+      else if (location.pathname === '/') {
+        navigate('/discussions')
+      }
+    }, [path, location, navigate])
 
     function handleHome() {
       navigate('/')
     }
 
     function navigateToSignIn() {
-      const signInUrl = `/signin?path=${encodeURI(location.pathname)}`
-      navigate(signInUrl)
+      setReloadPath(window.location.pathname)
+      navigate('/signin')
     }
 
-    useEffect(() => {
-      if (location.pathname === '/') {
-        navigate('/discussions')
-      }
-    }, [location, navigate])
-
-    const signInOrOutButton = location.pathname === '/signin' ?
-      null : user ?
-        <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
-        <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
+    const signInOrOutButton = location.pathname === '/signin' ? null : user ?
+      <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
+      <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
 
     return (
       <CurrentUserContext.Provider value={user}>
