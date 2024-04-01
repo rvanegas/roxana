@@ -17,6 +17,12 @@
   padding: 0 5px;
 }
 
+/* Component of same name will be renamed */
 .sentence-meta {
   user-select:  none;
+  font-family: Comic Sans;
+  font-weight: bold;
+  padding-right: 5px;
+  height: 100%;
+  width: 100%;
 }

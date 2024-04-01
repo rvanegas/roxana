@@ -65,10 +65,7 @@ export function Discussion() {
     return (
       <SwitchField
         style={{display: 'inline-block', paddingLeft: '20px', lineHeight: '30px'}}
-        key={discussant}
-        labelPosition="end"
-        label={discussant}
-        isChecked={!isHidden}
+        key={discussant} labelPosition="end" label={discussant} isChecked={!isHidden}
         onClick={e => handleDiscussantSwitch(e, discussant)}
       />
     )
@@ -91,7 +88,7 @@ export function Discussion() {
       </View>
       <Grid
         templateColumns="4rem 2rem 1fr 3rem"
-        gap="var(--amplify-space-small)"
+        gap="var(--amplify-space-xs)"
       >
         <PropositionsList />
         {argumentsList}
