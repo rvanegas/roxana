@@ -10,7 +10,6 @@ import * as custom from '../../graphql/custom'
 import {dlog} from '../../app/util'
 import {
   initializeDiscussionAction,
-  GetDiscussionUpdateInput,
   getDiscussionAction,
   selectDiscussions,
   setUsername,
@@ -46,7 +45,7 @@ export function Discussion() {
       const request = API.graphql(op) as unknown as {subscribe(any)}
       const subscription = request.subscribe({
         next: next => {
-          const discussion: GetDiscussionUpdateInput = next.value.data.onDiscussionById
+          const discussion = next.value.data.onDiscussionById
           dispatch(getDiscussionAction(discussion))
         },
         error: error => console.error(error),
