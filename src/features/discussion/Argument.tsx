@@ -13,6 +13,7 @@ import {
   replaceSentenceAction,
   changeSentenceStatusAction,
   ReplaceSentenceInput,
+  sentenceCommittedOthers,
 } from './discussionsSlice'
 import './discussion.css'
 
@@ -32,7 +33,7 @@ export function Argument({position, argument, discussionId}) {
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
   const placeholder = position === 0 ?
     'Type a sequence of proposition numbers. For example, "1 2 3".' : null
-  const readOnly = !username || argument.accepted.length + argument.rejected.length > 0 || argument.inArgument
+  const readOnly = !username || sentenceCommittedOthers(argument, username) || argument.inArgument
   const [mode, setMode] = useState<SentenceMode>('')
 
   let canonicalContent
