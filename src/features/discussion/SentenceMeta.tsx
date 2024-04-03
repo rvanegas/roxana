@@ -74,23 +74,24 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     underlined = underlined || underline
     let style = {
       color: (claim ? 'seagreen' : 'firebrick'),
-      textDecoration: underline ? 'underline' : 'none'
+      borderBottom: underline ? '1px gray solid' : 'none'
     }
-    return <span key={index} style={style}>{claim ? '\u2714' : '\u2718'}</span>
+    return claim ? <span key={index} className="oi" style={style} data-glyph="check" title="check" />
+      : <span key={index} className="oi" style={style} data-glyph="x" title="x" />
   })
   if (sentence.inArgument) {
-    annotations.unshift(<span key="a" style={{color: 'gray'}}>{'\u279c'}</span>)
+    annotations.unshift(<span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />)
   }
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
     let underline = irrational.includes(username) && !discussions.hideDiscussants[username]
     let style = {
-      color: 'red',
-      fontWeight: 'bold',
-      textDecoration: underline ? 'underline' : 'none'
+      color: 'gold',
+      borderBottom: underline ? '1px gray solid' : 'none'
     }
-    annotations.unshift(<span key="i" style={style}>{'\u2757'}</span>)
+    annotations.unshift(<span key="i" className="oi" style={style} data-glyph="warning" title="warning" />)
   }
+
   const annotationIcons = (
     <View
       columnStart={1} className="sentence-meta" style={{height: '100%', width: '100%', position: 'relative'}}
@@ -103,9 +104,15 @@ export function SentenceMeta({sentence, position, section, mode, postSentence, d
     </View>
   )
 
-  const fontWeight = readOnly ? 'bold' : 'normal'
+  // const isHome = Math.random() > 0.5
+  const indexStyle = {
+    fontWeight: 'bold',
+    // border: position === 0 ? '1px gray double' : position === 2 ? '1px gray dashed' : 'none',
+    height: '20px',
+    width: '20px'
+  }
   const indexLine = (
-    <View columnStart={2} className="sentence-meta" style={{fontWeight}}>
+    <View columnStart={2} className="sentence-index" style={indexStyle}>
       <div style={{textAlign: 'right'}}>
         {isArguments ? toAlphaIndex(position) : position+1}
       </div>

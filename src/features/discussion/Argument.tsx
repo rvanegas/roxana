@@ -142,11 +142,15 @@ export function Argument({position, argument, discussionId}) {
     propositionElements = displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== indexesLength-1) ? null
-        : <View columnStart={1} style={{justifySelf: 'end'}}>{'\u2234'}</View>
+        : <View columnStart={1} className="sentence-meta">
+          <div style={{textAlign: 'right'}}>
+            <span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
+          </div>
+        </View>
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
-          <View columnStart={2} className="sentence-meta">
+          <View columnStart={2} className="sentence-index">
             <div style={{textAlign: 'right'}}>{index}</div>
           </View>
           <View columnEnd={-2}>{proposition.content}</View>
