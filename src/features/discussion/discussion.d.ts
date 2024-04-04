@@ -10,6 +10,7 @@ export type Sentence = {
   owner?: string
   accepted: string[]
   rejected: string[]
+  cleared: string[]
   goal: string[]
   inArgument: boolean
   irrational: string[]

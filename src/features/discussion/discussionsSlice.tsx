@@ -22,7 +22,6 @@ interface Event {
 
 interface State {
   eventQueue: Event[]
-  // ownDiscussionIds: string[]
   recentDiscussions: {id: string, updatedAt: string}[]
   status: string
   error?: string
@@ -139,7 +138,8 @@ const discussionsSlice = createSlice({
       const sentence: Sentence = {
         key, content: '', index: nextIndex(state[section]),
         status, owner: status === 'draft' ? state.username : undefined,
-        accepted: [], rejected: [], irrational: [], goal: [],
+        accepted: [], rejected: [], cleared: [],
+        irrational: [], goal: [],
         inArgument: false
       }
       state[section].push(sentence)
@@ -361,6 +361,7 @@ function getDiscussion(discussionInput) {
           owner: layoutEntry.owner,
           accepted: layoutEntry.accepted || [],
           rejected: layoutEntry.rejected || [],
+          cleared: layoutEntry.cleared || [],
           goal: layoutEntry.goal || [],
           irrational: [],
           inArgument: false
@@ -557,28 +558,52 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       }
       let newSentence: Sentence
       if (change === 'edit' && isActionable.edit(sentence, username)) {
-        newSentence = {...sentence, status: 'draft', owner: username, accepted: [], rejected: []}
+        newSentence = {
+          ...sentence, status: 'draft', owner: username,
+          accepted: [], rejected: [], cleared: [], goal: []
+        }
       }
       else if (change === 'accept' && isActionable.accept(sentence, username)) {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
+        const newCleared = new Set(sentence.cleared)
         newAccepted.add(username)
         newRejected.delete(username)
-        newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
+        newCleared.delete(username)
+        newSentence = {
+          ...sentence,
+          accepted: Array.from(newAccepted),
+          rejected: Array.from(newRejected),
+          cleared: Array.from(newCleared)
+        }
       }
       else if (change === 'reject' && isActionable.reject(sentence, username)) {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
-        newRejected.add(username)
+        const newCleared = new Set(sentence.cleared)
         newAccepted.delete(username)
-        newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
+        newRejected.add(username)
+        newCleared.delete(username)
+        newSentence = {
+          ...sentence,
+          accepted: Array.from(newAccepted),
+          rejected: Array.from(newRejected),
+          cleared: Array.from(newCleared)
+        }
       }
       else if (change === 'clear' && isActionable.clear(sentence, username)) {
         const newAccepted = new Set(sentence.accepted)
         const newRejected = new Set(sentence.rejected)
+        const newCleared = new Set(sentence.cleared)
         newAccepted.delete(username)
         newRejected.delete(username)
-        newSentence = {...sentence, accepted: Array.from(newAccepted), rejected: Array.from(newRejected)}
+        newCleared.add(username)
+        newSentence = {
+          ...sentence,
+          accepted: Array.from(newAccepted),
+          rejected: Array.from(newRejected),
+          cleared: Array.from(newCleared)
+        }
       }
       else {
         console.warn('unknown action or invalid conditions:', change, sentence)
