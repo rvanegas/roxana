@@ -4,7 +4,7 @@ import {View} from '@aws-amplify/ui-react'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import {CurrentUserContext} from '../user/User'
 import {SentenceMeta} from './SentenceMeta'
-import {Section, SentenceMode, ElementRef} from './discussion.d'
+import {Section, ElementRef} from './discussion.d'
 import {
   selectDiscussions,
   propositionIndexesFromArgument,
@@ -18,30 +18,36 @@ import {
 import './discussion.css'
 
 export function Argument({position, argument, discussionId}) {
+  let canonicalContent
+  const sentence = argument
+  const section: Section = 'arguments'
+
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
-  const section: Section = 'arguments'
   // @ts-ignore
-  const propositionIndexes = propositionIndexesFromArgument(argument)
+  const propositionIndexes = section === 'arguments' && propositionIndexesFromArgument(sentence)
   const editorRef = React.createRef() as ElementRef
-
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
-  const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
+  // @ts-ignore
+  const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(section === 'arguments' && propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
-  const placeholder = position === 0 ?
-    'Type a sequence of proposition numbers. For example, "1 2 3".' : null
-  const readOnly = !username || sentenceCommittedOthers(argument, username) || argument.inArgument
-  const [mode, setMode] = useState<SentenceMode>('')
-
-  let canonicalContent
+  const placeholder = position !== 0 ? null : (
+    // @ts-ignore
+    section === 'propositions' ?
+      'Type a proposition. For example, "Socrates is a man."' :
+      'Type a sequence of proposition numbers. For example, "1 2 3".'
+  )
+  const readOnly = !username || sentenceCommittedOthers(sentence, username) || sentence.inArgument
 
   function initialEditorState() {
-    const contentState = ContentState.createFromText(argument.content)
+    const contentState = ContentState.createFromText(sentence.content)
     return EditorState.createWithContent(contentState)
   }
+
+  //////////////////
 
   function setDisplayFromArgumentInput(argumentInput) {
     const invalidPattern = /[^\d\s]/
@@ -74,31 +80,12 @@ export function Argument({position, argument, discussionId}) {
     setDisplayPropositionIndexes(indexes)
   }
 
-  function handleFocus() {
-    setMode('editing')
-    dispatch(changeSentenceStatusAction({key: argument.key, section, change: 'edit'}))
-  }
-
-  function handleBlur() {
-    const content = displayPropositionIndexes.join(' ')
-    if (editorState.getCurrentContent().getPlainText() !== argument.content) {
-      canonicalContent = content
-    }
-    if (content !== argument.content || argument.status === 'draft') {
-      const value: ReplaceSentenceInput = {key: argument.key, section: 'arguments', content}
-      const response = dispatch(replaceSentenceAction(value)) as unknown as {then(any)}
-      response.then(() => setMode(''))
-      setMode('saving')
-    }
-    else {
-      setMode('')
-    }
-  }
-
   function handleChange(editorState) {
-    const argumentInput = editorState.getCurrentContent().getPlainText()
-    setDisplayFromArgumentInput(argumentInput)
-    if (canonicalContent !== undefined) {
+    if (section === 'arguments') {
+      const argumentInput = editorState.getCurrentContent().getPlainText()
+      setDisplayFromArgumentInput(argumentInput)
+    }
+    if (section === 'arguments' && canonicalContent !== undefined) {
       const contentState = ContentState.createFromText(canonicalContent)
       setEditorState(EditorState.createWithContent(contentState))
       setArgumentInputInvalid(false)
@@ -108,40 +95,26 @@ export function Argument({position, argument, discussionId}) {
     }
   }
 
-  function myKeyBindingFn(e) {
-    if (e.keyCode === 13) {
-      return e.shiftKey ? 'next-line' : 'blur-line'
-    }
-    return getDefaultKeyBinding(e)
-  }
-  function handleKeyCommand(command) {
-    if (command === 'next-line' || command === 'blur-line') {
-      editorRef.current.blur()
-      if (command === 'next-line') {
-        dispatch(focusOnSentence('arguments', position + 1))
+  function setFinalContent() {
+    if (section === 'arguments') {
+      const content = displayPropositionIndexes.join(' ')
+      if (editorState.getCurrentContent().getPlainText() !== sentence.content) {
+        canonicalContent = content
       }
-      return 'handled'
+      return content
     }
-    return 'not-handled'
+    else {
+      return editorState.getCurrentContent().getPlainText()
+    }
   }
 
-  useEffect(() => {
-    if (argument.autoFocus) {
-      editorRef.current.focus()
-      dispatch(unsetFocus({section: 'arguments', position}))
+  function propositionElements() {
+    if (section === 'propositions') {
+      return null
     }
-  })
-
-  const sentence = argument
-
-  //////////////////
-
-  let propositionElements
-  const indexesLength = displayPropositionIndexes.length
-  if (indexesLength !== 0) {
-    propositionElements = displayPropositionIndexes.map((index, mapIndex) => {
+    return displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
-      const therefore = (mapIndex !== indexesLength-1) ? null
+      const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
         : <View columnStart={1} className="sentence-meta">
           <div style={{textAlign: 'right'}}>
             <span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
@@ -159,12 +132,44 @@ export function Argument({position, argument, discussionId}) {
     })
   }
 
+  function handleFocus() {
+    dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'edit'}))
+  }
+
+  function handleBlur() {
+    const content = setFinalContent()
+    if (content !== sentence.content || sentence.status === 'draft') {
+      const input: ReplaceSentenceInput = {key: sentence.key, section, content}
+      dispatch(replaceSentenceAction(input))
+    }
+  }
+
+  function myKeyBindingFn(e) {
+    if (e.keyCode === 13) {
+      return e.shiftKey ? 'next-line' : 'blur-line'
+    }
+    return getDefaultKeyBinding(e)
+  }
+  function handleKeyCommand(command) {
+    if (command === 'next-line' || command === 'blur-line') {
+      editorRef.current.blur()
+      if (command === 'next-line') {
+        dispatch(focusOnSentence(section, position + 1))
+      }
+      return 'handled'
+    }
+    return 'not-handled'
+  }
+
+  useEffect(() => {
+    if (sentence.autoFocus) {
+      editorRef.current.focus()
+      dispatch(unsetFocus({section, position}))
+    }
+  })
+
   const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
-  const postSentence = (
-    <React.Fragment>
-      {propositionElements}
-    </React.Fragment>
-  )
+  const postSentence = (<React.Fragment>{propositionElements()}</React.Fragment>)
 
   const editorElement = (
     <Editor
@@ -179,7 +184,7 @@ export function Argument({position, argument, discussionId}) {
   return (
     <React.Fragment>
       <SentenceMeta
-        sentence={sentence} position={position} mode={mode} section={section} readOnly={readOnly}
+        sentence={sentence} position={position} section={section}
         postSentence={postSentence} dividerStyle={dividerStyle} editorElement={editorElement}
       />
     </React.Fragment>
