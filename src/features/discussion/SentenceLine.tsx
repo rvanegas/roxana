@@ -97,20 +97,8 @@ export function SentenceLine(props: SentenceProps) {
     }
   }
 
-  function setFinalContent() {
-    if (canonicalContent) {
-      return canonicalContent
-    }
-    else if (section === 'arguments') {
-      const content = displayPropositionIndexes.join(' ')
-      if (editorState.getCurrentContent().getPlainText() !== sentence.content) {
-        canonicalContent = content
-      }
-      return content
-    }
-    else {
-      return editorState.getCurrentContent().getPlainText()
-    }
+  function handleFocus() {
+    dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'edit'}))
   }
 
   function propositionElements() {
@@ -137,8 +125,20 @@ export function SentenceLine(props: SentenceProps) {
     })
   }
 
-  function handleFocus() {
-    dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'edit'}))
+  function setFinalContent() {
+    if (canonicalContent) {
+      return canonicalContent
+    }
+    else if (section === 'arguments') {
+      const content = displayPropositionIndexes.join(' ')
+      if (editorState.getCurrentContent().getPlainText() !== sentence.content) {
+        canonicalContent = content
+      }
+      return content
+    }
+    else {
+      return editorState.getCurrentContent().getPlainText()
+    }
   }
 
   function handleBlur() {
@@ -158,6 +158,7 @@ export function SentenceLine(props: SentenceProps) {
     }
     return getDefaultKeyBinding(e)
   }
+
   function handleKeyCommand(command) {
     if (command === 'next-line' || command === 'blur-line') {
       editorRef.current.blur()
@@ -286,6 +287,7 @@ export function SentenceLine(props: SentenceProps) {
     width: '20px',
     position: 'relative'
   }
+
   const indexLine = (
     <View
       columnStart={2} className="sentence-index" style={indexStyle}

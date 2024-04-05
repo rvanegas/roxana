@@ -1,11 +1,14 @@
 import React, {useEffect, useState} from 'react'
+import {useSelector} from 'react-redux'
 import {BrowserRouter, Routes, Route, Outlet, useLocation, useSearchParams, useNavigate} from 'react-router-dom'
-import {Authenticator, useAuthenticator, Grid, Text, View, Heading, Button} from '@aws-amplify/ui-react'
+import {Authenticator, useAuthenticator, Flex, Text, View, Heading, Button} from '@aws-amplify/ui-react'
+import classNames from 'classnames'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
 import {CurrentUserContext} from './features/user/User'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
+import {selectDiscussions} from './features/discussion/discussionsSlice'
 // import DragTest from './DragTest'
 
 export default function App() {
@@ -32,6 +35,8 @@ export default function App() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const path = searchParams.get('path')
+    const discussions = useSelector(selectDiscussions)
+    const isSynced = discussions.eventQueue.length === 0
 
     useEffect(() => {
       if (path) {
@@ -55,27 +60,49 @@ export default function App() {
       <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
       <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
 
+    const indicatorClasses = classNames(
+      'indicator',
+      {
+        'synced': isSynced,
+        'unsynced': !isSynced
+      }
+    )
+
+    const locationInDiscussion = (new RegExp('/discussions/\\w+')).test(location.pathname)
+    const discussionElement = <Text>discussion: {discussions.discussionId}</Text>
+
     return (
       <CurrentUserContext.Provider value={user}>
         <View padding="20px">
-          <View>
-            <Grid
-              templateColumns="4fr 1fr 7rem"
-              gap="var(--amplify-space-small)"
+          <Flex
+            justifyContent="space-between"
+            style={{userSelect: 'none'}}
+          >
+            <Flex
+              justifyContent="flex-end"
+              alignItems="baseline"
             >
               <Heading
-                alignSelf="flex-start" level={3}
+                level={3}
                 onClick={handleHome}
-                style={{userSelect: 'none', cursor: 'pointer'}}
+                style={{cursor: 'pointer'}}
               >
                 Roxana
               </Heading>
-              <Text alignSelf="center" style={{justifySelf: 'end'}}>
+              {locationInDiscussion ? discussionElement : undefined}
+              </Flex>
+            <Flex
+              justifyContent="flex-end"
+              alignItems="center"
+              style={{paddingTop: '6px'}}
+            >
+              <View className={indicatorClasses}></View>
+              <Text>
                 {user?.username}
               </Text>
               {signInOrOutButton}
-            </Grid>
-          </View>
+            </Flex>
+          </Flex>
           <View>
             <Outlet />
           </View>

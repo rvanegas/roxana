@@ -33,3 +33,19 @@
   font-weight: bold;
   padding-right: 5px;
 }
+
+.indicator {
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  padding-right: 5px;
+  display: inline-block;
+}
+
+.synced {
+  background-color: #0f9960;
+}
+
+.unsynced {
+  background-color: crimson;
+}
