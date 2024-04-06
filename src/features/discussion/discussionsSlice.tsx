@@ -35,6 +35,7 @@ interface State {
   arguments: Sentence[]
   discussants: string[]
   hideDiscussants: object
+  sentenceModalPosition?: number
   // users: string[]
 }
 
@@ -60,6 +61,7 @@ const initialState: State = {
   arguments: [],
   discussants: [],
   hideDiscussants: hideDiscussantsCookie(),
+  sentenceModalPosition: undefined,
   // users: [],
 }
 
@@ -189,6 +191,13 @@ const discussionsSlice = createSlice({
       state.hideDiscussants[discussant] = !state.hideDiscussants[discussant]
       cookies.set('hideDiscussants', state.hideDiscussants)
     },
+    setSentenceModal(state, action) {
+      const position: number = action.payload
+      state.sentenceModalPosition = state.sentenceModalPosition === position ? undefined : position
+    },
+    clearSentenceModal(state) {
+      state.sentenceModalPosition = undefined
+    },
     setUsername(state, action) {
       const username: string = action.payload
       state.username = username
@@ -266,9 +275,8 @@ function updateDiscussionLayout(changeNote: string) {
         input: {id, version, revision, layout},
         condition: {revision: {eq: oldRevision}}
       }
-      dlog('updateLayout begin', revision, changeNote)
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-      dlog('updateLayout end', revision, changeNote)
+      dlog('updateLayout', revision, changeNote)
       dispatch(incrementRevision(revision))
     }
     catch (exception: any) {
@@ -632,7 +640,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   }
 }
 
-function changeGoalSentence({position}: {position: number}) {
+function changeGoalSentence(position: number) {
   const {setGoal} = discussionsSlice.actions
   return async (dispatch, getState) => {
     try {
@@ -642,7 +650,7 @@ function changeGoalSentence({position}: {position: number}) {
     catch (exception: any) {
       if (exception.name === 'UnexpectedLayoutRevision') {
         console.warn('try again')
-        dispatch(changeGoalSentence({position}))
+        dispatch(changeGoalSentence(position))
       }
       else {
         throw exception
@@ -714,11 +722,10 @@ export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
   const action = {handler: 'changeSentenceStatus', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function changeGoalSentenceAction(value: {position: number}) {
+export function changeGoalSentenceAction(value) {
   const action = {handler: 'changeGoalSentence', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
-
 
 export function focusOnSentence(section: Section, position: number) {
   const {setFocus} = discussionsSlice.actions
@@ -744,5 +751,5 @@ export function propositionIndexesFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus, setUsername, toggleHideDiscussant} = discussionsSlice.actions
+export const {unsetFocus, setUsername, toggleHideDiscussant, setSentenceModal, clearSentenceModal} = discussionsSlice.actions
 export default discussionsSlice.reducer

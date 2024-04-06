@@ -5,6 +5,7 @@ import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
 import {toAlphaIndex} from '../../app/util'
+import {SentenceModal} from './SentenceModal'
 import {Section, Sentence, ElementRef} from './discussion.d'
 import {
   selectDiscussions,
@@ -13,8 +14,9 @@ import {
   focusOnSentence,
   replaceSentenceAction,
   changeSentenceStatusAction,
-  changeGoalSentenceAction,
+  // changeGoalSentenceAction,
   sentenceCommittedOthers,
+  setSentenceModal,
 } from './discussionsSlice'
 import './discussion.css'
 
@@ -43,6 +45,8 @@ export function SentenceLine(props: SentenceProps) {
       'Type a sequence of proposition numbers. For example, "1 2 3".'
   )
   const readOnly = !username || sentenceCommittedOthers(sentence, username) || sentence.inArgument
+  const inSentenceModal = discussions.sentenceModalPosition === position
+
   let canonicalContent
 
   function initialEditorState() {
@@ -108,7 +112,7 @@ export function SentenceLine(props: SentenceProps) {
     return displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
-        : <View columnStart={1} className="sentence-meta">
+        : <View columnStart={1} className="sentence-line-cell sentence-meta">
           <div style={{textAlign: 'right'}}>
             <span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
           </div>
@@ -116,10 +120,10 @@ export function SentenceLine(props: SentenceProps) {
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
-          <View columnStart={2} className="sentence-index">
+          <View columnStart={2} className="sentence-line-cell sentence-index">
             <div style={{textAlign: 'right'}}>{index}</div>
           </View>
-          <View columnEnd={-2}>{proposition.content}</View>
+          <View columnEnd={-2} className="sentence-line-cell">{proposition.content}</View>
         </React.Fragment>
       )
     })
@@ -210,11 +214,15 @@ export function SentenceLine(props: SentenceProps) {
     }
   }
 
-  function handleGoalSet() {
-    if (sentence.status !== 'committed' || section !== 'propositions') {
-      return
-    }
-    dispatch(changeGoalSentenceAction({position}))
+  // function handleGoalSet() {
+  //   if (sentence.status !== 'committed' || section !== 'propositions') {
+  //     return
+  //   }
+  //   dispatch(changeGoalSentenceAction(position))
+  // }
+
+  function handleSentenceModal() {
+    dispatch(setSentenceModal(position))
   }
 
   function claimsSummary() {
@@ -267,9 +275,14 @@ export function SentenceLine(props: SentenceProps) {
     annotations.unshift(<span key="i" className="oi" style={style} data-glyph="warning" />)
   }
 
+  const annotationIconsClassName = classNames(
+    'sentence-line-cell', 'sentence-meta', {
+      'sentence-line-cell-in-modal': inSentenceModal
+    }
+  )
   const annotationIcons = (
     <View
-      columnStart={1} className="sentence-meta" style={{height: '100%', width: '100%', position: 'relative'}}
+      columnStart={1} className={annotationIconsClassName}
       onClick={username && handleStatusToggle}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
@@ -281,17 +294,19 @@ export function SentenceLine(props: SentenceProps) {
 
   const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
   const indexStyle = {
-    fontWeight: 'bold',
-    border: goal.includes(username) ? '1px gray double' : goal.length !== 0 ? '1px gray dashed' : 'none',
-    height: '20px',
-    width: '20px',
-    position: 'relative'
+    border: goal.includes(username) ? '1px gray double' :
+      goal.length !== 0 ? '1px gray dashed' : 'none',
   }
 
-  const indexLine = (
+  const indexClassName = classNames(
+    'sentence-line-cell', 'sentence-index', {
+      'sentence-line-cell-in-modal': inSentenceModal
+    }
+  )
+  const indexElement = (
     <View
-      columnStart={2} className="sentence-index" style={indexStyle}
-      onClick={username && handleGoalSet}
+      columnStart={2} className={indexClassName} style={indexStyle}
+      onClick={username && handleSentenceModal}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
       <div style={{textAlign: 'right'}}>
@@ -310,12 +325,16 @@ export function SentenceLine(props: SentenceProps) {
     'discussion-editor': true,
     'discussion-editor-draft': sentence.status === 'draft' && sentence.owner === username
   })
-
   const anothersDraft = sentence.status === 'draft' && sentence.owner !== username
 
+  const editorLineClassName = classNames(
+    'sentence-line-cell', {
+      'sentence-line-cell-in-modal': inSentenceModal
+    }
+  )
   const editorLine = (
     <React.Fragment>
-      <View columnStart={3}>
+      <View columnStart={3} className={editorLineClassName}>
         <div className={editorClassName}>
           {editorElement}
           {anothersDraft ? editingStatus : undefined}
@@ -326,11 +345,28 @@ export function SentenceLine(props: SentenceProps) {
     </React.Fragment>
   )
 
+  const sentenceModal = inSentenceModal ? <SentenceModal /> : undefined
+
+    // const editorWrapper = !inSentenceModal ? editorLine : undefined
+
+    // <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
+    //   <View className="sentence-modal">
+    //     <View style={{marginTop: '45px'}}>
+    //       hey i'm a modal
+    //     </View>
+    //   </View>
+    //   <View
+    //     className="sentence-modal-overlay"
+    //     onClick={handleOverlay}
+    //   />
+    // </View>
+
   return (
     <React.Fragment>
       {annotationIcons}
-      {indexLine}
+      {indexElement}
       {editorLine}
+      {sentenceModal}
       {isArguments && <View style={{paddingBottom: '10px'}} columnSpan={4} />}
     </React.Fragment>
   )

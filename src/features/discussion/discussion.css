@@ -11,19 +11,23 @@
   font-style: italic;
   background-color: white;
   position: absolute;
-  z-index:  1;
+  z-index: 1;
   top: 0;
   right: 0;
   padding: 0 5px;
 }
 
-/* Component of same name will be renamed */
+.sentence-line-cell {
+  margin-bottom: 7px;
+}
+
 .sentence-meta {
+  position: relative;
+  height: 100%;
+  width: 100%;
   user-select: none;
   padding-right: 5px;
   padding-top: 2px;
-  height: 100%;
-  width: 100%;
   font-size: 10pt;
 }
 
@@ -31,7 +35,14 @@
   font-family: Comic Sans;
   user-select: none;
   font-weight: bold;
+  height: 20px;
+  width: 20px;
+  position: relative;
   padding-right: 5px;
+}
+
+.sentence-line-cell-in-modal {
+  z-index: 4;
 }
 
 .indicator {
@@ -40,12 +51,39 @@
   height: 10px;
   padding-right: 5px;
   display: inline-block;
+  background-color: crimson;
 }
 
 .synced {
   background-color: #0f9960;
 }
 
-.unsynced {
-  background-color: crimson;
+.sentence-modal-wrapper {
+  color: blue;
+  position: relative;
+  height: 0;
+}
+
+.sentence-modal {
+  width: calc(100% + 30px);
+  height: 200px;
+  background-color: white;
+  top: -50px;
+  z-index: 3;
+  position: absolute;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 30px;
+}
+
+.sentence-modal-overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.2);
+  z-index: 2;
 }
