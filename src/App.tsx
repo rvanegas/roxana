@@ -10,7 +10,7 @@ import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions} from './features/discussion/discussionsSlice'
 
-export default function App() {
+export function App() {
   const [reloadPath, setReloadPath] = useState('')
   // @ts-ignore
   const {user, signOut}: {user: any, signOut: () => {}} = useAuthenticator(context => [context.user])

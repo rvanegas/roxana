@@ -1,11 +1,11 @@
-import React, {useState, useEffect, useContext} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View} from '@aws-amplify/ui-react'
+import {throttle} from 'lodash'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
 import {toAlphaIndex} from '../../app/util'
-import {SentenceModal} from './SentenceModal'
 import {Section, Sentence, ElementRef} from './discussion.d'
 import {
   selectDiscussions,
@@ -17,6 +17,7 @@ import {
   // changeGoalSentenceAction,
   sentenceCommittedOthers,
   setSentenceModal,
+  clearSentenceModal,
 } from './discussionsSlice'
 import './discussion.css'
 
@@ -32,7 +33,9 @@ export function SentenceLine(props: SentenceProps) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
+  // const editorRef = useRef() // ??
   const editorRef = React.createRef() as ElementRef
+  const editorContainerRef = useRef()
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
@@ -46,6 +49,10 @@ export function SentenceLine(props: SentenceProps) {
   )
   const readOnly = !username || sentenceCommittedOthers(sentence, username) || sentence.inArgument
   const inSentenceModal = discussions.sentenceModalPosition === position
+
+  // @ts-ignore
+  const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
+  const [offsetHeight, setOffsetHeight] = useState<number>(offsetHeightRaw || 0)
 
   let canonicalContent
 
@@ -103,6 +110,10 @@ export function SentenceLine(props: SentenceProps) {
 
   function handleFocus() {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'edit'}))
+  }
+
+  function handleOverlay() {
+    dispatch(clearSentenceModal())
   }
 
   function propositionElements() {
@@ -184,7 +195,24 @@ export function SentenceLine(props: SentenceProps) {
       editorRef.current.focus()
       dispatch(unsetFocus({section, position}))
     }
-  })
+    if (offsetHeightRaw !== undefined && offsetHeight === 0) {
+      setOffsetHeight(offsetHeightRaw)
+    }
+
+    if (inSentenceModal) {
+      const throttledHandleResize = throttle(function handleResize() {
+        // @ts-ignore
+        const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
+        setOffsetHeight(offsetHeightRaw)
+      }, 20)
+
+      window.addEventListener('resize', throttledHandleResize)
+
+      return () => {
+        window.removeEventListener('resize', throttledHandleResize)
+      }
+    }
+  }, [sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw, inSentenceModal])
 
   const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
   const postSentence = (<React.Fragment>{propositionElements()}</React.Fragment>)
@@ -222,7 +250,9 @@ export function SentenceLine(props: SentenceProps) {
   // }
 
   function handleSentenceModal() {
-    dispatch(setSentenceModal(position))
+    if (offsetHeight !== 0) {
+      dispatch(setSentenceModal(position))
+    }
   }
 
   function claimsSummary() {
@@ -332,20 +362,42 @@ export function SentenceLine(props: SentenceProps) {
       'sentence-line-cell-in-modal': inSentenceModal
     }
   )
+
+  // @ts-ignore
+  const editorContainer = <div ref={editorContainerRef} className={editorClassName}>
+    {editorElement}
+    {anothersDraft ? editingStatus : undefined}
+    <Divider style={dividerStyle} />
+  </div>
+
   const editorLine = (
     <React.Fragment>
       <View columnStart={3} className={editorLineClassName}>
-        <div className={editorClassName}>
-          {editorElement}
-          {anothersDraft ? editingStatus : undefined}
-          <Divider style={dividerStyle} />
-        </div>
+        {editorContainer}
       </View>
       {postSentence}
     </React.Fragment>
   )
 
-  const sentenceModal = inSentenceModal ? <SentenceModal /> : undefined
+  const sentenceModalStyle = {
+    height: `${offsetHeight + 80}px`,
+    top: `${-offsetHeight - 21}px`,
+    paddingTop: `${offsetHeight + 30}px`,
+  }
+  const sentenceModal = !inSentenceModal ? undefined : (
+    <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
+      <View className="sentence-modal" style={sentenceModalStyle}>
+        <View>
+          hey i'm a modal
+        </View>
+      </View>
+      <View
+        className="sentence-modal-overlay"
+        onClick={handleOverlay}
+      />
+    </View>
+  )
+
 
     // const editorWrapper = !inSentenceModal ? editorLine : undefined
 

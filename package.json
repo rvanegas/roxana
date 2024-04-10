@@ -1,6 +1,6 @@
 {
   "name": "roxana",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "private": true,
   "dependencies": {
     "@aws-amplify/ui-react": "^2.1.9",
@@ -17,6 +17,7 @@
     "crypto-random-string": "^4.0.0",
     "dayjs": "^1.11.0",
     "draft-js": "^0.11.7",
+    "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.6",
