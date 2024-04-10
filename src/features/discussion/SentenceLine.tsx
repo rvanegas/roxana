@@ -1,6 +1,6 @@
 import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Divider, View} from '@aws-amplify/ui-react'
+import {Divider, View, Button} from '@aws-amplify/ui-react'
 import {throttle} from 'lodash'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
@@ -14,7 +14,7 @@ import {
   focusOnSentence,
   replaceSentenceAction,
   changeSentenceStatusAction,
-  // changeGoalSentenceAction,
+  changeGoalSentenceAction,
   setSentenceModal,
   clearSentenceModal,
   isActionable,
@@ -242,12 +242,12 @@ export function SentenceLine(props: SentenceProps) {
     }
   }
 
-  // function handleGoalSet() {
-  //   if (sentence.status !== 'committed' || section !== 'propositions') {
-  //     return
-  //   }
-  //   dispatch(changeGoalSentenceAction(position))
-  // }
+  function handleGoalSet() {
+    if (sentence.status !== 'committed' || section !== 'propositions') {
+      return
+    }
+    dispatch(changeGoalSentenceAction(position))
+  }
 
   function handleSentenceModal() {
     if (offsetHeight !== 0) {
@@ -387,8 +387,8 @@ export function SentenceLine(props: SentenceProps) {
   const sentenceModal = !inSentenceModal ? undefined : (
     <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
       <View className="sentence-modal" style={sentenceModalStyle}>
-        <View>
-          hey i'm a modal
+        <View style={{paddingLeft: '87px'}}>
+          <Button variation="link" size="small" onClick={handleGoalSet}>goal</Button>
         </View>
       </View>
       <View
