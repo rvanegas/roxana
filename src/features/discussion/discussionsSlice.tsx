@@ -531,9 +531,14 @@ function replaceSentence(input: {key: string, section: Section, content: string}
   }
 }
 
+function sentenceCommittedOthers(sentence: Sentence, username: string): boolean {
+  return sentence.accepted.concat(sentence.rejected).findIndex(n => n !== username) !== -1
+}
+
 export const isActionable = {
   edit: (sentence: Sentence, username: string) => !sentence.inArgument
-    && !sentenceCommittedOthers(sentence, username),
+    && !sentenceCommittedOthers(sentence, username)
+    && !(sentence.status === 'draft' && sentence.owner !== username),
   accept: (sentence: Sentence, username: string) => sentence.status === 'committed'
     && isPresent(sentence.content),
   reject: (sentence: Sentence, username: string) => sentence.status === 'committed'
@@ -733,10 +738,6 @@ export function focusOnSentence(section: Section, position: number) {
     }
     dispatch(setFocus({section, position}))
   }
-}
-
-export function sentenceCommittedOthers(sentence: Sentence, username: string): boolean {
-  return sentence.accepted.concat(sentence.rejected).findIndex(n => n !== username) !== -1
 }
 
 export function propositionIndexesFromArgument(argument) {
