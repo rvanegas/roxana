@@ -93,6 +93,8 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function handleChange(editorState) {
+    // @ts-ignore
+    const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
     if (canonicalContent !== undefined) {
       const contentState = ContentState.createFromText(canonicalContent)
       setEditorState(EditorState.createWithContent(contentState))
@@ -102,9 +104,11 @@ export function SentenceLine(props: SentenceProps) {
       const argumentInput = editorState.getCurrentContent().getPlainText()
       setDisplayFromArgumentInput(argumentInput)
       setEditorState(editorState)
+      setOffsetHeight(offsetHeightRaw)
     }
     else {
       setEditorState(editorState)
+      setOffsetHeight(offsetHeightRaw)
     }
   }
 
