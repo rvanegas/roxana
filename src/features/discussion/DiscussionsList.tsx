@@ -35,7 +35,7 @@ export function DiscussionsList() {
     }
   }, [dispatch])
 
-  const newButton = (
+  const newButton = !username ? undefined : (
     <View style={{paddingBottom: '10px'}}>
       <Button variation="link" size="small" onClick={handleNewDiscussion}
       >new discussion</Button>
@@ -61,7 +61,7 @@ export function DiscussionsList() {
       >
         {links}
       </Grid>
-      {username && newButton}
+      {newButton}
 
     </View>
   )
