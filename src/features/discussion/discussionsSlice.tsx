@@ -1,5 +1,6 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {createSlice, nanoid} from '@reduxjs/toolkit'
+import {pick} from 'lodash'
 import Cookies from 'universal-cookie'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
@@ -13,7 +14,6 @@ import {
   hoursAgo,
   isPresent,
   // sleep,
-  pick,
 } from '../../app/util'
 
 const cookies = new Cookies()

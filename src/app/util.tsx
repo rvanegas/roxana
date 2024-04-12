@@ -23,14 +23,6 @@ export function redirectToDiscussionId(discussionId) {
   window.location.href = '/discussions/' + discussionId
 }
 
-export function pick(object: object, keys: string[]): any {
-  const newObject = {}
-  for (let key of keys) {
-    newObject[key] = object[key]
-  }
-  return newObject
-}
-
 export function toAlphaIndex(numberIndex) {
   const base = 'A'.charCodeAt(0)
   const divisor = 'Z'.charCodeAt(0) - base + 1
