@@ -30,6 +30,7 @@ interface SentenceProps {
 
 export function SentenceLine(props: SentenceProps) {
   const {section, sentence, position} = props
+  const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
@@ -38,7 +39,6 @@ export function SentenceLine(props: SentenceProps) {
   const editorRef = React.createRef() as ElementRef
   const editorContainerRef = useRef()
   const dispatch = useDispatch()
-  const discussions = useSelector(selectDiscussions)
   const propositions = discussions.propositions
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
@@ -56,6 +56,34 @@ export function SentenceLine(props: SentenceProps) {
   const [offsetHeight, setOffsetHeight] = useState<number>(offsetHeightRaw || 0)
 
   let canonicalContent
+
+  useEffect(() => {
+    if (sentence.autoFocus) {
+      editorRef.current.focus()
+      dispatch(unsetFocus({section, position}))
+    }
+    if (offsetHeightRaw !== undefined && offsetHeight === 0) {
+      setOffsetHeight(offsetHeightRaw)
+    }
+
+    if (inSentenceModal) {
+      const throttledHandleResize = throttle(function handleResize() {
+        // @ts-ignore
+        const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
+        setOffsetHeight(offsetHeightRaw)
+      }, 20)
+
+      window.addEventListener('resize', throttledHandleResize)
+
+      return () => {
+        window.removeEventListener('resize', throttledHandleResize)
+      }
+    }
+  }, [sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw, inSentenceModal])
+
+  if (discussions.showHidden && sentence.hidden) {
+    return null
+  }
 
   function initialEditorState() {
     const contentState = ContentState.createFromText(sentence.content)
@@ -195,33 +223,6 @@ export function SentenceLine(props: SentenceProps) {
     return 'not-handled'
   }
 
-  useEffect(() => {
-    if (sentence.autoFocus) {
-      editorRef.current.focus()
-      dispatch(unsetFocus({section, position}))
-    }
-    if (offsetHeightRaw !== undefined && offsetHeight === 0) {
-      setOffsetHeight(offsetHeightRaw)
-    }
-
-    if (inSentenceModal) {
-      const throttledHandleResize = throttle(function handleResize() {
-        // @ts-ignore
-        const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
-        setOffsetHeight(offsetHeightRaw)
-      }, 20)
-
-      window.addEventListener('resize', throttledHandleResize)
-
-      return () => {
-        window.removeEventListener('resize', throttledHandleResize)
-      }
-    }
-  }, [sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw, inSentenceModal])
-
-  const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
-  const postSentence = (<React.Fragment>{propositionElements()}</React.Fragment>)
-
   const editorElement = (
     <Editor
       editorState={editorState} onChange={handleChange}
@@ -317,7 +318,8 @@ export function SentenceLine(props: SentenceProps) {
 
   const annotationIconsClassName = classNames(
     'sentence-line-cell', 'sentence-meta', {
-      'sentence-line-cell-in-modal': inSentenceModal
+      'sentence-line-cell-in-modal': inSentenceModal,
+      'sentence-hidden': sentence.hidden,
     }
   )
   const annotationIcons = (
@@ -340,7 +342,8 @@ export function SentenceLine(props: SentenceProps) {
 
   const indexClassName = classNames(
     'sentence-line-cell', 'sentence-index', {
-      'sentence-line-cell-in-modal': inSentenceModal
+      'sentence-line-cell-in-modal': inSentenceModal,
+      'sentence-hidden': sentence.hidden,
     }
   )
   const indexElement = (
@@ -349,7 +352,7 @@ export function SentenceLine(props: SentenceProps) {
       onClick={section === 'propositions' && username ? handleSentenceModal : null}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-      <div style={{textAlign: 'right', color: (sentence.hidden ? 'red' : 'black')}}>
+      <div style={{textAlign: 'right'}}>
         {isArguments ? toAlphaIndex(position) : position + 1}
       </div>
     </View>
@@ -369,14 +372,19 @@ export function SentenceLine(props: SentenceProps) {
 
   const editorLineClassName = classNames(
     'sentence-line-cell', {
-      'sentence-line-cell-in-modal': inSentenceModal
+      'sentence-line-cell-in-modal': inSentenceModal,
+      'sentence-hidden': sentence.hidden,
     }
   )
+
+  const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
+  const postSentence = (<React.Fragment>{propositionElements()}</React.Fragment>)
 
   // @ts-ignore
   const editorContainer = <div ref={editorContainerRef} className={editorClassName}>
     {editorElement}
     {anothersDraft ? editingStatus : undefined}
+    {/* @ts-ignore */}
     <Divider style={dividerStyle} />
   </div>
 

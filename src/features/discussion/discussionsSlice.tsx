@@ -35,6 +35,7 @@ interface State {
   arguments: Sentence[]
   discussants: string[]
   hideDiscussants: object
+  showHidden: boolean
   sentenceModalPosition?: number
   offsetHeight?: number
   // users: string[]
@@ -62,6 +63,7 @@ const initialState: State = {
   arguments: [],
   discussants: [],
   hideDiscussants: hideDiscussantsCookie(),
+  showHidden: false,
   sentenceModalPosition: undefined,
   offsetHeight: undefined,
   // users: [],
@@ -192,6 +194,9 @@ const discussionsSlice = createSlice({
       const discussant: string = action.payload
       state.hideDiscussants[discussant] = !state.hideDiscussants[discussant]
       cookies.set('hideDiscussants', state.hideDiscussants)
+    },
+    toggleShowHidden(state) {
+      state.showHidden = !state.showHidden
     },
     setSentenceModal(state, action) {
       const position: number = action.payload
@@ -785,5 +790,5 @@ export function propositionIndexesFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus, setUsername, toggleHideDiscussant, setSentenceModal, clearSentenceModal} = discussionsSlice.actions
+export const {unsetFocus, setUsername, toggleHideDiscussant, toggleShowHidden, setSentenceModal, clearSentenceModal} = discussionsSlice.actions
 export default discussionsSlice.reducer

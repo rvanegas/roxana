@@ -13,6 +13,7 @@ import {
   selectDiscussions,
   setUsername,
   toggleHideDiscussant,
+  toggleShowHidden,
 } from './discussionsSlice'
 
 export function Discussion() {
@@ -57,6 +58,23 @@ export function Discussion() {
     dispatch(toggleHideDiscussant(discussant))
   }
 
+  function handleHiddenSwitch(e) {
+    e.preventDefault()
+    console.log('h')
+    dispatch(toggleShowHidden())
+  }
+
+  const anyHidden = discussions.propositions.concat(discussions.arguments).some(s => s.hidden)
+
+  const hiddenToggle = !anyHidden ? undefined : (
+    <SwitchField
+      trackCheckedColor="blue"
+      style={{display: 'inline-block', lineHeight: '30px'}}
+      key="-hidden" labelPosition="end" label="show hidden" isChecked={!discussions.showHidden}
+      onClick={e => handleHiddenSwitch(e)}
+    />
+  )
+
   const discussantToggles = discussions.discussants.map(discussant => {
     const isHidden = discussions.hideDiscussants[discussant]
     return (
@@ -73,6 +91,7 @@ export function Discussion() {
   return (
     <React.Fragment>
       <View columnStart="1" columnEnd="-1">
+        {hiddenToggle}
         {discussantToggles}
       </View>
       <Grid
