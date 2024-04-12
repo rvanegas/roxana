@@ -31,6 +31,10 @@
   font-size: 10pt;
 }
 
+.sentence-icon {
+  font-size: 10pt;
+}
+
 .sentence-index {
   font-family: Comic Sans;
   user-select: none;
@@ -59,9 +63,7 @@
 }
 
 .sentence-modal-wrapper {
-  color: blue;
   position: relative;
-  height: 0;
 }
 
 .sentence-modal {

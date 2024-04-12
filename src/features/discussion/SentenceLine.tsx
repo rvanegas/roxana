@@ -1,7 +1,7 @@
 import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View, Button} from '@aws-amplify/ui-react'
-import {throttle} from 'lodash'
+import {throttle, sortBy, keys} from 'lodash'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
@@ -48,7 +48,7 @@ export function SentenceLine(props: SentenceProps) {
       'Type a sequence of proposition numbers. For example, "1 2 3".'
   )
   const readOnly = !(username && isActionable.edit(sentence, username))
-  const inSentenceModal = discussions.sentenceModalPosition === position
+  const inSentenceModal = section === 'propositions' && discussions.sentenceModalPosition === position
 
   // @ts-ignore
   const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
@@ -129,7 +129,7 @@ export function SentenceLine(props: SentenceProps) {
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
         : <View columnStart={1} className="sentence-line-cell sentence-meta">
           <div style={{textAlign: 'right'}}>
-            <span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
+            <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
           </div>
         </View>
       return (
@@ -293,11 +293,11 @@ export function SentenceLine(props: SentenceProps) {
       borderBottom: underline ? '1px gray solid' : 'none'
     }
     return claim ?
-      <span key={index} className="oi" style={style} data-glyph="check" /> :
-      <span key={index} className="oi" style={style} data-glyph="x" />
+      <span key={index} className="oi sentence-icon" style={style} data-glyph="check" /> :
+      <span key={index} className="oi sentence-icon" style={style} data-glyph="x" />
   })
   if (sentence.inArgument) {
-    annotations.unshift(<span key="a" className="oi" style={{color: 'gray'}} data-glyph="arrow-thick-right" />)
+    annotations.unshift(<span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" />)
   }
   const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
   if (irrational.length !== 0) {
@@ -306,7 +306,7 @@ export function SentenceLine(props: SentenceProps) {
       color: 'gold',
       borderBottom: underline ? '1px gray solid' : 'none'
     }
-    annotations.unshift(<span key="i" className="oi" style={style} data-glyph="warning" />)
+    annotations.unshift(<span key="i" className="oi sentence-icon" style={style} data-glyph="warning" />)
   }
 
   const annotationIconsClassName = classNames(
@@ -317,7 +317,7 @@ export function SentenceLine(props: SentenceProps) {
   const annotationIcons = (
     <View
       columnStart={1} className={annotationIconsClassName}
-      onClick={username && handleStatusToggle}
+      onClick={username ? handleStatusToggle : null}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
       <div style={{textAlign: 'right'}}>
@@ -340,11 +340,11 @@ export function SentenceLine(props: SentenceProps) {
   const indexElement = (
     <View
       columnStart={2} className={indexClassName} style={indexStyle}
-      onClick={username && handleSentenceModal}
+      onClick={section === 'propositions' && username ? handleSentenceModal : null}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
       <div style={{textAlign: 'right'}}>
-        {isArguments ? toAlphaIndex(position) : position+1}
+        {isArguments ? toAlphaIndex(position) : position + 1}
       </div>
     </View>
   )
@@ -383,16 +383,55 @@ export function SentenceLine(props: SentenceProps) {
     </React.Fragment>
   )
 
+  function modalAnnotations() {
+    const commitments: {[key: string]: string} = {}
+    for (let name of sentence.accepted) {
+      commitments[name] = 'accepted'
+    }
+    for (let name of sentence.rejected) {
+      commitments[name] = 'rejected'
+    }
+    for (let name of sentence.cleared) {
+      commitments[name] = 'cleared'
+    }
+    const glyphs = {
+      accepted: 'check',
+      rejected: 'x',
+      cleared: 'minus',
+    }
+    const colors = {
+      accepted: 'seagreen',
+      rejected: 'firebrick',
+      cleared: 'gray',
+    }
+    const elements = sortBy(keys(commitments)).map((name, index) =>
+      <View key={index}>
+        <span
+          className="oi sentence-icon"
+          style={{color: colors[commitments[name]], paddingRight: '10px'}}
+          data-glyph={glyphs[commitments[name]]}
+        />
+        {name}
+      </View>
+    )
+    return elements
+  }
+
   const sentenceModalStyle = {
-    height: `${offsetHeight + 80}px`,
-    top: `${-offsetHeight - 21}px`,
+    top: `${-offsetHeight - 23}px`,
     paddingTop: `${offsetHeight + 30}px`,
+    paddingBottom: '15px',
   }
   const sentenceModal = !inSentenceModal ? undefined : (
     <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
       <View className="sentence-modal" style={sentenceModalStyle}>
-        <View style={{paddingLeft: '87px'}}>
-          <Button variation="link" size="small" onClick={handleGoalSet}>goal</Button>
+        <View style={{paddingLeft: '70px', paddingBottom: '10px'}}>
+          <Button variation="link" size="small" onClick={handleGoalSet}>
+            {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
+          </Button>
+        </View>
+        <View style={{paddingLeft: '54px'}}>
+          {modalAnnotations()}
         </View>
       </View>
       <View
@@ -402,20 +441,9 @@ export function SentenceLine(props: SentenceProps) {
     </View>
   )
 
-
-    // const editorWrapper = !inSentenceModal ? editorLine : undefined
-
-    // <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
-    //   <View className="sentence-modal">
-    //     <View style={{marginTop: '45px'}}>
-    //       hey i'm a modal
-    //     </View>
-    //   </View>
-    //   <View
-    //     className="sentence-modal-overlay"
-    //     onClick={handleOverlay}
-    //   />
-    // </View>
+  // <Button variation="link" size="small" onClick={handleGoalSet}>
+  //   {sentence.goal.includes(username) ? 'hide' : 'show'}
+  // </Button>
 
   return (
     <React.Fragment>
