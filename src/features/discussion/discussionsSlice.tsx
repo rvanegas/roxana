@@ -200,6 +200,11 @@ const discussionsSlice = createSlice({
     clearSentenceModal(state) {
       state.sentenceModalPosition = undefined
     },
+    setSentenceHidden(state, action) {
+      const {section, position, hidden}:
+        {section: Section, position: number, hidden: boolean} = action.payload
+      state[section][position].hidden = hidden
+    },
     setUsername(state, action) {
       const username: string = action.payload
       state.username = username
@@ -258,7 +263,7 @@ function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
 
 function updateDiscussionLayout(changeNote: string) {
   const {incrementRevision} = discussionsSlice.actions
-  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'goal']
+  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'goal', 'hidden']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
   const layoutFilter = sentence => sentence.id !== undefined
   const sentencesToEntries = sentences => sentences.filter(layoutFilter).map(makeLayoutEntry)
@@ -349,6 +354,7 @@ function getDiscussion(discussionInput) {
           || (Array.isArray(entry.accepted) && entry.accepted.some(a => typeof a !== 'string'))
           || (Array.isArray(entry.rejected) && entry.rejected.some(a => typeof a !== 'string'))
           || (Array.isArray(entry.cleared) && entry.cleared.some(a => typeof a !== 'string'))
+          || (entry.hidden !== undefined && typeof entry.hidden !== 'boolean')
         if (invalidEntry) {
           console.error('entry', entry)
           throw new GetDiscussionError('invalid entry')
@@ -387,6 +393,7 @@ function getDiscussion(discussionInput) {
           rejected: layoutEntry.rejected || [],
           cleared: layoutEntry.cleared || [],
           goal: layoutEntry.goal || [],
+          hidden: layoutEntry.hidden,
           irrational: [],
           inArgument: false
         }
@@ -666,6 +673,25 @@ function changeGoalSentence(position: number) {
   }
 }
 
+function changeSentenceHidden(args: {section: Section, position: number, hidden: boolean}) {
+  const {setSentenceHidden} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    try {
+      dispatch(setSentenceHidden(args))
+      await dispatch(updateDiscussionLayout('hidden'))
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision') {
+        console.warn('try again')
+        dispatch(changeSentenceHidden(args))
+      }
+      else {
+        throw exception
+      }
+    }
+  }
+}
+
 function addNewSentence(section: Section, status: string) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -682,6 +708,7 @@ const eventHandlerFunctions = {
   replaceSentence,
   changeSentenceStatus,
   changeGoalSentence,
+  changeSentenceHidden,
 }
 
 function enqueueEvent(action) {
@@ -731,6 +758,10 @@ export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
 }
 export function changeGoalSentenceAction(value) {
   const action = {handler: 'changeGoalSentence', payload: value}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function changeSentenceHiddenAction(value) {
+  const action = {handler: 'changeSentenceHidden', payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 

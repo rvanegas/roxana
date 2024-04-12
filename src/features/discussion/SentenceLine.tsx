@@ -15,6 +15,7 @@ import {
   replaceSentenceAction,
   changeSentenceStatusAction,
   changeGoalSentenceAction,
+  changeSentenceHiddenAction,
   setSentenceModal,
   clearSentenceModal,
   isActionable,
@@ -253,6 +254,11 @@ export function SentenceLine(props: SentenceProps) {
     dispatch(changeGoalSentenceAction(position))
   }
 
+  function handleSetHidden() {
+    const hidden = !sentence.hidden
+    dispatch(changeSentenceHiddenAction({section, position, hidden}))
+  }
+
   function handleSentenceModal() {
     if (offsetHeight !== 0) {
       dispatch(setSentenceModal(position))
@@ -343,7 +349,7 @@ export function SentenceLine(props: SentenceProps) {
       onClick={section === 'propositions' && username ? handleSentenceModal : null}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-      <div style={{textAlign: 'right'}}>
+      <div style={{textAlign: 'right', color: (sentence.hidden ? 'red' : 'black')}}>
         {isArguments ? toAlphaIndex(position) : position + 1}
       </div>
     </View>
@@ -429,6 +435,9 @@ export function SentenceLine(props: SentenceProps) {
           <Button variation="link" size="small" onClick={handleGoalSet}>
             {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
           </Button>
+          <Button variation="link" size="small" onClick={handleSetHidden}>
+            {sentence.hidden ? 'show' : 'hide'}
+          </Button>
         </View>
         <View style={{paddingLeft: '54px'}}>
           {modalAnnotations()}
@@ -440,10 +449,6 @@ export function SentenceLine(props: SentenceProps) {
       />
     </View>
   )
-
-  // <Button variation="link" size="small" onClick={handleGoalSet}>
-  //   {sentence.goal.includes(username) ? 'hide' : 'show'}
-  // </Button>
 
   return (
     <React.Fragment>

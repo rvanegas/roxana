@@ -1,17 +1,19 @@
 export type SentenceStatus = 'draft' | 'committed'
 
 export type Sentence = {
-  key: string
   index: number
   id?: string
   content: string
-  autoFocus?: boolean
   status: SentenceStatus
   owner?: string
   accepted: string[]
   rejected: string[]
   cleared: string[]
   goal: string[]
+  hidden?: boolean
+  // the following are only in the store, not layout
+  key: string
+  autoFocus?: boolean
   inArgument: boolean
   irrational: string[]
 }
