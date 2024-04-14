@@ -166,10 +166,8 @@ export function SentenceLine(props: SentenceProps) {
 
   function handleBlur() {
     const content = setFinalContent()
-    if (content !== sentence.content || sentence.status === 'draft') {
-      const input = {key: sentence.key, section, content}
-      dispatch(replaceSentenceAction(input))
-    }
+    const input = {key: sentence.key, section, content}
+    dispatch(replaceSentenceAction(input))
   }
 
   function handleStatusToggle() {
