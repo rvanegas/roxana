@@ -19,10 +19,6 @@ export function generateDiscussionId() {
   return cryptoRandomString({length: discussionIdLength, type: 'distinguishable'}).toLowerCase();
 }
 
-export function redirectToDiscussionId(discussionId) {
-  window.location.href = '/discussions/' + discussionId
-}
-
 export function toAlphaIndex(numberIndex) {
   const base = 'A'.charCodeAt(0)
   const divisor = 'Z'.charCodeAt(0) - base + 1

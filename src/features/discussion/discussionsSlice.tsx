@@ -7,12 +7,8 @@ import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
 import {
-  dlog,
-  redirectToDiscussionId,
-  generateDiscussionId,
-  incrementDiscussionIdLength,
-  hoursAgo,
-  isPresent,
+  dlog, generateDiscussionId, incrementDiscussionIdLength,
+  hoursAgo, isPresent,
   // sleep,
 } from '../../app/util'
 
@@ -38,6 +34,7 @@ interface State {
   showHidden: boolean
   sentenceModalPosition?: number
   offsetHeight?: number
+  newDiscussionId?: string
   // users: string[]
 }
 
@@ -66,6 +63,7 @@ const initialState: State = {
   showHidden: false,
   sentenceModalPosition: undefined,
   offsetHeight: undefined,
+  newDiscussionId: undefined,
   // users: [],
 }
 
@@ -213,6 +211,10 @@ const discussionsSlice = createSlice({
     setUsername(state, action) {
       const username: string = action.payload
       state.username = username
+    },
+    setNewDiscussionId(state, action) {
+      const newDiscussionId: string = action.payload
+      state.newDiscussionId = newDiscussionId
     },
     eventEnqueue(state, action) {
       const event: Event = action.payload
@@ -471,7 +473,7 @@ function createNewDiscussion() {
         const discussionId = generateDiscussionId()
         variables.input.id = discussionId
         await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
-        redirectToDiscussionId(discussionId)
+        dispatch(setNewDiscussionId(discussionId))
         break
       }
       catch (exception: any) {
@@ -790,5 +792,8 @@ export function propositionIndexesFromArgument(argument) {
 }
 
 export const selectDiscussions = state => state.discussions
-export const {unsetFocus, setUsername, toggleHideDiscussant, toggleShowHidden, setSentenceModal, clearSentenceModal} = discussionsSlice.actions
+export const {
+  unsetFocus, setUsername, toggleHideDiscussant, toggleShowHidden, setSentenceModal,
+  clearSentenceModal, setNewDiscussionId
+} = discussionsSlice.actions
 export default discussionsSlice.reducer

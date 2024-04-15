@@ -8,17 +8,9 @@ import {CurrentUserContext} from '../user/User'
 import {toAlphaIndex} from '../../app/util'
 import {Section, Sentence, ElementRef} from './discussion.d'
 import {
-  selectDiscussions,
-  propositionIndexesFromArgument,
-  unsetFocus,
-  focusOnSentence,
-  replaceSentenceAction,
-  changeSentenceStatusAction,
-  changeGoalSentenceAction,
-  changeSentenceHiddenAction,
-  setSentenceModal,
-  clearSentenceModal,
-  isActionable,
+  selectDiscussions, propositionIndexesFromArgument, unsetFocus, focusOnSentence, replaceSentenceAction,
+  changeSentenceStatusAction, changeGoalSentenceAction, changeSentenceHiddenAction, setSentenceModal,
+  clearSentenceModal, isActionable,
 } from './discussionsSlice'
 import './discussion.css'
 
