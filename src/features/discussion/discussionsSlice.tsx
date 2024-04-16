@@ -15,6 +15,7 @@ import {
 const cookies = new Cookies()
 
 let tryAgainTrials = 0
+const tryAgainTrialsMax = 6
 
 interface Event {
   handler: string
@@ -324,6 +325,7 @@ function getDiscussion(discussionInput: {
   version: number,
   updatedAt: string
 })
+function getDiscussion(discussionInput: {id: string, layoutOnly: true})
 function getDiscussion(discussionInput) {
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -342,7 +344,7 @@ function getDiscussion(discussionInput) {
     let layoutUpdated
 
     async function loadDiscussion() {
-      const input = {id: discussionInput.id, limit: 500}
+      const input = {id: discussionInput.id, limit: discussionInput.layoutOnly ? 0 : 500}
       const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as {data}
       if (!response.data.getDiscussion) {
         throw new GetDiscussionError('no such discussion')
@@ -505,8 +507,8 @@ function replaceSentence(input: {key: string, section: Section, content: string}
     API.graphql(graphqlOperation(mutations.updateSentence, variables))
   }
   return async (dispatch, getState) => {
+    const state = getState()
     try {
-      const state = getState()
       const discussionId = state.discussions.discussionId
       let discussionSentences = {
         propositions: state.discussions.propositions,
@@ -537,8 +539,12 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       if (isPresent(content) && !state.discussions.username) {
         throw new Error('why is this happening?')
       }
-      const accepted = isPresent(content) ? [state.discussions.username] : []
+      const asserted = sentence.accepted.includes(state.discussions.username) ||
+        sentence.rejected.includes(state.discussions.username) ||
+        sentence.cleared.includes(state.discussions.username)
+      const accepted = isPresent(content) && !asserted ? [state.discussions.username] : sentence.accepted
       const newSentence = {key, index, content, id: newSentenceId, status, owner, accepted}
+      Object.assign(newSentence, pick(sentence, ['rejected', 'cleared', 'goal']))
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout('replace'))
       if (state.discussions.arguments.length === 0 && state.discussions.propositions.length > 0 && isPresent(content)) {
@@ -547,9 +553,10 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
+        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
         dispatch(replaceSentenceAction({key, section, content}))
       }
       else {
@@ -584,8 +591,8 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   const {key, section, change} = input
   const {updateSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
+    const state = getState()
     try {
-      const state = getState()
       const username = state.discussions.username
       let discussionSentences = {
         propositions: state.discussions.propositions,
@@ -600,8 +607,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       let newSentence: Sentence
       if (change === 'edit' && isActionable.edit(sentence, username)) {
         newSentence = {
-          ...sentence, status: 'draft', owner: username,
-          accepted: [], rejected: [], cleared: [], goal: []
+          ...sentence, status: 'draft', owner: username, hidden: false
         }
       }
       else if (change === 'accept' && isActionable.accept(sentence, username)) {
@@ -655,10 +661,11 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(changeSentenceStatus(input))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
+        dispatch(changeSentenceStatusAction(input))
       }
       else {
         throw exception
@@ -670,16 +677,18 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
 function changeGoalSentence(position: number) {
   const {setGoal} = discussionsSlice.actions
   return async (dispatch, getState) => {
+    const state = getState()
     try {
       dispatch(setGoal(position))
       await dispatch(updateDiscussionLayout('goal'))
       tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(changeGoalSentence(position))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
+        dispatch(changeGoalSentenceAction(position))
       }
       else {
         throw exception
@@ -691,16 +700,18 @@ function changeGoalSentence(position: number) {
 function changeSentenceHidden(args: {section: Section, position: number, hidden: boolean}) {
   const {setSentenceHidden} = discussionsSlice.actions
   return async (dispatch, getState) => {
+    const state = getState()
     try {
       dispatch(setSentenceHidden(args))
       await dispatch(updateDiscussionLayout('hidden'))
       tryAgainTrials = 0
     }
     catch (exception: any) {
-      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < 6) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(changeSentenceHidden(args))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
+        dispatch(changeSentenceHiddenAction(args))
       }
       else {
         throw exception
