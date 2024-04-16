@@ -177,14 +177,16 @@ export function SentenceLine(props: SentenceProps) {
     }
   }
 
-  function handleGoalSet() {
+  function handleGoalSet(e) {
+    e.target.blur()
     if (sentence.status !== 'committed' || section !== 'propositions') {
       return
     }
     dispatch(changeGoalSentenceAction(position))
   }
 
-  function handleSetHidden() {
+  function handleSetHidden(e) {
+    e.target.blur()
     const hidden = !sentence.hidden
     dispatch(changeSentenceHiddenAction({section, position, hidden}))
   }
@@ -325,8 +327,8 @@ export function SentenceLine(props: SentenceProps) {
 
   const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
   const indexStyle = {
-    border: goal.includes(username) ? '1px gray double' :
-      goal.length !== 0 ? '1px gray dashed' : 'none',
+    border: goal.includes(username) ? '1px gray solid' :
+      goal.length !== 0 ? '1px gray dashed' : '1px transparent solid',
   }
 
   const indexClassName = classNames(
@@ -429,10 +431,10 @@ export function SentenceLine(props: SentenceProps) {
     <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
       <View className="sentence-modal" style={sentenceModalStyle}>
         <View style={{paddingLeft: '70px', paddingBottom: '10px'}}>
-          <Button variation="link" size="small" onClick={handleGoalSet}>
+          <Button variation="link" size="small" onClick={e => handleGoalSet(e)}>
             {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
           </Button>
-          <Button variation="link" size="small" onClick={handleSetHidden}>
+          <Button variation="link" size="small" onClick={e => handleSetHidden(e)}>
             {sentence.hidden ? 'show' : 'hide'}
           </Button>
         </View>
