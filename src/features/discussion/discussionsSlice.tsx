@@ -6,11 +6,10 @@ import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
-import {
-  dlog, generateDiscussionId, incrementDiscussionIdLength,
-  hoursAgo, isPresent,
-  // sleep,
-} from '../../app/util'
+import {createNewDiscussionLayout, createDiscussionLayout,
+  parseDiscussionLayout, newSentenceFromLayoutEntry} from '../../data/DiscussionLayout'
+import {dlog, generateDiscussionId, incrementDiscussionIdLength, // sleep,
+  hoursAgo, isPresent} from '../../app/util'
 
 const cookies = new Cookies()
 
@@ -273,17 +272,10 @@ function nextUniqueIndex(sentence: Sentence, sentences: Sentence[]): number {
 
 function updateDiscussionLayout(changeNote: string) {
   const {incrementRevision} = discussionsSlice.actions
-  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'goal', 'hidden']
-  const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
-  const layoutFilter = sentence => sentence.id !== undefined
-  const sentencesToEntries = sentences => sentences.filter(layoutFilter).map(makeLayoutEntry)
   return async (dispatch, getState) => {
     try {
       const state = getState()
-      const layout = JSON.stringify({
-        propositions: sentencesToEntries(state.discussions.propositions),
-        arguments: sentencesToEntries(state.discussions.arguments)
-      })
+      const layout = createDiscussionLayout(pick(state.discussions, ['propositions', 'arguments']))
       const id = state.discussions.discussionId
       const version = 2
       const oldRevision = state.discussions.revision
@@ -340,7 +332,7 @@ function getDiscussion(discussionInput) {
     let sentences: Sentence[] = []
 
     const newSentences = {propositions: [], arguments: []}
-    let layoutEntries
+    let parsedLayout
     let layoutUpdated
 
     async function loadDiscussion() {
@@ -352,27 +344,6 @@ function getDiscussion(discussionInput) {
       return response
     }
 
-    async function parseLayout() {
-      if (!discussion.layout) {
-        throw new GetDiscussionError('missing layout')
-      }
-      layoutEntries = JSON.parse(discussion.layout)
-      for (let entry of layoutEntries.propositions.concat(layoutEntries.arguments)) {
-        const invalidEntry = typeof entry.id !== 'string'
-          || typeof entry.index !== 'number'
-          || typeof entry.status !== 'string'
-          || (entry.status === 'draft' && typeof entry.owner !== 'string')
-          || (Array.isArray(entry.accepted) && entry.accepted.some(a => typeof a !== 'string'))
-          || (Array.isArray(entry.rejected) && entry.rejected.some(a => typeof a !== 'string'))
-          || (Array.isArray(entry.cleared) && entry.cleared.some(a => typeof a !== 'string'))
-          || (entry.hidden !== undefined && typeof entry.hidden !== 'boolean')
-        if (invalidEntry) {
-          console.error('entry', entry)
-          throw new GetDiscussionError('invalid entry')
-        }
-      }
-    }
-
     async function getSentence(id) {
       const response = await API.graphql(graphqlOperation(queries.getSentence, {id})) as {data}
       return response.data.getSentence
@@ -381,8 +352,8 @@ function getDiscussion(discussionInput) {
     async function readLayout(section) {
       const expireIdleDrafts = hoursAgo(discussion.updatedAt) > 1
       const stateSentences = state.discussions[section]
-      for (let pos = 0; pos < layoutEntries[section].length; pos++) {
-        const layoutEntry = layoutEntries[section][pos]
+      for (let pos = 0; pos < parsedLayout[section].length; pos++) {
+        const layoutEntry = parsedLayout[section][pos]
         const sentence = stateSentences.find(s => s.id === layoutEntry.id)
           || sentences.find(s => s.id === layoutEntry.id)
           || await getSentence(layoutEntry.id)
@@ -393,21 +364,7 @@ function getDiscussion(discussionInput) {
         if (notUnique) {
           throw new GetDiscussionError('non-unique sentence id, fixing layout')
         }
-        const newSentence: Sentence = {
-          id: sentence.id,
-          key: sentence.key || nanoid(),
-          index: layoutEntry.index,
-          content: sentence.content,
-          status: layoutEntry.status,
-          owner: layoutEntry.owner,
-          accepted: layoutEntry.accepted || [],
-          rejected: layoutEntry.rejected || [],
-          cleared: layoutEntry.cleared || [],
-          goal: layoutEntry.goal || [],
-          hidden: layoutEntry.hidden,
-          irrational: [],
-          inArgument: false
-        }
+        const newSentence = newSentenceFromLayoutEntry(sentence, layoutEntry)
         if (newSentence.status === 'draft' && expireIdleDrafts) {
           newSentence.status = 'committed'
           newSentence.owner = undefined
@@ -445,7 +402,7 @@ function getDiscussion(discussionInput) {
       throw new GetDiscussionError('bad version')
     }
 
-    await parseLayout()
+    parsedLayout = parseDiscussionLayout(discussion.layout)
     await readLayout('propositions')
     await readLayout('arguments')
     dispatch(updateSentences({revision: discussion.revision, newSentences}))
@@ -468,7 +425,7 @@ function initializeDiscussion({discussionId}) {
 
 function createNewDiscussion() {
   return async (dispatch) => {
-    const layout = JSON.stringify({propositions: [], arguments: []})
+    const layout = createNewDiscussionLayout()
     const revision = 1
     const version = 2
     const variables = {input: {version, layout, revision}} as {input: {id, version, layout, revision}}
