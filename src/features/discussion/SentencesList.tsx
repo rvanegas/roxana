@@ -3,10 +3,8 @@ import {useDispatch, useSelector} from 'react-redux'
 import {View, Button, Heading} from '@aws-amplify/ui-react'
 import {SentenceLine} from './SentenceLine'
 import {CurrentUserContext} from '../user/User'
-import {
-  selectDiscussions,
-  focusOnSentence,
-} from './discussionsSlice'
+import {selectDiscussions} from './discussionsSlice'
+import {focusOnSentence} from './data'
 
 export function SentencesList({section}) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}

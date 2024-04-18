@@ -1,8 +1,8 @@
-import { configureStore } from '@reduxjs/toolkit'
-import discussionsReducer from '../features/discussion/discussionsSlice'
+import {configureStore} from '@reduxjs/toolkit'
+import {discussionsSlice} from '../features/discussion/discussionsSlice'
 
 export const store = configureStore({
   reducer: {
-    discussions: discussionsReducer,
+    discussions: discussionsSlice.reducer,
   }
 })

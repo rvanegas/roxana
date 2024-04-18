@@ -7,14 +7,8 @@ import {SentencesList} from './SentencesList'
 import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
 import {dlog} from '../../app/util'
-import {
-  initializeDiscussionAction,
-  getDiscussionAction,
-  selectDiscussions,
-  setUsername,
-  toggleHideDiscussant,
-  toggleShowHidden,
-} from './discussionsSlice'
+import {selectDiscussions, discussionsSlice} from './discussionsSlice'
+import {getDiscussionAction, initializeDiscussionAction} from './data'
 
 export function Discussion() {
   const dispatch = useDispatch()
@@ -25,6 +19,7 @@ export function Discussion() {
   const discussionStatusInit = discussions.status === 'init'
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
+  const {setUsername, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
 
   useEffect(() => {
     if (usernameChanged) {
@@ -51,7 +46,10 @@ export function Discussion() {
       })
       return () => subscription.unsubscribe()
     }
-  }, [dispatch, discussionStatusInit, usernameChanged, discussionId, username, params])
+  }, [
+    setUsername, dispatch, discussionStatusInit, usernameChanged, discussionId,
+    username, params
+  ])
 
   function handleDiscussantSwitch(e, discussant) {
     e.preventDefault()

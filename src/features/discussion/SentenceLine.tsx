@@ -7,11 +7,10 @@ import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
 import {toAlphaIndex} from '../../app/util'
 import {Section, Sentence, ElementRef} from './discussion.d'
-import {
-  selectDiscussions, propositionIndexesFromArgument, unsetFocus, focusOnSentence, replaceSentenceAction,
-  changeSentenceStatusAction, changeGoalSentenceAction, changeSentenceHiddenAction, setSentenceModal,
-  clearSentenceModal, isActionable,
-} from './discussionsSlice'
+import {selectDiscussions, propositionIndexesFromArgument,
+  discussionsSlice} from './discussionsSlice'
+import {replaceSentenceAction, changeGoalSentenceAction, focusOnSentence,
+  changeSentenceStatusAction, changeSentenceHiddenAction, isActionable} from './data'
 import './discussion.css'
 
 interface SentenceProps {
@@ -22,6 +21,7 @@ interface SentenceProps {
 
 export function SentenceLine(props: SentenceProps) {
   const {section, sentence, position} = props
+  const {unsetFocus, clearSentenceModal, setSentenceModal} = discussionsSlice.actions
   const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
@@ -70,7 +70,10 @@ export function SentenceLine(props: SentenceProps) {
         window.removeEventListener('resize', throttledHandleResize)
       }
     }
-  }, [sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw, inSentenceModal])
+  }, [
+    sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw,
+    inSentenceModal, unsetFocus
+  ])
 
   if (discussions.showHidden && sentence.hidden && !inSentenceModal) {
     return null
