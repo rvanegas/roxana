@@ -1,6 +1,6 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {nanoid} from '@reduxjs/toolkit'
-import {pick} from 'lodash'
+import {pick, sortBy, reverse} from 'lodash'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
@@ -16,6 +16,17 @@ const tryAgainTrialsMax = 6
 
 function updateDiscussionLayout(changeNote: string) {
   const {incrementRevision} = discussionsSlice.actions
+  function getGoalsSumamry(discussions) {
+    const goals = discussions.propositions.map((p, index) => ({index, length: p.goal.length}))
+    const filteredGoals = goals.filter(s => s.length > 0)
+    const sortedGoals = reverse(sortBy(reverse(filteredGoals), 'length'))
+    const summary = sortedGoals.map(s => {
+      const proposition = discussions.propositions[s.index]
+      const users = proposition.goal.join(', ')
+      return `${users}: ${proposition.content}`
+    }).join(', ')
+    return summary
+  }
   return async (dispatch, getState) => {
     try {
       const state = getState()
@@ -24,8 +35,9 @@ function updateDiscussionLayout(changeNote: string) {
       const version = 2
       const oldRevision = state.discussions.revision
       const revision = oldRevision + 1
+      const goalsSummary = getGoalsSumamry(state.discussions)
       const variables = {
-        input: {id, version, revision, layout},
+        input: {id, version, revision, layout, goalsSummary},
         condition: {revision: {eq: oldRevision}}
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))

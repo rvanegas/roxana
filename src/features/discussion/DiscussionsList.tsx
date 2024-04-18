@@ -50,6 +50,7 @@ export function DiscussionsList() {
     <React.Fragment key={index}>
       <Link to={`/discussions/${discussion.id}`}>{discussion.id}</Link>
       <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
+      <span>{discussion.goalsSummary}</span>
     </React.Fragment>
   ))
 
@@ -60,7 +61,7 @@ export function DiscussionsList() {
       </Heading>
       <Grid
         style={{padding: '10px 10px'}}
-        templateColumns="3rem 8rem"
+        templateColumns="3rem 8rem 1fr"
         columnGap="var(--amplify-space-small)"
         rowGap="0"
       >

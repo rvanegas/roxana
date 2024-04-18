@@ -49,6 +49,7 @@ export const listRecentDiscussions = /* GraphQL */ `
       items {
         id
         updatedAt
+        goalsSummary
       }
     }
   }

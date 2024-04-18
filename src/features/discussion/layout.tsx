@@ -15,6 +15,7 @@ export function parseDiscussionLayout(layout: string) {
       || (Array.isArray(entry.accepted) && entry.accepted.some(a => typeof a !== 'string'))
       || (Array.isArray(entry.rejected) && entry.rejected.some(a => typeof a !== 'string'))
       || (Array.isArray(entry.cleared) && entry.cleared.some(a => typeof a !== 'string'))
+      || (Array.isArray(entry.goal) && entry.goal.some(a => typeof a !== 'string'))
       || (entry.hidden !== undefined && typeof entry.hidden !== 'boolean')
     if (invalidEntry) {
       console.error('entry', entry)

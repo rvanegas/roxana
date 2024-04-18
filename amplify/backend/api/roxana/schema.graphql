@@ -7,6 +7,7 @@ type Discussion @model @searchable {
   version: Int!    # == 2
   revision: Int    # incremented on every update
   layout: String!
+  goalsSummary: String
   users: [User] @manyToMany(relationName: "DiscussionUsers")
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])
   createdAt: AWSDateTime

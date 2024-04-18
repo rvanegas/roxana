@@ -11,6 +11,7 @@ export const createDiscussion = /* GraphQL */ `
       version
       revision
       layout
+      goalsSummary
       users {
         items {
           id
@@ -47,6 +48,7 @@ export const updateDiscussion = /* GraphQL */ `
       version
       revision
       layout
+      goalsSummary
       users {
         items {
           id
@@ -83,6 +85,7 @@ export const deleteDiscussion = /* GraphQL */ `
       version
       revision
       layout
+      goalsSummary
       users {
         items {
           id
@@ -124,6 +127,7 @@ export const createSentence = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -153,6 +157,7 @@ export const updateSentence = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -182,6 +187,7 @@ export const deleteSentence = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -276,6 +282,7 @@ export const createDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -312,6 +319,7 @@ export const updateDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -348,6 +356,7 @@ export const deleteDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }

@@ -12,7 +12,7 @@ interface Event {
 
 interface State {
   eventQueue: Event[]
-  recentDiscussions: {id: string, updatedAt: string}[]
+  recentDiscussions: {id: string, updatedAt: string, goalsSummary: string}[]
   status: string
   error?: string
   discussionId?: string

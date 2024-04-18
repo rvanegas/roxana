@@ -23,6 +23,7 @@ export const searchDiscussions = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -58,6 +59,7 @@ export const getDiscussion = /* GraphQL */ `
       version
       revision
       layout
+      goalsSummary
       users {
         items {
           id
@@ -96,6 +98,7 @@ export const listDiscussions = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -121,6 +124,7 @@ export const getSentence = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -152,6 +156,7 @@ export const listSentences = /* GraphQL */ `
           version
           revision
           layout
+          goalsSummary
           createdAt
           updatedAt
         }
@@ -219,6 +224,7 @@ export const getDiscussionUsers = /* GraphQL */ `
         version
         revision
         layout
+        goalsSummary
         users {
           nextToken
         }
@@ -257,6 +263,7 @@ export const listDiscussionUsers = /* GraphQL */ `
           version
           revision
           layout
+          goalsSummary
           createdAt
           updatedAt
         }
