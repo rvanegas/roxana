@@ -28,18 +28,13 @@ export function SentencesList({section}) {
     </View>
   )
 
-  const style = section === 'propositions' ? {left: 0} :
-    section === 'arguments' ? {right: 0} : undefined
-
   return (
-    <View className="sentence-list" style={style}>
-      <Grid
-        templateColumns="5rem 20px 1fr 3rem"
-        columnGap="5px"
-      >
-        {elements}
-        {newButton}
-      </Grid>
-    </View>
+    <Grid
+      templateColumns="5rem 20px 1fr 3rem"
+      columnGap="5px"
+    >
+      {elements}
+      {newButton}
+    </Grid>
   )
 }

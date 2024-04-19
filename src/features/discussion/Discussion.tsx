@@ -90,16 +90,26 @@ export function Discussion() {
         {discussantToggles}
       </View>
       <Grid templateColumns="1fr 1fr">
-        <Heading style={{padding: '10px'}}>
+        <Heading className="sentence-list-header sentence-list-header-adjacent">
           Propositions
         </Heading>
-        <Heading style={{padding: '10px'}}>
+        <Heading className="sentence-list-header sentence-list-header-adjacent">
           Arguments
         </Heading>
       </Grid>
       <View className="discussion-container">
-        <SentencesList section="propositions" />
-        <SentencesList section="arguments" />
+        <View className="sentence-list" style={{left: 0}}>
+          <Heading className="sentence-list-header sentence-list-header-stacked">
+            Propositions
+          </Heading>
+          <SentencesList section="propositions" />
+        </View>
+        <View className="sentence-list" style={{right: 0}}>
+          <Heading className="sentence-list-header sentence-list-header-stacked">
+            Arguments
+          </Heading>
+          <SentencesList section="arguments" />
+        </View>
       </View>
     </View>
   )
