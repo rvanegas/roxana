@@ -6,7 +6,7 @@ import {CurrentUserContext} from '../user/User'
 import {selectDiscussions} from './discussionsSlice'
 import {focusOnSentence} from './data'
 
-export function SentencesList({section}) {
+export function SentencesList({section, sentenceListRef}) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const dispatch = useDispatch()
@@ -18,7 +18,9 @@ export function SentencesList({section}) {
   }
 
   const elements = !sentences ? null : sentences.map((sentence, position) => (
-    <SentenceLine key={sentence.key} section={section} sentence={sentence} position={position}
+    <SentenceLine
+      key={sentence.key} section={section} sentence={sentence}
+      position={position} sentenceListRef={sentenceListRef}
     />
   ))
 

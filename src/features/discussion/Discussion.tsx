@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react'
+import React, {useEffect, useContext, useRef} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
@@ -15,6 +15,8 @@ export function Discussion() {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const params = useParams()
+  const propositionsListRef = useRef()
+  const argumentsListRef = useRef()
   const discussions = useSelector(selectDiscussions)
   const discussionStatusInit = discussions.status === 'init'
   const usernameChanged = discussions.username !== username
@@ -98,17 +100,19 @@ export function Discussion() {
         </Heading>
       </Grid>
       <View className="discussion-container">
-        <View className="sentence-list" style={{left: 0}}>
+        {/* @ts-ignore */}
+        <View ref={propositionsListRef} className="sentence-list" style={{left: 0}}>
           <Heading className="sentence-list-header sentence-list-header-stacked">
             Propositions
           </Heading>
-          <SentencesList section="propositions" />
+          <SentencesList section="propositions" sentenceListRef={propositionsListRef} />
         </View>
-        <View className="sentence-list" style={{right: 0}}>
+        {/* @ts-ignore */}
+        <View ref={argumentsListRef} className="sentence-list" style={{right: 0}}>
           <Heading className="sentence-list-header sentence-list-header-stacked">
             Arguments
           </Heading>
-          <SentencesList section="arguments" />
+          <SentencesList section="arguments" sentenceListRef={argumentsListRef} />
         </View>
       </View>
     </View>

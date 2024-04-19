@@ -57,7 +57,7 @@ export function App() {
 
     return (
       <CurrentUserContext.Provider value={user}>
-        <View padding="10px">
+        <View padding="10px 10px 0">
           <Flex
             justifyContent="space-between"
             className="navbar"

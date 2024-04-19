@@ -5,7 +5,7 @@ import {throttle, sortBy, keys} from 'lodash'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
-import {toAlphaIndex} from '../../app/util'
+import {toAlphaIndex, verticalPixelsBelowViewport} from '../../app/util'
 import {Section, Sentence, ElementRef} from './discussion.d'
 import {selectDiscussions, propositionIndexesFromArgument,
   discussionsSlice} from './discussionsSlice'
@@ -17,10 +17,11 @@ interface SentenceProps {
   section: Section
   sentence: Sentence
   position: number
+  sentenceListRef: ElementRef
 }
 
 export function SentenceLine(props: SentenceProps) {
-  const {section, sentence, position} = props
+  const {section, sentence, position, sentenceListRef} = props
   const {unsetFocus, clearSentenceModal, setSentenceModal} = discussionsSlice.actions
   const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
@@ -29,6 +30,7 @@ export function SentenceLine(props: SentenceProps) {
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
   const editorRef = useRef() as ElementRef
   const editorContainerRef = useRef()
+  const modalRef = useRef()
   const dispatch = useDispatch()
   const propositions = discussions.propositions
   const isLastArgument = section === 'arguments' && discussions.arguments.length - 1 === position
@@ -59,6 +61,11 @@ export function SentenceLine(props: SentenceProps) {
     }
 
     if (inSentenceModal) {
+      let pixelsBelow = verticalPixelsBelowViewport(modalRef.current)
+      if (pixelsBelow > 0) {
+        sentenceListRef.current.scrollBy(0, pixelsBelow)
+      }
+
       const throttledHandleResize = throttle(function handleResize() {
         // @ts-ignore
         const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
@@ -73,7 +80,7 @@ export function SentenceLine(props: SentenceProps) {
     }
   }, [
     sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw,
-    inSentenceModal, unsetFocus
+    inSentenceModal, unsetFocus, modalRef, sentenceListRef
   ])
 
   if (discussions.showHidden && sentence.hidden && !inSentenceModal) {
@@ -433,7 +440,8 @@ export function SentenceLine(props: SentenceProps) {
   }
   const sentenceModal = !inSentenceModal ? undefined : (
     <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
-      <View className="sentence-modal" style={sentenceModalStyle}>
+      {/* @ts-ignore */}
+      <View ref={modalRef} className="sentence-modal" style={sentenceModalStyle}>
         <View style={{paddingLeft: '70px', paddingBottom: '10px'}}>
           <Button variation="link" size="small" onClick={e => handleGoalSet(e)}>
             {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
