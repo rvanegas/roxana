@@ -23,8 +23,11 @@ function updateDiscussionLayout(changeNote: string) {
     const summary = sortedGoals.map(s => {
       const proposition = discussions.propositions[s.index]
       const users = proposition.goal.join(', ')
-      return `${users}: ${proposition.content}`
-    }).join(', ')
+      const contentPattern = new RegExp(/^\s*(.*?)\.*\s*$/)
+      const matches = proposition.content.match(contentPattern)
+      const content = matches[1]
+      return `${content} (${users})`
+    }).join(' \u2014 ') // emdash
     return summary
   }
   return async (dispatch, getState) => {
