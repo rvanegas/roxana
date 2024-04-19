@@ -23,7 +23,7 @@ function updateDiscussionLayout(changeNote: string) {
     const summary = sortedGoals.map(s => {
       const proposition = discussions.propositions[s.index]
       const users = proposition.goal.join(', ')
-      const contentPattern = new RegExp(/^\s*(.*?)\.*\s*$/)
+      const contentPattern = /^\s*(.*?)\.*\s*$/
       const matches = proposition.content.match(contentPattern)
       const content = matches[1]
       return `${content} (${users})`
