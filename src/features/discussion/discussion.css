@@ -1,4 +1,21 @@
 
+.view-toggles {
+  width: 100%;
+}
+
+.discussion-container {
+  position: relative;
+}
+
+.sentence-list {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100vh;
+  overflow-y: auto;
+  width: 50%;
+}
+
 .discussion-editor {
   position: relative;
 }
