@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect, useContext} from 'react'
+import React, {useRef, useState, useEffect, useContext, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View, Button} from '@aws-amplify/ui-react'
 import {throttle, sortBy, keys} from 'lodash'
@@ -28,9 +28,9 @@ export function SentenceLine(props: SentenceProps) {
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
-  const editorRef = useRef() as ElementRef
-  const editorContainerRef = useRef()
-  const modalRef = useRef()
+  const editorRef = useRef() as MutableRefObject<HTMLElement>
+  const editorContainerRef = useRef() as MutableRefObject<HTMLElement>
+  const modalRef = useRef() as MutableRefObject<HTMLElement>
   const dispatch = useDispatch()
   const propositions = discussions.propositions
   const isLastArgument = section === 'arguments' && discussions.arguments.length - 1 === position
@@ -47,7 +47,6 @@ export function SentenceLine(props: SentenceProps) {
     discussions.sentenceModal.section === section &&
     discussions.sentenceModal.position === position
 
-  // @ts-ignore
   const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
   const [offsetHeight, setOffsetHeight] = useState<number>(offsetHeightRaw || 0)
 
@@ -62,14 +61,13 @@ export function SentenceLine(props: SentenceProps) {
       setOffsetHeight(offsetHeightRaw)
     }
 
-    if (inSentenceModal) {
+    if (inSentenceModal && modalRef) {
       let pixelsBelow = verticalPixelsBelowViewport(modalRef.current)
       if (pixelsBelow > 0) {
         sentenceListRef.current.scrollBy(0, pixelsBelow)
       }
 
       const throttledHandleResize = throttle(function handleResize() {
-        // @ts-ignore
         const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
         setOffsetHeight(offsetHeightRaw)
       }, 20)
@@ -82,7 +80,7 @@ export function SentenceLine(props: SentenceProps) {
     }
   }, [
     sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw,
-    inSentenceModal, unsetFocus, modalRef, sentenceListRef
+    inSentenceModal, unsetFocus, modalRef, sentenceListRef, editorContainerRef,
   ])
 
   if (discussions.showHidden && sentence.hidden && !inSentenceModal) {
@@ -126,7 +124,6 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function handleChange(editorState) {
-    // @ts-ignore
     const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
     if (canonicalContent !== undefined) {
       const contentState = ContentState.createFromText(canonicalContent)
@@ -407,13 +404,13 @@ export function SentenceLine(props: SentenceProps) {
 
   const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
 
-  // @ts-ignore
-  const editorContainer = <div ref={editorContainerRef} className={editorClassName}>
-    {editorElement}
-    {anothersDraft ? editingStatus : undefined}
-    {/* @ts-ignore */}
-    <Divider style={dividerStyle} />
-  </div>
+  const editorContainer = (
+    <View ref={editorContainerRef} className={editorClassName}>
+      {editorElement}
+      {anothersDraft ? editingStatus : undefined}
+      <Divider style={dividerStyle} />
+    </View>
+  )
 
   const editorLine = (
     <View columnStart={3} className={editorLineClassName}>
@@ -476,7 +473,6 @@ export function SentenceLine(props: SentenceProps) {
 
   const sentenceModal = !inSentenceModal ? undefined : (
     <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
-      {/* @ts-ignore */}
       <View ref={modalRef} className="sentence-modal" style={sentenceModalStyle}>
         <View style={{paddingLeft: '52px', paddingBottom: '10px'}}>
           {modalAnnotations()}
