@@ -23,7 +23,7 @@ interface State {
   discussants: string[]
   hideDiscussants: object
   showHidden: boolean
-  sentenceModalPosition?: number
+  sentenceModal?: {section: Section, position: number}
   offsetHeight?: number
   newDiscussionId?: string
   // users: string[]
@@ -52,7 +52,7 @@ const initialState: State = {
   discussants: [],
   hideDiscussants: hideDiscussantsCookie(),
   showHidden: false,
-  sentenceModalPosition: undefined,
+  sentenceModal: undefined,
   offsetHeight: undefined,
   newDiscussionId: undefined,
   // users: [],
@@ -188,11 +188,11 @@ export const discussionsSlice = createSlice({
       state.showHidden = !state.showHidden
     },
     setSentenceModal(state, action) {
-      const position: number = action.payload
-      state.sentenceModalPosition = state.sentenceModalPosition === position ? undefined : position
+      const {section, position}: {section: Section, position: number} = action.payload
+      state.sentenceModal = {section, position}
     },
     clearSentenceModal(state) {
-      state.sentenceModalPosition = undefined
+      state.sentenceModal = undefined
     },
     setSentenceHidden(state, action) {
       const {section, position, hidden}:

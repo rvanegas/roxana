@@ -43,7 +43,9 @@ export function SentenceLine(props: SentenceProps) {
       'Type a sequence of proposition numbers. For example, "1 2 3".'
   )
   const readOnly = !(username && isActionable.edit(sentence, username))
-  const inSentenceModal = section === 'propositions' && discussions.sentenceModalPosition === position
+  const inSentenceModal = discussions.sentenceModal &&
+    discussions.sentenceModal.section === section &&
+    discussions.sentenceModal.position === position
 
   // @ts-ignore
   const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
@@ -147,10 +149,6 @@ export function SentenceLine(props: SentenceProps) {
     dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'edit'}))
   }
 
-  function handleOverlay() {
-    dispatch(clearSentenceModal())
-  }
-
   function setFinalContent() {
     if (canonicalContent !== undefined) {
       return canonicalContent
@@ -202,10 +200,22 @@ export function SentenceLine(props: SentenceProps) {
     dispatch(changeSentenceHiddenAction({section, position, hidden}))
   }
 
-  function handleSentenceModal() {
+  function handleIndex() {
     if (offsetHeight !== 0) {
-      dispatch(setSentenceModal(position))
+      if (!username) {
+        return
+      }
+      else if (inSentenceModal) {
+        dispatch(clearSentenceModal())
+      }
+      else {
+        dispatch(setSentenceModal({section, position}))
+      }
     }
+  }
+
+  function handleOverlay() {
+    dispatch(clearSentenceModal())
   }
 
   function myKeyBindingFn(e) {
@@ -244,14 +254,29 @@ export function SentenceLine(props: SentenceProps) {
     />
   )
 
-  function propositionElements() {
+  function postSentence() {
     if (section === 'propositions') {
       return null
     }
+    const sentenceMetaClassName = classNames(
+      'sentence-line-cell', 'sentence-meta', {
+        'sentence-hidden': sentence.hidden,
+      }
+    )
+    const sentenceIndexClassName = classNames(
+      'sentence-line-cell', 'sentence-index', {
+        'sentence-hidden': sentence.hidden,
+      }
+    )
+    const sentenceEditorClassName = classNames(
+      'sentence-line-cell', {
+        'sentence-hidden': sentence.hidden,
+      }
+    )
     return displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
-        : <View columnStart={1} className="sentence-line-cell sentence-meta">
+        : <View columnStart={1} className={sentenceMetaClassName}>
           <div style={{textAlign: 'right'}}>
             <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
           </div>
@@ -259,10 +284,10 @@ export function SentenceLine(props: SentenceProps) {
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
-          <View columnStart={2} className="sentence-line-cell sentence-index">
+          <View columnStart={2} className={sentenceIndexClassName}>
             <div style={{textAlign: 'right'}}>{index}</div>
           </View>
-          <View columnEnd={-2} className="sentence-line-cell">{proposition.content}</View>
+          <View columnEnd={-2} className={sentenceEditorClassName}>{proposition.content}</View>
         </React.Fragment>
       )
     })
@@ -348,10 +373,11 @@ export function SentenceLine(props: SentenceProps) {
       'sentence-hidden': sentence.hidden,
     }
   )
+
   const indexElement = (
     <View
       columnStart={2} className={indexClassName} style={indexStyle}
-      onClick={section === 'propositions' && username ? handleSentenceModal : null}
+      onClick={handleIndex}
     >
       <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
       <div style={{textAlign: 'right'}}>
@@ -380,7 +406,6 @@ export function SentenceLine(props: SentenceProps) {
   )
 
   const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
-  const postSentence = (<React.Fragment>{propositionElements()}</React.Fragment>)
 
   // @ts-ignore
   const editorContainer = <div ref={editorContainerRef} className={editorClassName}>
@@ -391,12 +416,9 @@ export function SentenceLine(props: SentenceProps) {
   </div>
 
   const editorLine = (
-    <React.Fragment>
-      <View columnStart={3} className={editorLineClassName}>
-        {editorContainer}
-      </View>
-      {postSentence}
-    </React.Fragment>
+    <View columnStart={3} className={editorLineClassName}>
+      {editorContainer}
+    </View>
   )
 
   function modalAnnotations() {
@@ -438,21 +460,28 @@ export function SentenceLine(props: SentenceProps) {
     paddingTop: `${offsetHeight + 30}px`,
     paddingBottom: '15px',
   }
+
+  const modalActions = [
+    <Button key="h" variation="link" size="small" onClick={e => handleSetHidden(e)}>
+      {sentence.hidden ? 'show' : 'hide'}
+    </Button>
+  ]
+  if (section === 'propositions') {
+    modalActions.push(
+      <Button key="g" variation="link" size="small" onClick={e => handleGoalSet(e)}>
+        {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
+      </Button>
+    )
+  }
+
   const sentenceModal = !inSentenceModal ? undefined : (
     <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
       {/* @ts-ignore */}
       <View ref={modalRef} className="sentence-modal" style={sentenceModalStyle}>
-        <View style={{paddingLeft: '70px', paddingBottom: '10px'}}>
-          <Button variation="link" size="small" onClick={e => handleGoalSet(e)}>
-            {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
-          </Button>
-          <Button variation="link" size="small" onClick={e => handleSetHidden(e)}>
-            {sentence.hidden ? 'show' : 'hide'}
-          </Button>
-        </View>
-        <View style={{paddingLeft: '54px'}}>
+        <View style={{paddingLeft: '52px', paddingBottom: '10px'}}>
           {modalAnnotations()}
         </View>
+        <View style={{paddingLeft: '50px'}}>{modalActions}</View>
       </View>
       <View
         className="sentence-modal-overlay"
@@ -467,6 +496,7 @@ export function SentenceLine(props: SentenceProps) {
       {indexElement}
       {editorLine}
       {sentenceModal}
+      {postSentence()}
       {isArguments && !isLastArgument && <View style={{paddingBottom: '10px'}} columnSpan={4} />}
     </React.Fragment>
   )
