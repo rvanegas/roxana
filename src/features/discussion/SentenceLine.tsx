@@ -458,7 +458,7 @@ export function SentenceLine(props: SentenceProps) {
   const sentenceModalStyle = {
     top: `${-offsetHeight - 23}px`,
     paddingTop: `${offsetHeight + 30}px`,
-    paddingBottom: '15px',
+    paddingBottom: '5px',
   }
 
   const modalActions = [
