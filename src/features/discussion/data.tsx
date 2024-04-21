@@ -265,12 +265,17 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       if (isPresent(content) && !state.discussions.username) {
         throw new Error('why is this happening?')
       }
-      const asserted = sentence.accepted.includes(state.discussions.username) ||
-        sentence.rejected.includes(state.discussions.username) ||
-        sentence.cleared.includes(state.discussions.username)
-      const accepted = isPresent(content) && !asserted ? [state.discussions.username] : sentence.accepted
-      const newSentence = {key, index, content, id: newSentenceId, status, owner, accepted}
-      Object.assign(newSentence, pick(sentence, ['rejected', 'cleared', 'goal']))
+      const newSentence = {key, index, content, id: newSentenceId, status, owner}
+      if (isPresent(content)) {
+        const asserted = sentence.accepted.includes(state.discussions.username) ||
+          sentence.rejected.includes(state.discussions.username) ||
+          sentence.cleared.includes(state.discussions.username)
+        const accepted = !asserted ? [state.discussions.username] : sentence.accepted
+        Object.assign(newSentence, {accepted}, pick(sentence, ['rejected', 'cleared', 'goal']))
+      }
+      else {
+        Object.assign(newSentence, {accepted: [], rejected: [], cleared: [], goal: []})
+      }
       dispatch(updateSentence({section, newSentence}))
       await dispatch(updateDiscussionLayout('replace'))
       if (state.discussions.arguments.length === 0 && state.discussions.propositions.length > 0 && isPresent(content)) {
