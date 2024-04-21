@@ -72,7 +72,6 @@ export function SentenceLine(props: SentenceProps) {
       }, 20)
 
       window.addEventListener('resize', throttledHandleResize)
-
       return () => {
         window.removeEventListener('resize', throttledHandleResize)
       }
@@ -363,8 +362,8 @@ export function SentenceLine(props: SentenceProps) {
 
   const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
   const indexStyle = {
-    border: goal.includes(username) ? '1px gray solid' :
-      goal.length !== 0 ? '1px gray dashed' : '1px transparent solid',
+    border: goal.includes(username) ? '1px royalblue solid' :
+      goal.length !== 0 ? '1px royalblue dashed' : '1px transparent solid',
   }
 
   const indexClassName = classNames(
@@ -443,7 +442,7 @@ export function SentenceLine(props: SentenceProps) {
       cleared: 'gray',
     }
     const elements = sortBy(keys(commitments)).map((name, index) =>
-      <View key={index}>
+      <View key={`c${index}`}>
         <span
           className="oi sentence-icon"
           style={{color: colors[commitments[name]], paddingRight: '10px'}}
@@ -452,6 +451,16 @@ export function SentenceLine(props: SentenceProps) {
         {name}
       </View>
     )
+    elements.unshift(...sortBy(sentence.goal).map((name, index) =>
+      <View key={`g${index}`}>
+        <span
+          className="oi sentence-icon"
+          style={{color: 'royalblue', paddingRight: '10px'}}
+          data-glyph="bookmark"
+        />
+        {name}
+      </View>
+    ))
     return elements
   }
 
@@ -460,7 +469,6 @@ export function SentenceLine(props: SentenceProps) {
     paddingTop: `${offsetHeight + 30}px`,
     paddingBottom: '5px',
   }
-
   const modalActions = [
     <Button key="h" variation="link" size="small" onClick={e => handleSetHidden(e)}>
       {sentence.hidden ? 'unhide' : 'hide'}
