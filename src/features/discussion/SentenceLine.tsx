@@ -239,15 +239,222 @@ export function SentenceLine(props: SentenceProps) {
     return 'not-handled'
   }
 
-  const editorElement = (
-    <Editor
-      editorState={editorState} onChange={handleChange}
-      keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
-      onBlur={handleBlur} onFocus={handleFocus}
-      readOnly={readOnly} ref={editorRef}
-      placeholder={placeholder}
-    />
-  )
+  function annotationIcons() {
+
+    function claimsSummary() {
+      const accepted = sentence.accepted.filter(d => !discussions.hideDiscussants[d])
+      const rejected = sentence.rejected.filter(d => !discussions.hideDiscussants[d])
+      if (accepted.length > 0 && rejected.length > 0) {
+        return [true, false]
+      }
+      else if (accepted.length > 1) {
+        return [true, true]
+      }
+      else if (rejected.length > 1) {
+        return [false, false]
+      }
+      else if (accepted.length === 1) {
+        return [true]
+      }
+      else if (rejected.length === 1) {
+        return [false]
+      }
+      else {
+        return []
+      }
+    }
+
+    const userClaim = sentence.accepted.includes(username) ? true
+      : sentence.rejected.includes(username) ? false : null
+    let underlined
+    const annotations = claimsSummary().map((claim, index) => {
+      const underline = !underlined && claim === userClaim && !discussions.hideDiscussants[username]
+      underlined = underlined || underline
+      let style = {
+        color: (claim ? 'seagreen' : 'firebrick'),
+        borderBottom: underline ? '1px gray solid' : 'none'
+      }
+      return claim ?
+        <span key={index} className="oi sentence-icon" style={style} data-glyph="check" /> :
+        <span key={index} className="oi sentence-icon" style={style} data-glyph="x" />
+    })
+    if (sentence.inArgument) {
+      annotations.unshift(<span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" />)
+    }
+    const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
+    if (irrational.length !== 0) {
+      let underline = irrational.includes(username) && !discussions.hideDiscussants[username]
+      let style = {
+        color: 'gold',
+        borderBottom: underline ? '1px gray solid' : 'none'
+      }
+      annotations.unshift(<span key="i" className="oi sentence-icon" style={style} data-glyph="warning" />)
+    }
+
+    const annotationIconsClassName = classNames(
+      'sentence-line-cell', 'sentence-meta', {
+        'sentence-line-cell-in-modal': inSentenceModal,
+        'sentence-hidden': sentence.hidden,
+      }
+    )
+
+    return (
+      <View
+        columnStart={1} className={annotationIconsClassName}
+        onClick={username ? handleStatusToggle : null}
+      >
+        <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
+        <div style={{textAlign: 'right'}}>
+          {annotations}
+        </div>
+      </View>
+    )
+  }
+
+  function indexElement() {
+    const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
+    const indexStyle = {
+      border: goal.includes(username) ? '1px royalblue solid' :
+        goal.length !== 0 ? '1px royalblue dashed' : '1px transparent solid',
+    }
+    const indexClassName = classNames(
+      'sentence-line-cell', 'sentence-index', {
+        'sentence-line-cell-in-modal': inSentenceModal,
+        'sentence-hidden': sentence.hidden,
+      }
+    )
+    return (
+      <View
+        columnStart={2} className={indexClassName} style={indexStyle}
+        onClick={handleIndex}
+      >
+        <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
+        <View style={{textAlign: 'right'}}>
+          {isArguments ? toAlphaIndex(position) : position + 1}
+        </View>
+      </View>
+    )
+  }
+
+  function editorLine() {
+    const editorElement = (
+      <Editor
+        editorState={editorState} onChange={handleChange}
+        keyBindingFn={myKeyBindingFn} handleKeyCommand={handleKeyCommand}
+        onBlur={handleBlur} onFocus={handleFocus}
+        readOnly={readOnly} ref={editorRef}
+        placeholder={placeholder}
+      />
+    )
+    const editingStatus = (
+      <div className={'discussion-actions'}>
+        ...{sentence.owner} editing
+      </div>
+    )
+    const editorClassName = classNames({
+      'discussion-editor': true,
+      'discussion-editor-draft': sentence.status === 'draft' && sentence.owner === username
+    })
+    const anothersDraft = sentence.status === 'draft' && sentence.owner !== username
+    const editorLineClassName = classNames(
+      'sentence-line-cell', {
+        'sentence-line-cell-in-modal': inSentenceModal,
+        'sentence-hidden': sentence.hidden,
+      }
+    )
+    const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
+    const editorContainer = (
+      <View ref={editorContainerRef} className={editorClassName}>
+        {editorElement}
+        {anothersDraft ? editingStatus : undefined}
+        <Divider style={dividerStyle} />
+      </View>
+    )
+    return (
+      <View columnStart={3} className={editorLineClassName}>
+        {editorContainer}
+      </View>
+    )
+  }
+
+  function sentenceModal() {
+
+    function modalAnnotations() {
+      const commitments: {[key: string]: string} = {}
+      for (let name of sentence.accepted) {
+        commitments[name] = 'accepted'
+      }
+      for (let name of sentence.rejected) {
+        commitments[name] = 'rejected'
+      }
+      for (let name of sentence.cleared) {
+        commitments[name] = 'cleared'
+      }
+      const glyphs = {
+        accepted: 'check',
+        rejected: 'x',
+        cleared: 'minus',
+      }
+      const colors = {
+        accepted: 'seagreen',
+        rejected: 'firebrick',
+        cleared: 'gray',
+      }
+      const elements = sortBy(keys(commitments)).map((name, index) =>
+        <View key={`c${index}`}>
+          <span
+            className="oi sentence-icon"
+            style={{color: colors[commitments[name]], paddingRight: '10px'}}
+            data-glyph={glyphs[commitments[name]]}
+          />
+          {name}
+        </View>
+      )
+      elements.unshift(...sortBy(sentence.goal).map((name, index) =>
+        <View key={`g${index}`}>
+          <span
+            className="oi sentence-icon"
+            style={{color: 'royalblue', paddingRight: '10px'}}
+            data-glyph="bookmark"
+          />
+          {name}
+        </View>
+      ))
+      return elements
+    }
+
+    const sentenceModalStyle = {
+      top: `${-offsetHeight - 23}px`,
+      paddingTop: `${offsetHeight + 30}px`,
+      paddingBottom: '5px',
+    }
+    const modalActions = [
+      <Button key="h" variation="link" size="small" onClick={e => handleSetHidden(e)}>
+        {sentence.hidden ? 'unhide' : 'hide'}
+      </Button>
+    ]
+    if (section === 'propositions') {
+      modalActions.push(
+        <Button key="g" variation="link" size="small" onClick={e => handleGoalSet(e)}>
+          {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
+        </Button>
+      )
+    }
+    return !inSentenceModal ? undefined : (
+      <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
+        <View ref={modalRef} className="sentence-modal" style={sentenceModalStyle}>
+          <View style={{paddingLeft: '52px', paddingBottom: '10px'}}>
+            {modalAnnotations()}
+          </View>
+          <View style={{paddingLeft: '50px'}}>{modalActions}</View>
+        </View>
+        <View
+          className="sentence-modal-overlay"
+          onClick={handleOverlay}
+        />
+      </View>
+    )
+  }
 
   function postSentence() {
     if (section === 'propositions') {
@@ -297,217 +504,12 @@ export function SentenceLine(props: SentenceProps) {
     )
   }
 
-  function claimsSummary() {
-    const accepted = sentence.accepted.filter(d => !discussions.hideDiscussants[d])
-    const rejected = sentence.rejected.filter(d => !discussions.hideDiscussants[d])
-    if (accepted.length > 0 && rejected.length > 0) {
-      return [true, false]
-    }
-    else if (accepted.length > 1) {
-      return [true, true]
-    }
-    else if (rejected.length > 1) {
-      return [false, false]
-    }
-    else if (accepted.length === 1) {
-      return [true]
-    }
-    else if (rejected.length === 1) {
-      return [false]
-    }
-    else {
-      return []
-    }
-  }
-
-  const userClaim = sentence.accepted.includes(username) ? true
-    : sentence.rejected.includes(username) ? false : null
-  let underlined
-  const annotations = claimsSummary().map((claim, index) => {
-    const underline = !underlined && claim === userClaim && !discussions.hideDiscussants[username]
-    underlined = underlined || underline
-    let style = {
-      color: (claim ? 'seagreen' : 'firebrick'),
-      borderBottom: underline ? '1px gray solid' : 'none'
-    }
-    return claim ?
-      <span key={index} className="oi sentence-icon" style={style} data-glyph="check" /> :
-      <span key={index} className="oi sentence-icon" style={style} data-glyph="x" />
-  })
-  if (sentence.inArgument) {
-    annotations.unshift(<span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" />)
-  }
-  const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
-  if (irrational.length !== 0) {
-    let underline = irrational.includes(username) && !discussions.hideDiscussants[username]
-    let style = {
-      color: 'gold',
-      borderBottom: underline ? '1px gray solid' : 'none'
-    }
-    annotations.unshift(<span key="i" className="oi sentence-icon" style={style} data-glyph="warning" />)
-  }
-
-  const annotationIconsClassName = classNames(
-    'sentence-line-cell', 'sentence-meta', {
-      'sentence-line-cell-in-modal': inSentenceModal,
-      'sentence-hidden': sentence.hidden,
-    }
-  )
-  const annotationIcons = (
-    <View
-      columnStart={1} className={annotationIconsClassName}
-      onClick={username ? handleStatusToggle : null}
-    >
-      <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-      <div style={{textAlign: 'right'}}>
-        {annotations}
-      </div>
-    </View>
-  )
-
-  const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
-  const indexStyle = {
-    border: goal.includes(username) ? '1px royalblue solid' :
-      goal.length !== 0 ? '1px royalblue dashed' : '1px transparent solid',
-  }
-
-  const indexClassName = classNames(
-    'sentence-line-cell', 'sentence-index', {
-      'sentence-line-cell-in-modal': inSentenceModal,
-      'sentence-hidden': sentence.hidden,
-    }
-  )
-
-  const indexElement = (
-    <View
-      columnStart={2} className={indexClassName} style={indexStyle}
-      onClick={handleIndex}
-    >
-      <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-      <div style={{textAlign: 'right'}}>
-        {isArguments ? toAlphaIndex(position) : position + 1}
-      </div>
-    </View>
-  )
-
-  const editingStatus = (
-    <div className={'discussion-actions'}>
-      ...{sentence.owner} editing
-    </div>
-  )
-
-  const editorClassName = classNames({
-    'discussion-editor': true,
-    'discussion-editor-draft': sentence.status === 'draft' && sentence.owner === username
-  })
-  const anothersDraft = sentence.status === 'draft' && sentence.owner !== username
-
-  const editorLineClassName = classNames(
-    'sentence-line-cell', {
-      'sentence-line-cell-in-modal': inSentenceModal,
-      'sentence-hidden': sentence.hidden,
-    }
-  )
-
-  const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
-
-  const editorContainer = (
-    <View ref={editorContainerRef} className={editorClassName}>
-      {editorElement}
-      {anothersDraft ? editingStatus : undefined}
-      <Divider style={dividerStyle} />
-    </View>
-  )
-
-  const editorLine = (
-    <View columnStart={3} className={editorLineClassName}>
-      {editorContainer}
-    </View>
-  )
-
-  function modalAnnotations() {
-    const commitments: {[key: string]: string} = {}
-    for (let name of sentence.accepted) {
-      commitments[name] = 'accepted'
-    }
-    for (let name of sentence.rejected) {
-      commitments[name] = 'rejected'
-    }
-    for (let name of sentence.cleared) {
-      commitments[name] = 'cleared'
-    }
-    const glyphs = {
-      accepted: 'check',
-      rejected: 'x',
-      cleared: 'minus',
-    }
-    const colors = {
-      accepted: 'seagreen',
-      rejected: 'firebrick',
-      cleared: 'gray',
-    }
-    const elements = sortBy(keys(commitments)).map((name, index) =>
-      <View key={`c${index}`}>
-        <span
-          className="oi sentence-icon"
-          style={{color: colors[commitments[name]], paddingRight: '10px'}}
-          data-glyph={glyphs[commitments[name]]}
-        />
-        {name}
-      </View>
-    )
-    elements.unshift(...sortBy(sentence.goal).map((name, index) =>
-      <View key={`g${index}`}>
-        <span
-          className="oi sentence-icon"
-          style={{color: 'royalblue', paddingRight: '10px'}}
-          data-glyph="bookmark"
-        />
-        {name}
-      </View>
-    ))
-    return elements
-  }
-
-  const sentenceModalStyle = {
-    top: `${-offsetHeight - 23}px`,
-    paddingTop: `${offsetHeight + 30}px`,
-    paddingBottom: '5px',
-  }
-  const modalActions = [
-    <Button key="h" variation="link" size="small" onClick={e => handleSetHidden(e)}>
-      {sentence.hidden ? 'unhide' : 'hide'}
-    </Button>
-  ]
-  if (section === 'propositions') {
-    modalActions.push(
-      <Button key="g" variation="link" size="small" onClick={e => handleGoalSet(e)}>
-        {sentence.goal.includes(username) ? 'clear goal' : 'set goal'}
-      </Button>
-    )
-  }
-
-  const sentenceModal = !inSentenceModal ? undefined : (
-    <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
-      <View ref={modalRef} className="sentence-modal" style={sentenceModalStyle}>
-        <View style={{paddingLeft: '52px', paddingBottom: '10px'}}>
-          {modalAnnotations()}
-        </View>
-        <View style={{paddingLeft: '50px'}}>{modalActions}</View>
-      </View>
-      <View
-        className="sentence-modal-overlay"
-        onClick={handleOverlay}
-      />
-    </View>
-  )
-
   return (
     <React.Fragment>
-      {annotationIcons}
-      {indexElement}
-      {editorLine}
-      {sentenceModal}
+      {annotationIcons()}
+      {indexElement()}
+      {editorLine()}
+      {sentenceModal()}
       {postSentence()}
     </React.Fragment>
   )
