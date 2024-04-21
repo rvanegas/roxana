@@ -33,7 +33,6 @@ export function SentenceLine(props: SentenceProps) {
   const modalRef = useRef() as MutableRefObject<HTMLElement>
   const dispatch = useDispatch()
   const propositions = discussions.propositions
-  const isLastArgument = section === 'arguments' && discussions.arguments.length - 1 === position
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
@@ -47,8 +46,7 @@ export function SentenceLine(props: SentenceProps) {
     discussions.sentenceModal.section === section &&
     discussions.sentenceModal.position === position
 
-  const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
-  const [offsetHeight, setOffsetHeight] = useState<number>(offsetHeightRaw || 0)
+  const [offsetHeight, setOffsetHeight] = useState<number>(0)
 
   let canonicalContent
 
@@ -57,6 +55,7 @@ export function SentenceLine(props: SentenceProps) {
       editorRef.current.focus()
       dispatch(unsetFocus({section, position}))
     }
+    const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
     if (offsetHeightRaw !== undefined && offsetHeight === 0) {
       setOffsetHeight(offsetHeightRaw)
     }
@@ -79,7 +78,7 @@ export function SentenceLine(props: SentenceProps) {
       }
     }
   }, [
-    sentence, dispatch, editorRef, position, section, offsetHeight, offsetHeightRaw,
+    sentence, dispatch, editorRef, position, section, offsetHeight,
     inSentenceModal, unsetFocus, modalRef, sentenceListRef, editorContainerRef,
   ])
 
@@ -270,6 +269,7 @@ export function SentenceLine(props: SentenceProps) {
         'sentence-hidden': sentence.hidden,
       }
     )
+    const isLastArgument = discussions.arguments.length - 1 === position
     return displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
@@ -278,6 +278,8 @@ export function SentenceLine(props: SentenceProps) {
             <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
           </div>
         </View>
+      const padding = isLastArgument ? undefined :
+        <View style={{paddingBottom: '10px'}} columnSpan={4} />
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
@@ -285,6 +287,7 @@ export function SentenceLine(props: SentenceProps) {
             <div style={{textAlign: 'right'}}>{index}</div>
           </View>
           <View columnEnd={-2} className={sentenceEditorClassName}>{proposition.content}</View>
+          {padding}
         </React.Fragment>
       )
     })
@@ -460,7 +463,7 @@ export function SentenceLine(props: SentenceProps) {
 
   const modalActions = [
     <Button key="h" variation="link" size="small" onClick={e => handleSetHidden(e)}>
-      {sentence.hidden ? 'show' : 'hide'}
+      {sentence.hidden ? 'unhide' : 'hide'}
     </Button>
   ]
   if (section === 'propositions') {
@@ -493,7 +496,6 @@ export function SentenceLine(props: SentenceProps) {
       {editorLine}
       {sentenceModal}
       {postSentence()}
-      {isArguments && !isLastArgument && <View style={{paddingBottom: '10px'}} columnSpan={4} />}
     </React.Fragment>
   )
 }
