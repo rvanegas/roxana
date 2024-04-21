@@ -268,8 +268,7 @@ export function SentenceLine(props: SentenceProps) {
         'sentence-hidden': sentence.hidden,
       }
     )
-    const isLastArgument = discussions.arguments.length - 1 === position
-    return displayPropositionIndexes.map((index, mapIndex) => {
+    const steps = displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
         : <View columnStart={1} className={sentenceMetaClassName}>
@@ -277,8 +276,6 @@ export function SentenceLine(props: SentenceProps) {
             <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
           </div>
         </View>
-      const padding = isLastArgument ? undefined :
-        <View style={{paddingBottom: '10px'}} columnSpan={4} />
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
@@ -286,10 +283,18 @@ export function SentenceLine(props: SentenceProps) {
             <div style={{textAlign: 'right'}}>{index}</div>
           </View>
           <View columnEnd={-2} className={sentenceEditorClassName}>{proposition.content}</View>
-          {padding}
         </React.Fragment>
       )
     })
+    const isLastArgument = discussions.arguments.length - 1 === position
+    const padding = isLastArgument ? undefined :
+      <View style={{paddingBottom: '10px'}} columnSpan={4} />
+    return (
+      <React.Fragment>
+        {steps}
+        {padding}
+      </React.Fragment>
+    )
   }
 
   function claimsSummary() {
