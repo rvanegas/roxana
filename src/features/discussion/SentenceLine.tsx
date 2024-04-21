@@ -6,7 +6,7 @@ import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
 import {toAlphaIndex, verticalPixelsBelowViewport} from '../../app/util'
-import {Section, Sentence, ElementRef} from './discussion.d'
+import {Section, Sentence} from './discussion.d'
 import {selectDiscussions, propositionIndexesFromArgument,
   discussionsSlice} from './discussionsSlice'
 import {replaceSentenceAction, changeGoalSentenceAction, focusOnSentence,
@@ -17,7 +17,7 @@ interface SentenceProps {
   section: Section
   sentence: Sentence
   position: number
-  sentenceListRef: ElementRef
+  sentenceListRef: MutableRefObject<HTMLElement>
 }
 
 export function SentenceLine(props: SentenceProps) {
