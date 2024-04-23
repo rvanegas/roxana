@@ -1,4 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit'
+import {pull, uniq} from 'lodash'
 import Cookies from 'universal-cookie'
 import {dlog} from '../../app/util'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
@@ -26,6 +27,11 @@ interface State {
   sentenceModal?: {section: Section, position: number}
   offsetHeight?: number
   newDiscussionId?: string
+  argumentView?: {
+    primaryPropositionPosition: number,
+    secondaryPropositionPositions: number[],
+    argumentPositions: number[],
+  }
   // users: string[]
 }
 
@@ -55,6 +61,7 @@ const initialState: State = {
   sentenceModal: undefined,
   offsetHeight: undefined,
   newDiscussionId: undefined,
+  argumentView: undefined,
   // users: [],
 }
 
@@ -193,6 +200,27 @@ export const discussionsSlice = createSlice({
     },
     clearSentenceModal(state) {
       state.sentenceModal = undefined
+    },
+    setArgumentView(state, action) {
+      const primaryPropositionPosition: number = action.payload
+      const argumentPositions: number[] = []
+      const propositionPositions = state.arguments.map((argument, argumentPosition) => {
+        const positions = propositionIndexesFromArgument(argument).map(i => i - 1)
+        if (positions.includes(primaryPropositionPosition)) {
+          argumentPositions.push(argumentPosition)
+          return positions
+        }
+        return []
+      })
+      const secondaryPropositionPositions = pull(uniq(propositionPositions.flat()), [primaryPropositionPosition])
+      state.argumentView = {
+        primaryPropositionPosition,
+        secondaryPropositionPositions,
+        argumentPositions,
+      }
+    },
+    clearArgumentView(state) {
+      state.argumentView = undefined
     },
     setSentenceHidden(state, action) {
       const {section, position, hidden}:

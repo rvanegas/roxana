@@ -34,6 +34,7 @@ export function SentencesList({section, sentenceListRef}) {
     <Grid
       templateColumns="5rem 20px 1fr 3rem"
       columnGap="5px"
+      rowGap="7px"
     >
       {elements}
       {newButton}

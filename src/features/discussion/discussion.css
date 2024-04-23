@@ -55,17 +55,16 @@
 }
 
 .sentence-line-cell {
-  margin-bottom: 7px;
 }
 
 .sentence-meta {
   position: relative;
+  user-select: none;
+  padding-top: 2px;
+  padding-right: 5px;
+  font-size: 10pt;
   height: 100%;
   width: 100%;
-  user-select: none;
-  padding-right: 5px;
-  padding-top: 2px;
-  font-size: 10pt;
 }
 
 .sentence-icon {
@@ -73,13 +72,23 @@
 }
 
 .sentence-index {
+  position: relative;
   font-family: Comic Sans;
   user-select: none;
   font-weight: bold;
   height: 20px;
   width: 20px;
-  position: relative;
   padding-right: 5px;
+}
+
+.sentence-in-argument {
+  position: relative;
+  user-select: none;
+  padding-top: 5px;
+  padding-left: 5px;
+  font-size: 10pt;
+  height: 100%;
+  width: 100%;
 }
 
 .sentence-line-cell-in-modal {

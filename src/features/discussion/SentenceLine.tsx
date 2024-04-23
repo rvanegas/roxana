@@ -22,14 +22,15 @@ interface SentenceProps {
 
 export function SentenceLine(props: SentenceProps) {
   const {section, sentence, position, sentenceListRef} = props
-  const {unsetFocus, clearSentenceModal, setSentenceModal} = discussionsSlice.actions
+  const {unsetFocus, clearSentenceModal, setSentenceModal,
+    clearArgumentView, setArgumentView} = discussionsSlice.actions
   const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
-  const editorRef = useRef() as MutableRefObject<HTMLElement>
   const editorContainerRef = useRef() as MutableRefObject<HTMLElement>
+  const editorRef = useRef() as MutableRefObject<HTMLElement>
   const modalRef = useRef() as MutableRefObject<HTMLElement>
   const dispatch = useDispatch()
   const propositions = discussions.propositions
@@ -209,6 +210,12 @@ export function SentenceLine(props: SentenceProps) {
     }
   }
 
+  function handleInArgument() {
+    const isSettable = discussions.argumentView === undefined ||
+      discussions.argumentView.primaryPropositionPosition !== position
+    isSettable ? dispatch(setArgumentView(position)) : dispatch(clearArgumentView())
+  }
+
   function handleOverlay() {
     dispatch(clearSentenceModal())
   }
@@ -278,9 +285,6 @@ export function SentenceLine(props: SentenceProps) {
         <span key={index} className="oi sentence-icon" style={style} data-glyph="check" /> :
         <span key={index} className="oi sentence-icon" style={style} data-glyph="x" />
     })
-    if (sentence.inArgument) {
-      annotations.unshift(<span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" />)
-    }
     const irrational = sentence.irrational.filter(d => !discussions.hideDiscussants[d])
     if (irrational.length !== 0) {
       let underline = irrational.includes(username) && !discussions.hideDiscussants[username]
@@ -303,10 +307,10 @@ export function SentenceLine(props: SentenceProps) {
         columnStart={1} className={annotationIconsClassName}
         onClick={username ? handleStatusToggle : null}
       >
-        <div style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-        <div style={{textAlign: 'right'}}>
+        <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
+        <View style={{textAlign: 'right'}}>
           {annotations}
-        </div>
+        </View>
       </View>
     )
   }
@@ -315,7 +319,15 @@ export function SentenceLine(props: SentenceProps) {
     const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
     const indexStyle = {
       border: goal.includes(username) ? '1px royalblue solid' :
-        goal.length !== 0 ? '1px royalblue dashed' : '1px transparent solid',
+        goal.length !== 0 ? '1px royalblue dashed' :
+          '1px transparent solid',
+      color: section === 'propositions' &&
+        discussions.argumentView?.primaryPropositionPosition === position ? 'red' :
+        section === 'propositions' &&
+        discussions.argumentView?.secondaryPropositionPositions.includes(position) ? 'orange' :
+        section === 'arguments' &&
+        discussions.argumentView?.argumentPositions.includes(position) ? 'gold' :
+        'black',
     }
     const indexClassName = classNames(
       'sentence-line-cell', 'sentence-index', {
@@ -375,6 +387,28 @@ export function SentenceLine(props: SentenceProps) {
         {editorContainer}
       </View>
     )
+  }
+
+  function inArgumentElement() {
+    const classes = classNames(
+      'sentence-line-cell', 'sentence-in-argument', {
+        'sentence-line-cell-in-modal': inSentenceModal,
+        'sentence-hidden': sentence.hidden,
+      }
+    )
+    if (!sentence.inArgument) {
+      return null
+    }
+    else {
+      return (
+        <View columnStart={4} className={classes} onClick={handleInArgument}>
+          <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
+          <View style={{textAlign: 'left'}}>
+            <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" />
+          </View>
+        </View>
+      )
+    }
   }
 
   function sentenceModal() {
@@ -477,17 +511,17 @@ export function SentenceLine(props: SentenceProps) {
     )
     const steps = displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
-      const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null
-        : <View columnStart={1} className={sentenceMetaClassName}>
-          <div style={{textAlign: 'right'}}>
-            <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" title="arrow" />
-          </div>
+      const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null :
+        <View columnStart={1} className={sentenceMetaClassName}>
+          <View style={{textAlign: 'right'}}>
+            {'\u2234'}
+          </View>
         </View>
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
           <View columnStart={2} className={sentenceIndexClassName}>
-            <div style={{textAlign: 'right'}}>{index}</div>
+            <View style={{textAlign: 'right'}}>{index}</View>
           </View>
           <View columnEnd={-2} className={sentenceEditorClassName}>{proposition.content}</View>
         </React.Fragment>
@@ -509,6 +543,7 @@ export function SentenceLine(props: SentenceProps) {
       {annotationIcons()}
       {indexElement()}
       {editorLine()}
+      {inArgumentElement()}
       {sentenceModal()}
       {postSentence()}
     </React.Fragment>
