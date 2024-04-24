@@ -1,5 +1,5 @@
 import React, {useContext} from 'react'
-import {pullAt, concat} from 'lodash'
+import {pullAt, concat, sortBy} from 'lodash'
 import {useDispatch, useSelector} from 'react-redux'
 import {View, Button, Grid} from '@aws-amplify/ui-react'
 import {SentenceLine} from './SentenceLine'
@@ -26,17 +26,11 @@ export function SentencesList({section, sentenceListRef}) {
   ))
 
   if (section === 'propositions' && discussions.argumentView) {
-    const primaryProposition = elements[discussions.argumentView.primaryPropositionPosition]
-    const secondaryPropositions = elements.filter((element, position) =>
-      discussions.argumentView.secondaryPropositionPositions.includes(position)
-    )
-    const indexes = concat([discussions.argumentView.primaryPropositionPosition], discussions.argumentView.secondaryPropositionPositions)
-    pullAt(elements, indexes)
-    elements = concat([], primaryProposition, secondaryPropositions)
+    const positions = concat([discussions.argumentView.primaryPropositionPosition], discussions.argumentView.secondaryPropositionPositions)
+    elements = pullAt(elements, sortBy(positions))
   }
   else if (section === 'arguments' && discussions.argumentView) {
-    const argumentPositions = pullAt(elements, discussions.argumentView.argumentPositions)
-    elements = concat([], argumentPositions)
+    elements = pullAt(elements, discussions.argumentView.argumentPositions)
   }
 
   const newButton = !(username && sentences.length !== 0) ? undefined : (
