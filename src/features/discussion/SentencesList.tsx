@@ -34,7 +34,7 @@ export function SentencesList({section, sentenceListRef}) {
   }
 
   const newButton = !(username && sentences.length !== 0) ? undefined : (
-    <View columnSpan={2} style={{placeSelf: 'center start', paddingBottom: '20px'}}>
+    <View columnSpan={2} style={{placeSelf: 'center start', paddingLeft: '60px', paddingBottom: '20px'}}>
       <Button variation="link" size="small" onClick={handleNew}>new</Button>
     </View>
   )
