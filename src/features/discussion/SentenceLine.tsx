@@ -509,7 +509,7 @@ export function SentenceLine(props: SentenceProps) {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null :
         <View columnStart={1} className={sentenceMetaClassName}>
-          <View style={{textAlign: 'right'}}>
+          <View style={{textAlign: 'right', fontSize: 'larger', lineHeight: '10px'}}>
             {'\u2234'}
           </View>
         </View>
