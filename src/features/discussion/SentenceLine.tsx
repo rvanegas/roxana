@@ -323,10 +323,6 @@ export function SentenceLine(props: SentenceProps) {
           '1px transparent solid',
       color: section === 'propositions' &&
         discussions.argumentView?.primaryPropositionPosition === position ? 'red' :
-        section === 'propositions' &&
-        discussions.argumentView?.secondaryPropositionPositions.includes(position) ? 'orange' :
-        section === 'arguments' &&
-        discussions.argumentView?.argumentPositions.includes(position) ? 'gold' :
         'black',
     }
     const indexClassName = classNames(
@@ -396,7 +392,7 @@ export function SentenceLine(props: SentenceProps) {
         'sentence-hidden': sentence.hidden,
       }
     )
-    if (!sentence.inArgument) {
+    if (!sentence.inArgument || (discussions.argumentView && discussions.argumentView.primaryPropositionPosition !== position)) {
       return null
     }
     else {

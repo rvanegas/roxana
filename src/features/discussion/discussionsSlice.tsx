@@ -13,7 +13,11 @@ interface Event {
 
 interface State {
   eventQueue: Event[]
-  recentDiscussions: {id: string, updatedAt: string, goalsSummary: string}[]
+  recentDiscussions: {
+    id: string,
+    updatedAt: string,
+    goalsSummary: string
+  }[]
   status: string
   error?: string
   discussionId?: string
@@ -24,7 +28,10 @@ interface State {
   discussants: string[]
   hideDiscussants: object
   showHidden: boolean
-  sentenceModal?: {section: Section, position: number}
+  sentenceModal?: {
+    section: Section,
+    position: number
+  }
   offsetHeight?: number
   newDiscussionId?: string
   argumentView?: {
@@ -212,7 +219,8 @@ export const discussionsSlice = createSlice({
         }
         return []
       })
-      const secondaryPropositionPositions = pull(uniq(propositionPositions.flat()), [primaryPropositionPosition])
+      const secondaryPropositionPositions =
+        pull(uniq(propositionPositions.flat()), primaryPropositionPosition) // difference ?
       state.argumentView = {
         primaryPropositionPosition,
         secondaryPropositionPositions,
