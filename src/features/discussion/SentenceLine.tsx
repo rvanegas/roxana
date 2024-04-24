@@ -388,7 +388,6 @@ export function SentenceLine(props: SentenceProps) {
   function inArgumentElement() {
     const classes = classNames(
       'sentence-line-cell', 'sentence-in-argument', {
-        'sentence-line-cell-in-modal': inSentenceModal,
         'sentence-hidden': sentence.hidden,
       }
     )
