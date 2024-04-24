@@ -55,6 +55,7 @@
 }
 
 .sentence-line-cell {
+  margin-bottom: 7px;
 }
 
 .sentence-meta {
@@ -109,7 +110,6 @@
 }
 
 .sentence-modal-wrapper {
-  /*visibility: hidden;*/
   position: relative;
 }
 
