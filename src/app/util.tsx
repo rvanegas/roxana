@@ -16,7 +16,13 @@ export function incrementDiscussionIdLength() {
   discussionIdLength++
 }
 export function generateDiscussionId() {
-  return cryptoRandomString({length: discussionIdLength, type: 'numeric'}).toLowerCase();
+  const startsWithZero = /^0/
+  for (;;) {
+    const id = cryptoRandomString({length: discussionIdLength, type: 'numeric'}).toLowerCase()
+    if (!startsWithZero.test(id)) {
+      return id
+    }
+  }
 }
 
 export function toAlphaIndex(numberIndex) {
