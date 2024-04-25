@@ -99,10 +99,10 @@ function createNewDiscussion() {
   }
 }
 
-function initializeDiscussion({discussionId}) {
-  const {initialize} = discussionsSlice.actions
+function initializeDiscussion() {
   return async (dispatch, getState) => {
-    dispatch(initialize(discussionId))
+    const state = getState()
+    const discussionId = state.discussions.discussionId
     await dispatch(getDiscussion({id: discussionId}))
     if (getState().discussions.propositions.length === 0) {
       await dispatch(addNewSentence('propositions', 'committed'))
@@ -486,8 +486,8 @@ export function createNewDiscussionAction() {
   const action = {handler: 'createNewDiscussion'}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function initializeDiscussionAction(value) {
-  const action = {handler: 'initializeDiscussion', payload: value}
+export function initializeDiscussionAction() {
+  const action = {handler: 'initializeDiscussion'}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function getDiscussionAction(discussion) {
