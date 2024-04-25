@@ -143,6 +143,7 @@ export const discussionsSlice = createSlice({
         propositions: [],
         arguments: [],
         discussants: [],
+        argumentView: undefined,
       })
     },
     incrementRevision(state, action) {

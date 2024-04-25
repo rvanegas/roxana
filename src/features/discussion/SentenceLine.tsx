@@ -322,8 +322,7 @@ export function SentenceLine(props: SentenceProps) {
         goal.length !== 0 ? '1px royalblue dashed' :
           '1px transparent solid',
       color: section === 'propositions' &&
-        discussions.argumentView?.primaryPropositionPosition === position ? 'red' :
-        'black',
+        discussions.argumentView?.primaryPropositionPosition === position ? '#b00010' : 'black',
     }
     const indexClassName = classNames(
       'sentence-line-cell', 'sentence-index', {
@@ -391,15 +390,16 @@ export function SentenceLine(props: SentenceProps) {
         'sentence-hidden': sentence.hidden,
       }
     )
-    if (!sentence.inArgument || (discussions.argumentView && discussions.argumentView.primaryPropositionPosition !== position)) {
+    if (!sentence.inArgument) {
       return null
     }
     else {
+      const arrowColor = discussions.argumentView?.primaryPropositionPosition === position ? '#ff0010' : 'gray'
       return (
         <View columnStart={4} className={classes} onClick={handleInArgument}>
           <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
           <View style={{textAlign: 'left'}}>
-            <span key="a" className="oi sentence-icon" style={{color: 'gray'}} data-glyph="arrow-thick-right" />
+            <span key="a" className="oi sentence-icon" style={{color: arrowColor}} data-glyph="arrow-thick-right" />
           </View>
         </View>
       )
