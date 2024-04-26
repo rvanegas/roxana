@@ -12,6 +12,8 @@ export const createDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      private
+      inviteCode
       users {
         items {
           id
@@ -49,6 +51,8 @@ export const updateDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      private
+      inviteCode
       users {
         items {
           id
@@ -86,6 +90,8 @@ export const deleteDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      private
+      inviteCode
       users {
         items {
           id
@@ -128,6 +134,8 @@ export const createSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        private
+        inviteCode
         users {
           nextToken
         }
@@ -158,6 +166,8 @@ export const updateSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        private
+        inviteCode
         users {
           nextToken
         }
@@ -188,6 +198,8 @@ export const deleteSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        private
+        inviteCode
         users {
           nextToken
         }
@@ -283,6 +295,8 @@ export const createDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        private
+        inviteCode
         users {
           nextToken
         }
@@ -320,6 +334,8 @@ export const updateDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        private
+        inviteCode
         users {
           nextToken
         }
@@ -357,6 +373,8 @@ export const deleteDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        private
+        inviteCode
         users {
           nextToken
         }
