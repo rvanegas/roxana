@@ -16,7 +16,7 @@ export function incrementDiscussionIdLength() {
   discussionIdLength++
 }
 export function generateDiscussionId() {
-  return cryptoRandomString({length: discussionIdLength, type: 'numeric'}).toLowerCase();
+  return cryptoRandomString({length: discussionIdLength, type: 'distinguishable'}).toLowerCase();
 }
 
 export function toAlphaIndex(numberIndex) {
