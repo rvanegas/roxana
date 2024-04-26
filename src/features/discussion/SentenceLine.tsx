@@ -86,6 +86,11 @@ export function SentenceLine(props: SentenceProps) {
     return null
   }
 
+  function highlightColor(section, position, defaultColor = 'black') {
+    return section === 'propositions' &&
+      discussions.argumentView?.primaryPropositionPosition === position ? 'red' : defaultColor
+  }
+
   function initialEditorState() {
     const contentState = ContentState.createFromText(sentence.content)
     return EditorState.createWithContent(contentState)
@@ -321,8 +326,7 @@ export function SentenceLine(props: SentenceProps) {
       border: goal.includes(username) ? '1px royalblue solid' :
         goal.length !== 0 ? '1px royalblue dashed' :
           '1px transparent solid',
-      color: section === 'propositions' &&
-        discussions.argumentView?.primaryPropositionPosition === position ? '#b00010' : 'black',
+      color: highlightColor(section, position)
     }
     const indexClassName = classNames(
       'sentence-line-cell', 'sentence-index', {
@@ -369,9 +373,10 @@ export function SentenceLine(props: SentenceProps) {
         'sentence-hidden': sentence.hidden,
       }
     )
+
     const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
     const editorContainer = (
-      <View ref={editorContainerRef} className={editorClassName}>
+      <View ref={editorContainerRef} className={editorClassName} style={{color: highlightColor(section, position)}}>
         {editorElement}
         {anothersDraft ? editingStatus : undefined}
         <Divider style={dividerStyle} />
@@ -394,12 +399,12 @@ export function SentenceLine(props: SentenceProps) {
       return null
     }
     else {
-      const arrowColor = discussions.argumentView?.primaryPropositionPosition === position ? '#ff0010' : 'gray'
       return (
         <View columnStart={4} className={classes} onClick={handleInArgument}>
           <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
           <View style={{textAlign: 'left'}}>
-            <span key="a" className="oi sentence-icon" style={{color: arrowColor}} data-glyph="arrow-thick-right" />
+            <span key="a" className="oi sentence-icon" style={{color: highlightColor(section, position, 'gray')}}
+              data-glyph="arrow-thick-right" />
           </View>
         </View>
       )
@@ -512,13 +517,14 @@ export function SentenceLine(props: SentenceProps) {
             {'\u2234'}
           </View>
         </View>
+      const color = highlightColor('propositions', index - 1)
       return (
         <React.Fragment key={proposition.key}>
           {therefore}
           <View columnStart={2} className={sentenceIndexClassName}>
-            <View style={{textAlign: 'right'}}>{index}</View>
+            <View style={{textAlign: 'right', color}}>{index}</View>
           </View>
-          <View columnEnd={-2} className={sentenceEditorClassName}>{proposition.content}</View>
+          <View columnEnd={-2} className={sentenceEditorClassName} style={{color}}>{proposition.content}</View>
         </React.Fragment>
       )
     })

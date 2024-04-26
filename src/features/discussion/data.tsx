@@ -530,7 +530,6 @@ export function loadRecentDiscussions() {
   const {setRecentDiscussions} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const response = await API.graphql(graphqlOperation(custom.listRecentDiscussions)) as {data}
-    dlog('searchDiscussions', response)
     dispatch(setRecentDiscussions(response.data.searchDiscussions.items))
   }
 }
