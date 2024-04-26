@@ -21,7 +21,7 @@ export function Discussion() {
   const discussionStatusInit = discussions.status === 'init'
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
-  const {setUsername, toggleHideDiscussant, toggleShowHidden, initialize: initializeSliceDiscussion} = discussionsSlice.actions
+  const {setUsername, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
 
   useEffect(() => {
     if (usernameChanged) {
@@ -31,9 +31,8 @@ export function Discussion() {
       }
     }
 
-    if (discussionStatusInit || (params.discussionId && discussionId !== params.discussionId)) {
-      dispatch(initializeSliceDiscussion(params.discussionId))
-      dispatch(initializeDiscussionAction())
+    if (discussionStatusInit || (discussionId && discussionId !== params.discussionId)) {
+      dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
 
     if (discussionId) {
@@ -51,7 +50,7 @@ export function Discussion() {
     }
   }, [
     setUsername, dispatch, discussionStatusInit, usernameChanged, discussionId,
-    username, params, initializeSliceDiscussion
+    username, params
   ])
 
   function handleDiscussantSwitch(e, discussant) {
