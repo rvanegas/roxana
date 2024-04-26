@@ -1,4 +1,4 @@
-import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
+import React, {useEffect, useState, useContext, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
@@ -18,9 +18,9 @@ export function Discussion() {
   const propositionsListRef = useRef() as MutableRefObject<HTMLElement>
   const argumentsListRef = useRef() as MutableRefObject<HTMLElement>
   const discussions = useSelector(selectDiscussions)
-  const discussionStatusInit = discussions.status === 'init'
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
+  const [loadingDiscussionId, setLoadingDiscussionId] = useState<string>()
   const {setUsername, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
 
   useEffect(() => {
@@ -31,7 +31,8 @@ export function Discussion() {
       }
     }
 
-    if (discussionStatusInit || (discussionId && discussionId !== params.discussionId)) {
+    if (params.discussionId && loadingDiscussionId !== params.discussionId) {
+      setLoadingDiscussionId(params.discussionId)
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
 
@@ -49,8 +50,8 @@ export function Discussion() {
       return () => subscription.unsubscribe()
     }
   }, [
-    setUsername, dispatch, discussionStatusInit, usernameChanged, discussionId,
-    username, params
+    setUsername, dispatch, usernameChanged, discussionId,
+    username, params, loadingDiscussionId
   ])
 
   function handleDiscussantSwitch(e, discussant) {
