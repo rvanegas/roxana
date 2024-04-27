@@ -8,7 +8,7 @@ type Discussion @model @searchable {
   revision: Int    # incremented on every update
   layout: String!
   goalsSummary: String
-  private: Boolean
+  isPrivate: Boolean
   inviteCode: String @index(name: "byInviteCode")
   users: [User] @manyToMany(relationName: "DiscussionUsers")
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])

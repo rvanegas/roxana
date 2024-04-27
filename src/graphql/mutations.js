@@ -12,7 +12,7 @@ export const createDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -51,7 +51,7 @@ export const updateDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -90,7 +90,7 @@ export const deleteDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -134,7 +134,7 @@ export const createSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -166,7 +166,7 @@ export const updateSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -198,7 +198,7 @@ export const deleteSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -295,7 +295,7 @@ export const createDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -334,7 +334,7 @@ export const updateDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -373,7 +373,7 @@ export const deleteDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken

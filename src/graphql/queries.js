@@ -24,7 +24,7 @@ export const searchDiscussions = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -62,7 +62,7 @@ export const getDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -103,7 +103,7 @@ export const listDiscussions = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -131,7 +131,7 @@ export const getSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -165,7 +165,7 @@ export const listSentences = /* GraphQL */ `
           revision
           layout
           goalsSummary
-          private
+          isPrivate
           inviteCode
           createdAt
           updatedAt
@@ -235,7 +235,7 @@ export const getDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -276,7 +276,7 @@ export const listDiscussionUsers = /* GraphQL */ `
           revision
           layout
           goalsSummary
-          private
+          isPrivate
           inviteCode
           createdAt
           updatedAt

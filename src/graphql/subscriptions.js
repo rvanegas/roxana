@@ -9,7 +9,7 @@ export const onDiscussionById = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -45,7 +45,7 @@ export const onCreateDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -81,7 +81,7 @@ export const onUpdateDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -117,7 +117,7 @@ export const onDeleteDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
-      private
+      isPrivate
       inviteCode
       users {
         items {
@@ -158,7 +158,7 @@ export const onCreateSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -187,7 +187,7 @@ export const onUpdateSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -216,7 +216,7 @@ export const onDeleteSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -301,7 +301,7 @@ export const onCreateDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -337,7 +337,7 @@ export const onUpdateDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
@@ -373,7 +373,7 @@ export const onDeleteDiscussionUsers = /* GraphQL */ `
         revision
         layout
         goalsSummary
-        private
+        isPrivate
         inviteCode
         users {
           nextToken
