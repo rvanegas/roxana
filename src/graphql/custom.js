@@ -5,6 +5,16 @@ export const getDiscussionSimple = /* GraphQL */ `
       layout
       version
       revision
+      isPrivate
+      users {
+        items {
+          id
+          discussionID
+          userID
+          createdAt
+          updatedAt
+        }
+      }
       sentences(limit: $limit) {
         items {
           id

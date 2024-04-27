@@ -323,9 +323,9 @@ export function SentenceLine(props: SentenceProps) {
   function indexElement() {
     const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
     const indexStyle = {
-      border: goal.includes(username) ? '1px royalblue solid' :
-        goal.length !== 0 ? '1px royalblue dashed' :
-          '1px transparent solid',
+      border: goal.includes(username) ? '2px royalblue solid' :
+        goal.length !== 0 ? '2px royalblue dashed' :
+          '2px transparent solid',
       color: highlightColor(section, position)
     }
     const indexClassName = classNames(
@@ -449,7 +449,7 @@ export function SentenceLine(props: SentenceProps) {
           <span
             className="oi sentence-icon"
             style={{color: 'royalblue', paddingRight: '10px'}}
-            data-glyph="bookmark"
+            data-glyph="target"
           />
           {name}
         </View>

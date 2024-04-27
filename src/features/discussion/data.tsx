@@ -120,14 +120,15 @@ GetDiscussionError.prototype = Object.create(Error.prototype)
 GetDiscussionError.prototype.name = 'GetDiscussionError'
 
 function getDiscussion(discussionInput: {id: string})
+function getDiscussion(discussionInput: {id: string, layoutOnly: true})
 function getDiscussion(discussionInput: {
   id: string,
   revision: number,
   layout: string,
   version: number,
+  users: object,
   updatedAt: string
 })
-function getDiscussion(discussionInput: {id: string, layoutOnly: true})
 function getDiscussion(discussionInput) {
   const {updateSentences} = discussionsSlice.actions
   return async (dispatch, getState) => {
