@@ -1,19 +1,67 @@
 
-# table=$(aws dynamodb list-tables | jq -r '.TableNames[] | select(test("Discussion-.*roxana"))')
-# ids=$(aws dynamodb scan --table-name $table \
-#   --filter-expression "updatedAt > :yesterday" \
-#   --expression-attribute-values '{":yesterday":{"S":"2022-04-24"}}' \
-#   | jq -r '.Items[] | .id.S | select(test("^\\d+$"))')
+set_table() {
+  env=pebbles
+  discussion_table=$(aws dynamodb list-tables | jq -r ".TableNames[] | select(test(\"Discussion-.*$env\"))")
+  sentence_table=$(aws dynamodb list-tables | jq -r ".TableNames[] | select(test(\"Discussion-.*$env\"))")
+}
 
-# for id in $ids; do
-#   echo deleting $id
-#   key=$(printf '{"id":{"S":"%s"}}' $id)
-#   aws dynamodb delete-item --table-name $table --key "$key"
-# done
+set_ids() {
+  ids=$( \
+    aws dynamodb scan --table-name $discussion_table --max-items 3 \
+      | jq -r '.Items[] | .id.S'
+#     | jq -r '.propositions[] | .id'
+  )
 
-  # --filter-expression "updatedAt > :yesterday" \
-  # --expression-attribute-values '{":yesterday":{"S":"2022-04-24"}}' \
 
+  # key=$(printf '{"id":{"S":"%s"}}' $id)
+
+  # aws dynamodb get-item --table-name $sentence_table --key '{}' \
+    # | jq -r '.' \
+
+  # | jq -r '.Count'
+  # | jq -r '.Items[] | if (.layout.S | length) < 35 then .id.S else "" end'
+  # --filter-expression "attribute_not_exists(isPrivate)" \
+  # --filter-expression "isPrivate = :value" \
+  # --expression-attribute-values '{":value":{"BOOL":true}}' \
+}
+
+# set_empty_discussions() {
+#   for id in $ids; do
+#   done
+# }
+
+
+
+
+
+update_items() {
+  for id in $ids; do
+    echo updating $id
+    key=$(printf '{"id":{"S":"%s"}}' $id)
+    update="SET isPrivate = :value"
+    values='{":value":{"BOOL":false}}'
+    aws dynamodb update-item --table-name $table --key "$key" \
+      --update-expression "$update" --expression-attribute-values "$values"
+      # --return-values ALL_NEW
+  done
+}
+
+delete_items() {
+  for id in $ids; do
+    echo deleting $id
+    key=$(printf '{"id":{"S":"%s"}}' $id)
+    aws dynamodb delete-item --table-name $table --key "$key"
+  done
+}
+
+set_table
+set_ids
+echo $ids
+# delete_items
+
+# exit
+
+#
 # read -rd '' json <<EOF
 # {
 #     key1: "$env_var1",
@@ -21,6 +69,6 @@
 # }
 # EOF
 # echo "$json"
-
+#
 # ids=$(aws dynamodb scan --table-name $table \
 #   | jq -r '.Items[] | .id.S | select(test("^\\d+$"))')

@@ -43,7 +43,7 @@ export function DiscussionsList() {
   const newButton = !username ? undefined : (
     <View style={{paddingBottom: '10px'}}>
       <Button variation="link" size="small" onClick={handleNewDiscussion}
-      >new discussion</Button>
+      >new</Button>
     </View>
   )
   const links = discussions.recentDiscussions.map((discussion, index) => (

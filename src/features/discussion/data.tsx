@@ -73,10 +73,12 @@ function addNewSentence(section: Section, status: string) {
 function createNewDiscussion() {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch) => {
-    const layout = createNewDiscussionLayout()
-    const revision = 1
+    const id = ''
     const version = 2
-    const variables = {input: {version, layout, revision}} as {input: {id, version, layout, revision}}
+    const revision = 1
+    const isPrivate = false
+    const layout = createNewDiscussionLayout()
+    const variables = {input: {id, version, revision, isPrivate, layout}}
     for (;;) {
       try {
         const discussionId = generateDiscussionId()
