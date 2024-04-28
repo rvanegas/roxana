@@ -46,6 +46,7 @@ function updateDiscussionLayout(changeNote: string) {
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       dlog('updateLayout', revision, changeNote)
       dispatch(incrementRevision(revision))
+      console.log('s', state.discussions.discussants)
     }
     catch (exception: any) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
@@ -125,9 +126,8 @@ function getDiscussion(discussionInput: {
   id: string,
   revision: number,
   layout: string,
-  version: number,
-  users: object,
-  updatedAt: string
+  version: number,   // needed?
+  updatedAt: string  // needed?
 })
 function getDiscussion(discussionInput) {
   const {updateSentences} = discussionsSlice.actions
@@ -139,6 +139,8 @@ function getDiscussion(discussionInput) {
       layout: string,
       version: number,
       updatedAt: string,
+      isPrivate: boolean,
+      users: {items: object[]},
     }
     let sentences: Sentence[] = []
 
@@ -201,7 +203,10 @@ function getDiscussion(discussionInput) {
 
     if (!isUpdate) {
       const response = await loadDiscussion()
-      discussion = pick(response.data.getDiscussion, ['id', 'revision', 'layout', 'version', 'updatedAt'])
+      const discussionKeys = ['id', 'revision', 'layout', 'version', 'updatedAt', 'users']
+      discussion = pick(response.data.getDiscussion, discussionKeys)
+      console.log('u', discussion.users.items)
+      // if (discussion.isPrivate && discussion.users.items)
       sentences = response.data.getDiscussion.sentences.items
     }
     else {

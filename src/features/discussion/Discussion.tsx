@@ -31,7 +31,9 @@ export function Discussion() {
       }
     }
 
+    console.log('d1')
     if (params.discussionId && loadingDiscussionId !== params.discussionId) {
+      console.log('d2')
       setLoadingDiscussionId(params.discussionId)
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
