@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useContext, useRef, MutableRefObject} from 'react'
+import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
@@ -20,7 +20,6 @@ export function Discussion() {
   const discussions = useSelector(selectDiscussions)
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
-  const [loadingDiscussionId, setLoadingDiscussionId] = useState<string>()
   const {setUsername, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
 
   useEffect(() => {
@@ -30,14 +29,15 @@ export function Discussion() {
         dlog.enabled = true
       }
     }
+  }, [setUsername, dispatch, usernameChanged, discussionId, username])
 
-    console.log('d1')
-    if (params.discussionId && loadingDiscussionId !== params.discussionId) {
-      console.log('d2')
-      setLoadingDiscussionId(params.discussionId)
+  useEffect(() => {
+    if (params.discussionId && discussionId !== params.discussionId) {
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
+  }, [dispatch, params, discussionId])
 
+  useEffect(() => {
     if (discussionId) {
       const variables = {id: discussionId}
       const op = graphqlOperation(custom.onDiscussionLayoutById, variables)
@@ -51,10 +51,7 @@ export function Discussion() {
       })
       return () => subscription.unsubscribe()
     }
-  }, [
-    setUsername, dispatch, usernameChanged, discussionId,
-    username, params, loadingDiscussionId
-  ])
+  }, [dispatch, discussionId])
 
   function handleDiscussantSwitch(e, discussant) {
     e.preventDefault()
