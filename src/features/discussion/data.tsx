@@ -491,31 +491,38 @@ function enqueueEvent(action) {
 }
 
 export function createNewDiscussionAction() {
-  const action = {handler: 'createNewDiscussion'}
+  const message = 'create new discussion'
+  const action = {handler: 'createNewDiscussion', message}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function initializeDiscussionAction(value) {
-  const action = {handler: 'initializeDiscussion', payload: value}
+  const message = `initialize discussion ${value?.discussionId}`
+  const action = {handler: 'initializeDiscussion', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function getDiscussionAction(discussion) {
-  const action = {handler: 'getDiscussion', payload: discussion}
+export function getDiscussionAction(value) {
+  const message = `get discussion ${value?.id} ${value?.revision}`
+  const action = {handler: 'getDiscussion', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function replaceSentenceAction(value) {
-  const action = {handler: 'replaceSentence', payload: value}
+  const message = `replace sentence ${value?.key}`
+  const action = {handler: 'replaceSentence', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
-  const action = {handler: 'changeSentenceStatus', payload: value}
+  const message = `change sentence status ${value?.key}`
+  const action = {handler: 'changeSentenceStatus', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeGoalSentenceAction(value) {
-  const action = {handler: 'changeGoalSentence', payload: value}
+  const message = `change goal sentence ${value?.position}`
+  const action = {handler: 'changeGoalSentence', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeSentenceHiddenAction(value) {
-  const action = {handler: 'changeSentenceHidden', payload: value}
+  const message = `change goal sentence ${value?.position} ${value?.section}`
+  const action = {handler: 'changeSentenceHidden', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 

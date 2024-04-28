@@ -31,6 +31,7 @@ export function App() {
     const navigate = useNavigate()
     const discussions = useSelector(selectDiscussions)
     const isSynced = discussions.eventQueue.length === 0
+    const eventMessages = discussions.eventQueue.map(e => e.message).join('\n')
 
     useEffect(() => {
       if (location.pathname === '/') {
@@ -50,7 +51,7 @@ export function App() {
     const indicatorClasses = classNames('indicator', {'synced': isSynced})
     const locationInDiscussion = (new RegExp('/discussions/\\w+')).test(location.pathname)
     const discussionElement = <Text>discussion: {discussions.discussionId}</Text>
-    const syncIndicator = <View className={indicatorClasses}></View>
+    const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
     const signInOrOutButton = location.pathname === '/signin' ? null : user ?
       <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
       <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
