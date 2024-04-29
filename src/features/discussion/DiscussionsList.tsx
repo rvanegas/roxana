@@ -21,8 +21,8 @@ export function DiscussionsList() {
   const discussions = useSelector(selectDiscussions)
   const {setNewDiscussionId} = discussionsSlice.actions
 
-  function handleNewDiscussion() {
-    dispatch(createNewDiscussionAction())
+  function handleNewDiscussion(isPrivate: boolean) {
+    dispatch(createNewDiscussionAction({isPrivate}))
   }
 
   useEffect(() => {
@@ -39,10 +39,16 @@ export function DiscussionsList() {
     }
   }, [setNewDiscussionId, dispatch, navigate, discussions.newDiscussionId])
 
-  const newButton = !username ? undefined : (
+  const newPublicButton = !username ? undefined : (
     <View style={{paddingBottom: '10px'}}>
-      <Button variation="link" size="small" onClick={handleNewDiscussion}
-      >new</Button>
+      <Button variation="link" size="small" onClick={e => handleNewDiscussion(false)}
+      >new public</Button>
+    </View>
+  )
+  const newPrivateButton = !username ? undefined : (
+    <View style={{paddingBottom: '10px'}}>
+      <Button variation="link" size="small" onClick={e => handleNewDiscussion(true)}
+      >new private</Button>
     </View>
   )
   const links = discussions.recentDiscussions.map((discussion, index) => (
@@ -69,7 +75,8 @@ export function DiscussionsList() {
       >
         {links}
       </Grid>
-      {newButton}
+      {newPublicButton}
+      {newPrivateButton}
     </View>
   )
 }

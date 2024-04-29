@@ -71,13 +71,12 @@ function addNewSentence(section: Section, status: string) {
   }
 }
 
-function createNewDiscussion() {
+function createNewDiscussion({isPrivate}) {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch) => {
     const id = ''
     const version = 2
     const revision = 1
-    const isPrivate = false
     const layout = createNewDiscussionLayout()
     const variables = {input: {id, version, revision, isPrivate, layout}}
     for (;;) {
@@ -490,9 +489,9 @@ function enqueueEvent(action) {
   }
 }
 
-export function createNewDiscussionAction() {
-  const message = 'create new discussion'
-  const action = {handler: 'createNewDiscussion', message}
+export function createNewDiscussionAction(value) {
+  const message = `create new discussion ${value}`
+  const action = {handler: 'createNewDiscussion', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function initializeDiscussionAction(value) {
