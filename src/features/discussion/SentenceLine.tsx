@@ -203,10 +203,7 @@ export function SentenceLine(props: SentenceProps) {
 
   function handleIndex() {
     if (offsetHeight !== 0) {
-      if (!username) {
-        return
-      }
-      else if (inSentenceModal) {
+      if (inSentenceModal) {
         dispatch(clearSentenceModal())
       }
       else {
@@ -480,7 +477,7 @@ export function SentenceLine(props: SentenceProps) {
           <View style={{paddingLeft: '52px', paddingBottom: '10px'}}>
             {modalAnnotations()}
           </View>
-          <View style={{paddingLeft: '50px'}}>{modalActions}</View>
+          <View style={{paddingLeft: '50px'}}>{username ? modalActions : undefined}</View>
         </View>
         <View
           className="sentence-modal-overlay"
