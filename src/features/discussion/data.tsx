@@ -129,7 +129,7 @@ function getDiscussion(discussionInput: {
   updatedAt: string  // needed?
 })
 function getDiscussion(discussionInput) {
-  const {updateSentences} = discussionsSlice.actions
+  const {updateDiscussion} = discussionsSlice.actions
   return async (dispatch, getState) => {
 
     let discussion : {
@@ -202,7 +202,7 @@ function getDiscussion(discussionInput) {
 
     if (!isUpdate) {
       const response = await loadDiscussion()
-      const discussionKeys = ['id', 'revision', 'layout', 'version', 'updatedAt', 'users']
+      const discussionKeys = ['id', 'revision', 'layout', 'version', 'updatedAt', 'isPrivate', 'users']
       discussion = pick(response.data.getDiscussion, discussionKeys)
       console.log('u', discussion.users.items)
       // if (discussion.isPrivate && discussion.users.items)
@@ -220,7 +220,11 @@ function getDiscussion(discussionInput) {
     parsedLayout = parseDiscussionLayout(discussion.layout)
     await readLayout('propositions')
     await readLayout('arguments')
-    dispatch(updateSentences({revision: discussion.revision, newSentences}))
+    dispatch(updateDiscussion({
+      revision: discussion.revision,
+      isPrivate: discussion.isPrivate,
+      newSentences
+    }))
     if (layoutUpdated) {
       await dispatch(updateDiscussionLayout('expire commits'))
     }

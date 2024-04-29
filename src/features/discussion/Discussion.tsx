@@ -87,6 +87,9 @@ export function Discussion() {
 
   return (
     <View>
+      <View>
+        {discussions.isPrivate ? 'private' : undefined}
+      </View>
       <View className="view-toggles" columnStart="1" columnEnd="-1">
         {hiddenToggle}
         {discussantToggles}

@@ -23,6 +23,7 @@ interface State {
   discussionId?: string
   username?: string
   revision?: number
+  isPrivate?: boolean
   propositions: Sentence[]
   arguments: Sentence[]
   discussants: string[]
@@ -60,6 +61,7 @@ const initialState: State = {
   discussionId: undefined,
   username: undefined,
   revision: undefined,
+  isPrivate: undefined,
   propositions: [],
   arguments: [],
   discussants: [],
@@ -259,7 +261,7 @@ export const discussionsSlice = createSlice({
       }
       updateSentenceDerivatives(state)
     },
-    updateSentences(state, action) {
+    updateDiscussion(state, action) {
       function mergeInNewSentences(section: Section) {
         const unsavedSentences = state[section].filter(s => !s.id)
         const base = nextIndex(newSentences[section])
@@ -269,8 +271,10 @@ export const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {revision, newSentences}: {revision: number, newSentences: Sentence[]} = action.payload
+      const {revision, isPrivate, newSentences}:
+        {revision: number, isPrivate: boolean, newSentences: Sentence[]} = action.payload
       state.revision = revision
+      state.isPrivate = isPrivate
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
       updateSentenceDerivatives(state)
