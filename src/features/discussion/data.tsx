@@ -295,7 +295,7 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
         dispatch(replaceSentenceAction({key, section, content}))
       }
       else {
@@ -399,7 +399,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
         dispatch(changeSentenceStatusAction(input))
       }
       else {
@@ -422,7 +422,7 @@ function changeGoalSentence(position: number) {
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
         dispatch(changeGoalSentenceAction(position))
       }
       else {
@@ -445,7 +445,7 @@ function changeSentenceHidden(args: {section: Section, position: number, hidden:
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
         dispatch(changeSentenceHiddenAction(args))
       }
       else {
