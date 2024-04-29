@@ -9,7 +9,6 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import {CurrentUserContext} from '../user/User'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
 import {loadRecentDiscussions, createNewDiscussionAction} from './data'
-
 dayjs.extend(relativeTime)
 
 let lastLoaded
@@ -48,7 +47,10 @@ export function DiscussionsList() {
   )
   const links = discussions.recentDiscussions.map((discussion, index) => (
     <React.Fragment key={index}>
-      <Link to={`/discussions/${discussion.id}`}>{discussion.id}</Link>
+      <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
+        to={`/discussions/${discussion.id}`}
+      >{discussion.id}
+      </Link>
       <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
       <span className="text-ellipsis">{discussion.goalsSummary}</span>
     </React.Fragment>
@@ -68,7 +70,6 @@ export function DiscussionsList() {
         {links}
       </Grid>
       {newButton}
-
     </View>
   )
 }
