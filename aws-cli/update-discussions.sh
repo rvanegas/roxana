@@ -1,23 +1,20 @@
 
 set_table() {
-  env=pebbles
+  env=roxana
   discussion_table=$(aws dynamodb list-tables | jq -r ".TableNames[] | select(test(\"Discussion-.*$env\"))")
   sentence_table=$(aws dynamodb list-tables | jq -r ".TableNames[] | select(test(\"Discussion-.*$env\"))")
 }
 
 set_ids() {
   ids=$( \
-    aws dynamodb scan --table-name $discussion_table --max-items 3 \
+    aws dynamodb scan --table-name $discussion_table \
       | jq -r '.Items[] | .id.S'
 #     | jq -r '.propositions[] | .id'
   )
 
-
   # key=$(printf '{"id":{"S":"%s"}}' $id)
-
   # aws dynamodb get-item --table-name $sentence_table --key '{}' \
-    # | jq -r '.' \
-
+  # | jq -r '.' \
   # | jq -r '.Count'
   # | jq -r '.Items[] | if (.layout.S | length) < 35 then .id.S else "" end'
   # --filter-expression "attribute_not_exists(isPrivate)" \
@@ -29,10 +26,6 @@ set_ids() {
 #   for id in $ids; do
 #   done
 # }
-
-
-
-
 
 update_items() {
   for id in $ids; do
@@ -50,17 +43,16 @@ delete_items() {
   for id in $ids; do
     echo deleting $id
     key=$(printf '{"id":{"S":"%s"}}' $id)
-    aws dynamodb delete-item --table-name $table --key "$key"
+    aws dynamodb delete-item --table-name $discussion_table --key "$key"
   done
 }
 
 set_table
 set_ids
 echo $ids
+
 # delete_items
-
 # exit
-
 #
 # read -rd '' json <<EOF
 # {
@@ -72,8 +64,4 @@ echo $ids
 #
 # ids=$(aws dynamodb scan --table-name $table \
 #   | jq -r '.Items[] | .id.S | select(test("^\\d+$"))')
-
-
 # aws appsync list-types --api-id bqkpkb6pszhoxpd3urdmd775km --format JSON --no-paginate | jq '.types[] | .name'
-
-
