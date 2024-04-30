@@ -4,7 +4,7 @@ import {pick, sortBy, reverse} from 'lodash'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
-import {dlog, hoursAgo, isPresent, incrementDiscussionIdLength,
+import {dlog, hoursAgo, isPresent,
   generateDiscussionId} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
 import {createDiscussionLayout, createNewDiscussionLayout,
@@ -91,8 +91,7 @@ function createNewDiscussion({isPrivate}) {
       catch (exception: any) {
         const errorType = exception.errors ? exception.errors[0].errorType : null
         if (errorType === 'DynamoDB:ConditionalCheckFailedException') {
-          // console.log('failed create, retrying...')
-          incrementDiscussionIdLength()
+          console.log('failed create, retrying...')
         }
         else {
           throw exception

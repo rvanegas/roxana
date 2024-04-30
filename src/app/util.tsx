@@ -12,10 +12,8 @@ export async function sleep(ms) {
 }
 
 var discussionIdLength = 3
-export function incrementDiscussionIdLength() {
-  discussionIdLength++
-}
 export function generateDiscussionId() {
+  // 'CDEHKMPRTUWXY012458'
   return cryptoRandomString({length: discussionIdLength, type: 'distinguishable'}).toLowerCase();
 }
 
