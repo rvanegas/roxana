@@ -2,7 +2,7 @@ import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
-import {SwitchField, Heading, View, Grid} from '@aws-amplify/ui-react'
+import {SwitchField, Heading, Button, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
@@ -63,6 +63,18 @@ export function Discussion() {
     dispatch(toggleShowHidden())
   }
 
+  function handleCreateInviteLink() {
+    console.log('create')
+  }
+
+  function handleCopyInviteLink() {
+    console.log('copy')
+  }
+
+  function handleRevokeInviteLink() {
+    console.log('revoke')
+  }
+
   const anyHidden = discussions.propositions.concat(discussions.arguments).some(s => s.hidden)
 
   const hiddenToggle = !anyHidden ? undefined : (
@@ -85,11 +97,19 @@ export function Discussion() {
     )
   })
 
+  const privateView = (
+    <View>
+      {discussions.isPrivate ? 'private' : undefined}
+      <Button onClick={handleCreateInviteLink}>create invite link</Button>
+      invite link
+      <Button onClick={handleCopyInviteLink}>copy</Button>
+      <Button onClick={handleRevokeInviteLink}>revoke</Button>
+    </View>
+  )
+
   return (
     <View>
-      <View>
-        {discussions.isPrivate ? 'private' : undefined}
-      </View>
+      {discussions.isPrivate ? privateView : undefined}
       <View className="view-toggles" columnStart="1" columnEnd="-1">
         {hiddenToggle}
         {discussantToggles}

@@ -145,6 +145,7 @@ export const discussionsSlice = createSlice({
         propositions: [],
         arguments: [],
         discussants: [],
+        isPrivate: false,
         argumentView: undefined,
       })
     },

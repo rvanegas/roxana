@@ -73,15 +73,16 @@ function addNewSentence(section: Section, status: string) {
 
 function createNewDiscussion({isPrivate}) {
   const {setNewDiscussionId} = discussionsSlice.actions
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     const id = ''
     const version = 2
     const revision = 1
     const layout = createNewDiscussionLayout()
     const variables = {input: {id, version, revision, isPrivate, layout}}
+    let discussionId
     for (;;) {
       try {
-        const discussionId = generateDiscussionId()
+        discussionId = generateDiscussionId()
         variables.input.id = discussionId
         await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
         dispatch(setNewDiscussionId(discussionId))
@@ -98,6 +99,9 @@ function createNewDiscussion({isPrivate}) {
         }
       }
     }
+    const state = getState()
+    const userVariables = {input: {discussionID: discussionId, userID: state.discussions.username}}
+    await API.graphql(graphqlOperation(mutations.createDiscussionUsers, userVariables))
   }
 }
 
