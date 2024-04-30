@@ -56,11 +56,16 @@ export function SentenceLine(props: SentenceProps) {
       editorRef.current.focus()
       dispatch(unsetFocus({section, position}))
     }
+  })
+
+  useEffect(() => {
     const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
     if (offsetHeightRaw !== undefined && offsetHeight === 0) {
       setOffsetHeight(offsetHeightRaw)
     }
+  }, [setOffsetHeight, editorContainerRef, offsetHeight])
 
+  useEffect(() => {
     if (inSentenceModal && modalRef) {
       let pixelsBelow = verticalPixelsBelowViewport(modalRef.current)
       if (pixelsBelow > 0) {
@@ -78,8 +83,8 @@ export function SentenceLine(props: SentenceProps) {
       }
     }
   }, [
-    sentence, dispatch, editorRef, position, section, offsetHeight,
-    inSentenceModal, unsetFocus, modalRef, sentenceListRef, editorContainerRef,
+    sentence, dispatch, editorRef, position, section, editorContainerRef,
+    inSentenceModal, unsetFocus, modalRef, sentenceListRef,
   ])
 
   if (discussions.showHidden && sentence.hidden && !inSentenceModal) {

@@ -32,12 +32,15 @@ export function DiscussionsList() {
       lastLoaded = now
       dispatch(loadRecentDiscussions())
     }
+  })
+
+  useEffect(() => {
     if (discussions.newDiscussionId) {
       const newDiscussionId = discussions.newDiscussionId
       dispatch(setNewDiscussionId(null))
       navigate(`/discussions/${newDiscussionId}`)
     }
-  }, [setNewDiscussionId, dispatch, navigate, discussions.newDiscussionId])
+  }, [dispatch, navigate, setNewDiscussionId, discussions.newDiscussionId])
 
   const newPublicButton = !username ? undefined : (
     <View style={{paddingBottom: '10px'}}>
