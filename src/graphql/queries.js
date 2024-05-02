@@ -293,3 +293,39 @@ export const listDiscussionUsers = /* GraphQL */ `
     }
   }
 `;
+export const discussionByInviteCode = /* GraphQL */ `
+  query DiscussionByInviteCode(
+    $inviteCode: String!
+    $sortDirection: ModelSortDirection
+    $filter: ModelDiscussionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    discussionByInviteCode(
+      inviteCode: $inviteCode
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        version
+        revision
+        layout
+        goalsSummary
+        isPrivate
+        inviteCode
+        users {
+          nextToken
+        }
+        sentences {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {useSelector} from 'react-redux'
+import {useSelector, useDispatch} from 'react-redux'
 import {BrowserRouter, Routes, Route, Outlet, useParams, useLocation, useNavigate} from 'react-router-dom'
 import {Authenticator, useAuthenticator, Flex, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import classNames from 'classnames'
@@ -8,12 +8,25 @@ import 'draft-js/dist/Draft.css'
 import {CurrentUserContext} from './features/user/User'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
-import {selectDiscussions} from './features/discussion/discussionsSlice'
+import {selectDiscussions, discussionsSlice} from './features/discussion/discussionsSlice'
+import {acceptInviteCode} from './features/discussion/data'
 
 export function App() {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [reloadPath, setReloadPath] = useState('')
   // @ts-ignore
   const {user, signOut}: {user: any, signOut: () => {}} = useAuthenticator(context => [context.user])
+  const discussions = useSelector(selectDiscussions)
+  const {setNewDiscussionId} = discussionsSlice.actions
+
+  useEffect(() => {
+    const newDiscussionId = discussions.newDiscussionId
+    if (newDiscussionId) {
+      dispatch(setNewDiscussionId(null))
+      navigate(`/discussions/${newDiscussionId}`)
+    }
+  }, [dispatch, navigate, setNewDiscussionId, discussions.newDiscussionId])
 
   function SignIn() {
     return (
@@ -28,7 +41,6 @@ export function App() {
 
   function Home() {
     const location = useLocation()
-    const navigate = useNavigate()
     const discussions = useSelector(selectDiscussions)
     const isSynced = discussions.eventQueue.length === 0
     const eventMessages = discussions.eventQueue.map(e => e.message).join('\n')
@@ -37,7 +49,7 @@ export function App() {
       if (location.pathname === '/') {
         navigate('/discussions')
       }
-    }, [location, navigate])
+    }, [location])
 
     function handleHome() {
       navigate('/')
@@ -96,13 +108,20 @@ export function App() {
 
   function Invite() {
     const params = useParams()
-    console.log(params.inviteCode)
+
     // search for discussion by id
     // if found,
     // add to users
     // navigate to /discussions/id
     // else
     // SOL
+
+    useEffect(() => {
+      if (params.inviteCode) {
+        console.log('i', params.inviteCode)
+        dispatch(acceptInviteCode(params.inviteCode))
+      }
+    }, [params.inviteCode])
 
     return null
   }

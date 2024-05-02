@@ -252,6 +252,7 @@ export const discussionsSlice = createSlice({
     setNewDiscussionId(state, action) {
       const newDiscussionId: string = action.payload
       state.newDiscussionId = newDiscussionId
+      console.log('ss', newDiscussionId)
     },
     eventEnqueue(state, action) {
       const event: Event = action.payload

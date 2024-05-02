@@ -16,14 +16,14 @@ function generateRandomString(length) {
   return cryptoRandomString({length, type: 'distinguishable'}).toLowerCase();
 }
 
+const idLength = 3
 export function generateDiscussionId() {
-  return generateRandomString(3)
+  return generateRandomString(idLength)
 }
 
 export function generateInviteCode() {
-  return generateRandomString(9)
+  return generateRandomString(idLength + 6)
 }
-
 
 export function toAlphaIndex(numberIndex) {
   const base = 'A'.charCodeAt(0)

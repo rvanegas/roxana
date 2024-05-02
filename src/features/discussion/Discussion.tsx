@@ -1,6 +1,6 @@
 import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {useParams, useNavigate} from 'react-router-dom'
+import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
 import {SwitchField, Heading, Button, View, Text, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
@@ -13,7 +13,6 @@ import {getDiscussionAction, initializeDiscussionAction,
 
 export function Discussion() {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const params = useParams()
@@ -22,7 +21,7 @@ export function Discussion() {
   const discussions = useSelector(selectDiscussions)
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
-  const {setUsername, setNewDiscussionId, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
+  const {setUsername, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
   const inviteLink = `${window.location.protocol}//${window.location.host}/invite/${discussions.inviteCode}`
 
   useEffect(() => {
@@ -33,14 +32,6 @@ export function Discussion() {
       }
     }
   }, [setUsername, dispatch, usernameChanged, discussionId, username])
-
-  useEffect(() => {
-    if (discussions.newDiscussionId) {
-      const newDiscussionId = discussions.newDiscussionId
-      dispatch(setNewDiscussionId(null))
-      navigate(`/discussions/${newDiscussionId}`)
-    }
-  }, [dispatch, navigate, setNewDiscussionId, discussions.newDiscussionId])
 
   useEffect(() => {
     if (params.discussionId && discussionId !== params.discussionId) {

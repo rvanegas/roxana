@@ -48,8 +48,11 @@ delete_items() {
 }
 
 set_table
+ids=crp
+delete_items
+
 # set_ids
-echo $discussion_table
+# echo $discussion_table
 
 # delete_items
 # exit

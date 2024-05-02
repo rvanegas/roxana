@@ -1,5 +1,5 @@
-export const getDiscussionSimple = /* GraphQL */ `
-  query GetDiscussion($id: ID!, $limit: Int) {
+export const getDiscussionSimpleWithAssociations = /* GraphQL */ `
+  query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
       id
       layout
@@ -16,7 +16,7 @@ export const getDiscussionSimple = /* GraphQL */ `
           updatedAt
         }
       }
-      sentences(limit: $limit) {
+      sentences(limit: 500) {
         items {
           id
           content
@@ -30,6 +30,31 @@ export const getDiscussionSimple = /* GraphQL */ `
     }
   }
 `
+export const getDiscussionSimpleWithoutAssociations = /* GraphQL */ `
+  query GetDiscussion($id: ID!) {
+    getDiscussion(id: $id) {
+      id
+      layout
+      version
+      revision
+      inviteCode
+      createdAt
+      updatedAt
+    }
+  }
+`
+export const discussionByInviteCode = /* GraphQL */ `
+  query DiscussionByInviteCode($inviteCode: String!) {
+    discussionByInviteCode(inviteCode: $inviteCode) {
+      items {
+        id
+        inviteCode
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;
 export const onUpdateDiscussionLayout = /* GraphQL */ `
   subscription OnUpdateDiscussion {
     onUpdateDiscussion {
