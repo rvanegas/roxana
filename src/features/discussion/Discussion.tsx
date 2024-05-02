@@ -22,6 +22,7 @@ export function Discussion() {
   const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
   const {setUsername, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
+  const inviteLink = `https://${window.location.host}/invite/${discussions.inviteCode}`
 
   useEffect(() => {
     if (usernameChanged) {
@@ -69,7 +70,7 @@ export function Discussion() {
   }
 
   function handleCopyInviteLink() {
-    console.log('copy')
+    navigator.clipboard.writeText(inviteLink).then(() => console.log('copied'))
   }
 
   function handleRevokeInviteLink() {
@@ -101,7 +102,7 @@ export function Discussion() {
   const privateView = (
     <View>
       <Text>private</Text>
-      <Text>{discussions.inviteCode}</Text>
+      <Text>{inviteLink}</Text>
       <Button onClick={handleCreateInviteLink}>create invite link</Button>
       invite link
       <Button onClick={handleCopyInviteLink}>copy</Button>
