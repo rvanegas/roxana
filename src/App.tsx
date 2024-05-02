@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import {useSelector} from 'react-redux'
-import {BrowserRouter, Routes, Route, Outlet, useLocation, useNavigate} from 'react-router-dom'
+import {BrowserRouter, Routes, Route, Outlet, useParams, useLocation, useNavigate} from 'react-router-dom'
 import {Authenticator, useAuthenticator, Flex, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import classNames from 'classnames'
 import '@aws-amplify/ui-react/styles.css'
@@ -94,8 +94,17 @@ export function App() {
     )
   }
 
-  function Discussions() {
-    return <Outlet/>
+  function Invite() {
+    const params = useParams()
+    console.log(params.inviteCode)
+    // search for discussion by id
+    // if found,
+    // add to users
+    // navigate to /discussions/id
+    // else
+    // SOL
+
+    return null
   }
 
   return (
@@ -103,9 +112,12 @@ export function App() {
       <Routes>
         <Route path="/" element={<Home/>} >
           <Route path="signin" element={<SignIn/>} />
-          <Route path="discussions" element={<Discussions/>} >
+          <Route path="discussions">
             <Route index element={<DiscussionsList/>} />
             <Route path=":discussionId" element={<Discussion/>} />
+          </Route>
+          <Route path="invite">
+            <Route path=":inviteCode" element={<Invite/>} />
           </Route>
         </Route>
       </Routes>

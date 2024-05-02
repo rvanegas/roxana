@@ -203,9 +203,6 @@ export const discussionsSlice = createSlice({
     setInviteCode(state, action) {
       state.inviteCode = action.payload
     },
-    clearInviteCode(state) {
-      state.inviteCode = undefined
-    },
     toggleHideDiscussant(state, action) {
       const discussant: string = action.payload
       state.hideDiscussants[discussant] = !state.hideDiscussants[discussant]

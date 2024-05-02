@@ -126,7 +126,7 @@ GetDiscussionError.prototype = Object.create(Error.prototype)
 GetDiscussionError.prototype.name = 'GetDiscussionError'
 
 function getDiscussion(discussionInput: {id: string})
-function getDiscussion(discussionInput: {id: string, layoutOnly: true})
+function getDiscussion(discussionInput: {id: string, withSentences: false})
 function getDiscussion(discussionInput: {
   id: string,
   revision: number,
@@ -155,7 +155,7 @@ function getDiscussion(discussionInput) {
     let layoutUpdated
 
     async function loadDiscussion() {
-      const input = {id: discussionInput.id, limit: discussionInput.layoutOnly ? 0 : 500}
+      const input = {id: discussionInput.id, limit: discussionInput.withSentences ? 500 : 0}
       const response = await API.graphql(graphqlOperation(custom.getDiscussionSimple, input)) as {data}
       if (!response.data.getDiscussion) {
         throw new GetDiscussionError('no such discussion')
@@ -307,7 +307,7 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withSentences: false}))
         dispatch(replaceSentenceAction({key, section, content}))
       }
       else {
@@ -411,7 +411,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withSentences: false}))
         dispatch(changeSentenceStatusAction(input))
       }
       else {
@@ -434,7 +434,7 @@ function changeGoalSentence(position: number) {
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withSentences: false}))
         dispatch(changeGoalSentenceAction(position))
       }
       else {
@@ -457,7 +457,7 @@ function changeSentenceHidden(args: {section: Section, position: number, hidden:
       if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
-        dispatch(getDiscussionAction({id: state.discussions.discussionId, layoutOnly: true}))
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withSentences: false}))
         dispatch(changeSentenceHiddenAction(args))
       }
       else {
@@ -477,12 +477,18 @@ function createInviteCode() {
 }
 
 function revokeInviteCode() {
-  const {clearInviteCode} = discussionsSlice.actions
+  const {setInviteCode} = discussionsSlice.actions
   return async (dispatch) => {
-    dispatch(clearInviteCode())
+    dispatch(setInviteCode(undefined))
     await dispatch(updateDiscussionLayout('revoke invite code'))
   }
 }
+
+// function acceptInviteCode() {
+//   return async (dispatch) => {
+
+//   }
+// }
 
 const eventHandlerFunctions = {
   createNewDiscussion,

@@ -1,13 +1,13 @@
 import React, {useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
-import {Link, useNavigate} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import {Heading, View, Grid, Button} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {CurrentUserContext} from '../user/User'
-import {selectDiscussions, discussionsSlice} from './discussionsSlice'
+import {selectDiscussions} from './discussionsSlice'
 import {loadRecentDiscussions, createNewDiscussionAction} from './data'
 dayjs.extend(relativeTime)
 
@@ -15,15 +15,9 @@ let lastLoaded
 
 export function DiscussionsList() {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const currentUser = useContext(CurrentUserContext) as unknown as {username}
   const username = currentUser?.username
   const discussions = useSelector(selectDiscussions)
-  const {setNewDiscussionId} = discussionsSlice.actions
-
-  function handleNewDiscussion(isPrivate: boolean) {
-    dispatch(createNewDiscussionAction({isPrivate}))
-  }
 
   useEffect(() => {
     // debounce due to unexpected multiple loads of component
@@ -34,13 +28,9 @@ export function DiscussionsList() {
     }
   })
 
-  useEffect(() => {
-    if (discussions.newDiscussionId) {
-      const newDiscussionId = discussions.newDiscussionId
-      dispatch(setNewDiscussionId(null))
-      navigate(`/discussions/${newDiscussionId}`)
-    }
-  }, [dispatch, navigate, setNewDiscussionId, discussions.newDiscussionId])
+  function handleNewDiscussion(isPrivate: boolean) {
+    dispatch(createNewDiscussionAction({isPrivate}))
+  }
 
   const newPublicButton = !username ? undefined : (
     <View style={{paddingBottom: '10px'}}>
