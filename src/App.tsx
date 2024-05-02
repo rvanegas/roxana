@@ -13,20 +13,9 @@ import {acceptInviteCode} from './features/discussion/data'
 
 export function App() {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const [reloadPath, setReloadPath] = useState('')
   // @ts-ignore
   const {user, signOut}: {user: any, signOut: () => {}} = useAuthenticator(context => [context.user])
-  const discussions = useSelector(selectDiscussions)
-  const {setNewDiscussionId} = discussionsSlice.actions
-
-  useEffect(() => {
-    const newDiscussionId = discussions.newDiscussionId
-    if (newDiscussionId) {
-      dispatch(setNewDiscussionId(null))
-      navigate(`/discussions/${newDiscussionId}`)
-    }
-  }, [dispatch, navigate, setNewDiscussionId, discussions.newDiscussionId])
 
   function SignIn() {
     return (
@@ -40,16 +29,26 @@ export function App() {
   }
 
   function Home() {
+    const navigate = useNavigate()
     const location = useLocation()
     const discussions = useSelector(selectDiscussions)
     const isSynced = discussions.eventQueue.length === 0
     const eventMessages = discussions.eventQueue.map(e => e.message).join('\n')
+    const {setNewDiscussionId} = discussionsSlice.actions
+
+    useEffect(() => {
+      const newDiscussionId = discussions.newDiscussionId
+      if (newDiscussionId) {
+        dispatch(setNewDiscussionId(null))
+        navigate(`/discussions/${newDiscussionId}`)
+      }
+    }, [navigate, setNewDiscussionId, discussions.newDiscussionId])
 
     useEffect(() => {
       if (location.pathname === '/') {
         navigate('/discussions')
       }
-    }, [location])
+    }, [navigate, location])
 
     function handleHome() {
       navigate('/')
