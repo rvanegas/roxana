@@ -1,6 +1,6 @@
 
 set_table() {
-  env=roxana
+  env=pebbles
   discussion_table=$(aws dynamodb list-tables | jq -r ".TableNames[] | select(test(\"Discussion-.*$env\"))")
   sentence_table=$(aws dynamodb list-tables | jq -r ".TableNames[] | select(test(\"Discussion-.*$env\"))")
 }
@@ -48,8 +48,8 @@ delete_items() {
 }
 
 set_table
-set_ids
-echo $ids
+# set_ids
+echo $discussion_table
 
 # delete_items
 # exit

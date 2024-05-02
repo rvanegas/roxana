@@ -1,11 +1,11 @@
 import {API, graphqlOperation} from 'aws-amplify'
 import {nanoid} from '@reduxjs/toolkit'
-import {pick, sortBy, reverse} from 'lodash'
+import {pick, sortBy, reverse, concat} from 'lodash'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import * as custom from '../../graphql/custom'
 import {dlog, hoursAgo, isPresent,
-  generateDiscussionId} from '../../app/util'
+  generateDiscussionId, generateInviteCode} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
 import {createDiscussionLayout, createNewDiscussionLayout,
   newSentenceFromLayoutEntry, parseDiscussionLayout} from './layout'
@@ -39,8 +39,11 @@ function updateDiscussionLayout(changeNote: string) {
       const oldRevision = state.discussions.revision
       const revision = oldRevision + 1
       const goalsSummary = getGoalsSummary(state.discussions)
+      // gql requires null (not undefined or empty string) to clear invite code
+      const inviteCode = state.discussions.inviteCode || null
+      console.log('ic2', inviteCode)
       const variables = {
-        input: {id, version, revision, layout, goalsSummary},
+        input: {id, version, revision, layout, goalsSummary, inviteCode},
         condition: {revision: {eq: oldRevision}}
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
@@ -142,6 +145,7 @@ function getDiscussion(discussionInput) {
       version: number,
       updatedAt: string,
       isPrivate: boolean,
+      inviteCode: string,
       users: {items: object[]},
     }
     let sentences: Sentence[] = []
@@ -203,17 +207,18 @@ function getDiscussion(discussionInput) {
       return  // haven't completed initial load
     }
 
-    if (!isUpdate) {
+    const commonAttributes = ['id', 'revision', 'layout', 'version', 'updatedAt', 'inviteCode']
+    if (isUpdate) {
+      discussion = pick(discussionInput, commonAttributes)
+    }
+    else {
       const response = await loadDiscussion()
-      const discussionKeys = ['id', 'revision', 'layout', 'version', 'updatedAt', 'isPrivate', 'users']
-      discussion = pick(response.data.getDiscussion, discussionKeys)
+      discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['users', 'isPrivate']))
       console.log('u', discussion.users.items)
       // if (discussion.isPrivate && discussion.users.items)
       sentences = response.data.getDiscussion.sentences.items
     }
-    else {
-      discussion = pick(discussionInput, ['id', 'revision', 'layout', 'version', 'updatedAt'])
-    }
+    console.log('ic', discussion.inviteCode)
 
     if (!discussion.revision || discussion.version !== 2) {
       console.error('version', discussion)
@@ -226,6 +231,7 @@ function getDiscussion(discussionInput) {
     dispatch(updateDiscussion({
       revision: discussion.revision,
       isPrivate: discussion.isPrivate,
+      inviteCode: discussion.inviteCode,
       newSentences
     }))
     if (layoutUpdated) {
@@ -461,6 +467,23 @@ function changeSentenceHidden(args: {section: Section, position: number, hidden:
   }
 }
 
+function createInviteCode() {
+  const {setInviteCode} = discussionsSlice.actions
+  return async (dispatch) => {
+    const inviteCode = generateInviteCode()
+    dispatch(setInviteCode(inviteCode))
+    await dispatch(updateDiscussionLayout('create invite code'))
+  }
+}
+
+function revokeInviteCode() {
+  const {clearInviteCode} = discussionsSlice.actions
+  return async (dispatch) => {
+    dispatch(clearInviteCode())
+    await dispatch(updateDiscussionLayout('revoke invite code'))
+  }
+}
+
 const eventHandlerFunctions = {
   createNewDiscussion,
   initializeDiscussion,
@@ -469,6 +492,8 @@ const eventHandlerFunctions = {
   changeSentenceStatus,
   changeGoalSentence,
   changeSentenceHidden,
+  createInviteCode,
+  revokeInviteCode,
 }
 
 function enqueueEvent(action) {
@@ -529,6 +554,16 @@ export function changeGoalSentenceAction(value) {
 export function changeSentenceHiddenAction(value) {
   const message = `change goal sentence ${value?.position} ${value?.section}`
   const action = {handler: 'changeSentenceHidden', message, payload: value}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function createInviteCodeAction() {
+  const message = `create invite code`
+  const action = {handler: 'createInviteCode', message}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function revokeInviteCodeAction() {
+  const message = `revoke invite code`
+  const action = {handler: 'revokeInviteCode', message}
   return dispatch => dispatch(enqueueEvent(action))
 }
 

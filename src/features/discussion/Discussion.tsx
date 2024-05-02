@@ -2,13 +2,14 @@ import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
-import {SwitchField, Heading, Button, View, Grid} from '@aws-amplify/ui-react'
+import {SwitchField, Heading, Button, View, Text, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
 import {dlog} from '../../app/util'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
-import {getDiscussionAction, initializeDiscussionAction} from './data'
+import {getDiscussionAction, initializeDiscussionAction,
+  createInviteCodeAction, revokeInviteCodeAction} from './data'
 
 export function Discussion() {
   const dispatch = useDispatch()
@@ -64,7 +65,7 @@ export function Discussion() {
   }
 
   function handleCreateInviteLink() {
-    console.log('create')
+    dispatch(createInviteCodeAction())
   }
 
   function handleCopyInviteLink() {
@@ -72,7 +73,7 @@ export function Discussion() {
   }
 
   function handleRevokeInviteLink() {
-    console.log('revoke')
+    dispatch(revokeInviteCodeAction())
   }
 
   const anyHidden = discussions.propositions.concat(discussions.arguments).some(s => s.hidden)
@@ -99,7 +100,8 @@ export function Discussion() {
 
   const privateView = (
     <View>
-      {discussions.isPrivate ? 'private' : undefined}
+      <Text>private</Text>
+      <Text>{discussions.inviteCode}</Text>
       <Button onClick={handleCreateInviteLink}>create invite link</Button>
       invite link
       <Button onClick={handleCopyInviteLink}>copy</Button>

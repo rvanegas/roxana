@@ -6,6 +6,7 @@ export const getDiscussionSimple = /* GraphQL */ `
       version
       revision
       isPrivate
+      inviteCode
       users {
         items {
           id
@@ -36,6 +37,7 @@ export const onUpdateDiscussionLayout = /* GraphQL */ `
       layout
       version
       revision
+      inviteCode
       createdAt
       updatedAt
     }
@@ -47,6 +49,7 @@ export const onDiscussionLayoutById = /* GraphQL */ `
       id
       version
       revision
+      inviteCode
       layout
       createdAt
       updatedAt

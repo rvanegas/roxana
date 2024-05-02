@@ -11,11 +11,19 @@ export async function sleep(ms) {
   await new Promise(res => setTimeout(res, ms))
 }
 
-var discussionIdLength = 3
-export function generateDiscussionId() {
+function generateRandomString(length) {
   // 'CDEHKMPRTUWXY012458'
-  return cryptoRandomString({length: discussionIdLength, type: 'distinguishable'}).toLowerCase();
+  return cryptoRandomString({length, type: 'distinguishable'}).toLowerCase();
 }
+
+export function generateDiscussionId() {
+  return generateRandomString(3)
+}
+
+export function generateInviteCode() {
+  return generateRandomString(9)
+}
+
 
 export function toAlphaIndex(numberIndex) {
   const base = 'A'.charCodeAt(0)

@@ -24,6 +24,7 @@ interface State {
   username?: string
   revision?: number
   isPrivate?: boolean
+  inviteCode?: string
   propositions: Sentence[]
   arguments: Sentence[]
   discussants: string[]
@@ -62,6 +63,7 @@ const initialState: State = {
   username: undefined,
   revision: undefined,
   isPrivate: undefined,
+  inviteCode: undefined,
   propositions: [],
   arguments: [],
   discussants: [],
@@ -146,6 +148,7 @@ export const discussionsSlice = createSlice({
         arguments: [],
         discussants: [],
         isPrivate: false,
+        inviteCode: undefined,
         argumentView: undefined,
       })
     },
@@ -196,6 +199,12 @@ export const discussionsSlice = createSlice({
     },
     setStatus(state, action) {
       state.status = action.payload
+    },
+    setInviteCode(state, action) {
+      state.inviteCode = action.payload
+    },
+    clearInviteCode(state) {
+      state.inviteCode = undefined
     },
     toggleHideDiscussant(state, action) {
       const discussant: string = action.payload
@@ -272,10 +281,12 @@ export const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {revision, isPrivate, newSentences}:
-        {revision: number, isPrivate: boolean, newSentences: Sentence[]} = action.payload
+      const {revision, inviteCode, isPrivate, newSentences}:
+        {revision: number, inviteCode: string, isPrivate: boolean, newSentences: Sentence[]} =
+        action.payload
       state.revision = revision
       state.isPrivate = isPrivate
+      state.inviteCode = inviteCode
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
       updateSentenceDerivatives(state)
