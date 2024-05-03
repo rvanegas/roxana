@@ -107,6 +107,8 @@ export function App() {
 
   function Invite() {
     const params = useParams()
+    const discussions = useSelector(selectDiscussions)
+    const {setNewInviteCode} = discussionsSlice.actions
 
     // search for discussion by id
     // if found,
@@ -116,11 +118,11 @@ export function App() {
     // SOL
 
     useEffect(() => {
-      if (params.inviteCode) {
-        console.log('i', params.inviteCode)
+      if (!discussions.newInviteCode && params.inviteCode) {
+        dispatch(setNewInviteCode(params.inviteCode))
         dispatch(acceptInviteCode(params.inviteCode))
       }
-    }, [params.inviteCode])
+    }, [params.inviteCode, setNewInviteCode, discussions.newInviteCode])
 
     return null
   }

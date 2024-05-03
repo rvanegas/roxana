@@ -156,7 +156,6 @@ function getDiscussion(discussionInput) {
 
     async function loadDiscussion() {
       const input = {id: discussionInput.id}
-      console.log('w', discussionInput.withoutSentences)
       const query = discussionInput.withoutSentences ?
         custom.getDiscussionSimpleWithoutAssociations :
         custom.getDiscussionSimpleWithAssociations
@@ -222,12 +221,9 @@ function getDiscussion(discussionInput) {
     else {
       const response = await loadDiscussion()
       discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['users', 'isPrivate']))
-      console.log('u', discussion)
-      console.log('u2', discussion.users.items)
       // if (discussion.isPrivate && discussion.users.items)
       sentences = response.data.getDiscussion.sentences.items
     }
-    console.log('ic', discussion.inviteCode, discussion.revision, discussion.version)
 
     if (!discussion.revision || discussion.version !== 2) {
       console.error('version', discussion)
@@ -603,9 +599,7 @@ export function acceptInviteCode(inviteCode) {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch) => {
     const variables = {inviteCode}
-    console.log('r0', variables)
     const response = await API.graphql(graphqlOperation(custom.discussionByInviteCode, variables)) as {data}
-    console.log('r', response)
     if (response.data) {
       const discussionId = response.data.discussionByInviteCode.items[0].id
       dispatch(setNewDiscussionId(discussionId))

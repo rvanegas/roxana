@@ -24,7 +24,10 @@ interface State {
   username?: string
   revision?: number
   isPrivate?: boolean
+  // of Discussion
   inviteCode?: string
+  // received, to verify and navigate (forced by odd dependency array behavior)
+  newInviteCode?: string
   propositions: Sentence[]
   arguments: Sentence[]
   discussants: string[]
@@ -64,6 +67,7 @@ const initialState: State = {
   revision: undefined,
   isPrivate: undefined,
   inviteCode: undefined,
+  newInviteCode: undefined,
   propositions: [],
   arguments: [],
   discussants: [],
@@ -149,6 +153,7 @@ export const discussionsSlice = createSlice({
         discussants: [],
         isPrivate: false,
         inviteCode: undefined,
+        newInviteCode: undefined,
         argumentView: undefined,
       })
     },
@@ -203,6 +208,9 @@ export const discussionsSlice = createSlice({
     setInviteCode(state, action) {
       state.inviteCode = action.payload
     },
+    setNewInviteCode(state, action) {
+      state.newInviteCode = action.payload
+    },
     toggleHideDiscussant(state, action) {
       const discussant: string = action.payload
       state.hideDiscussants[discussant] = !state.hideDiscussants[discussant]
@@ -252,7 +260,6 @@ export const discussionsSlice = createSlice({
     setNewDiscussionId(state, action) {
       const newDiscussionId: string = action.payload
       state.newDiscussionId = newDiscussionId
-      console.log('ss', newDiscussionId)
     },
     eventEnqueue(state, action) {
       const event: Event = action.payload
