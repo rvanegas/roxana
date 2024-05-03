@@ -110,10 +110,20 @@ function createNewDiscussion({isPrivate}) {
 function initializeDiscussion({discussionId}) {
   const {initialize} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    dispatch(initialize(discussionId))
-    await dispatch(getDiscussion({id: discussionId}))
-    if (getState().discussions.propositions.length === 0) {
-      await dispatch(addNewSentence('propositions', 'committed'))
+    try {
+      dispatch(initialize(discussionId))
+      await dispatch(getDiscussion({id: discussionId}))
+      if (getState().discussions.propositions.length === 0) {
+        await dispatch(addNewSentence('propositions', 'committed'))
+      }
+    }
+    catch (exception: any) {
+      if (exception.name === 'GetDiscussionError') {
+        console.error('get discussion failed: ', exception.message)
+      }
+      else {
+        throw exception
+      }
     }
   }
 }
@@ -162,6 +172,12 @@ function getDiscussion(discussionInput) {
       const response = await API.graphql(graphqlOperation(query, input)) as {data}
       if (!response.data.getDiscussion) {
         throw new GetDiscussionError('no such discussion')
+      }
+      if (response.data.getDiscussion.isPrivate) {
+        const users = response.data.getDiscussion.users.items.map(i => i.userID)
+        if (!users.includes(state.discussions.username)) {
+          throw new GetDiscussionError('no access to private discussion')
+        }
       }
       return response
     }
