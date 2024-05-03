@@ -91,8 +91,12 @@ export const onDiscussionLayoutById = /* GraphQL */ `
   }
 `
 export const listRecentDiscussions = /* GraphQL */ `
-  query SearchDiscussions {
-    searchDiscussions(sort: {direction: desc, field: updatedAt}, limit: 30) {
+  query SearchDiscussions($isPrivate: Boolean!) {
+    searchDiscussions(
+      sort: {direction: desc, field: updatedAt},
+      filter: {isPrivate: {eq: $isPrivate}},
+      limit: 30
+    ) {
       items {
         id
         createdAt

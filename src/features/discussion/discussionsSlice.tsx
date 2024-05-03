@@ -11,14 +11,18 @@ interface Event {
   payload: any
 }
 
+interface DiscussionMetadata {
+  id: string
+  updatedAt: string
+  goalsSummary: string
+}
+
 interface State {
   eventQueue: Event[]
-  recentDiscussions: {
-    id: string,
-    updatedAt: string,
-    isPrivate: boolean,
-    goalsSummary: string,
-  }[]
+  recentDiscussions?: {
+    privateDiscussions: DiscussionMetadata
+    publicDiscussions: DiscussionMetadata
+  }
   status: string
   error?: string
   discussionId?: string
@@ -35,15 +39,15 @@ interface State {
   hideDiscussants: object
   showHidden: boolean
   sentenceModal?: {
-    section: Section,
+    section: Section
     position: number
   }
   offsetHeight?: number
   newDiscussionId?: string
   argumentView?: {
-    primaryPropositionPosition: number,
-    secondaryPropositionPositions: number[],
-    argumentPositions: number[],
+    primaryPropositionPosition: number
+    secondaryPropositionPositions: number[]
+    argumentPositions: number[]
   }
   // users: string[]
 }
@@ -60,7 +64,7 @@ function hideDiscussantsCookie() {
 
 const initialState: State = {
   eventQueue: [] as Event[],
-  recentDiscussions: [],
+  recentDiscussions: undefined,
   status: 'init',
   error: undefined,
   discussionId: undefined,

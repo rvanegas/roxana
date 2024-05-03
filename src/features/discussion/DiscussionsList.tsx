@@ -32,37 +32,30 @@ export function DiscussionsList() {
     dispatch(createNewDiscussionAction({isPrivate}))
   }
 
-  const newPublicButton = !username ? undefined : (
-    <View style={{paddingBottom: '10px'}}>
-      <Button variation="link" size="small" onClick={e => handleNewDiscussion(false)}
-      >new public</Button>
-    </View>
-  )
-  const newPrivateButton = !username ? undefined : (
-    <View style={{paddingBottom: '10px'}}>
-      <Button variation="link" size="small" onClick={e => handleNewDiscussion(true)}
-      >new private</Button>
-    </View>
-  )
-  const links = discussions.recentDiscussions.map((discussion, index) => (
-    <React.Fragment key={index}>
-      <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
-        to={`/discussions/${discussion.id}`}
-      >{discussion.id}
-      </Link>
-      <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
-      <span className="text-ellipsis">
-        {discussion.isPrivate ? 'private' : 'public'}{' '}
-        {discussion.users.items.map(i => i.userID).join(',')}{' '}
-        {discussion.goalsSummary}
-      </span>
-    </React.Fragment>
-  ))
-
-  return (
-    <View>
-      <Heading style={{paddingTop: '30px'}}>
-        Discussions
+  function discussionsSection(isPrivate: boolean) {
+    const newButton = !username ? undefined : (
+      <View style={{paddingBottom: '10px'}}>
+        <Button variation="link" size="small" onClick={e => handleNewDiscussion(isPrivate)}
+        >new</Button>
+      </View>
+    )
+    const discussionsList = discussions.recentDiscussions[isPrivate ? 'privateDiscussions' : 'publicDiscussions']
+    const links = discussionsList.map((discussion, index) => (
+      <React.Fragment key={index}>
+        <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
+          to={`/discussions/${discussion.id}`}
+        >{discussion.id}
+        </Link>
+        <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
+        <span className="text-ellipsis">
+          {discussion.users.items.map(i => i.userID).join(',')}{' '}
+          {discussion.goalsSummary}
+        </span>
+      </React.Fragment>
+    ))
+    return <>
+      <Heading>
+        {isPrivate ? 'Private' : 'Public'} discussions
       </Heading>
       <Grid
         style={{padding: '10px 10px'}}
@@ -72,8 +65,18 @@ export function DiscussionsList() {
       >
         {links}
       </Grid>
-      {newPublicButton}
-      {newPrivateButton}
+      {newButton}
+    </>
+  }
+
+  const recentDiscussions = !discussions.recentDiscussions ? null : <>
+    {discussionsSection(false)}
+    {discussionsSection(true)}
+  </>
+
+  return (
+    <View style={{paddingTop: '30px'}}>
+      {recentDiscussions}
     </View>
   )
 }

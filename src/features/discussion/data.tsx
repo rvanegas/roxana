@@ -609,8 +609,13 @@ export function focusOnSentence(section: Section, position: number) {
 export function loadRecentDiscussions() {
   const {setRecentDiscussions} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const response = await API.graphql(graphqlOperation(custom.listRecentDiscussions)) as {data}
-    dispatch(setRecentDiscussions(response.data.searchDiscussions.items))
+    const responsePrivate = await API.graphql(graphqlOperation(custom.listRecentDiscussions, {isPrivate: true})) as {data}
+    const responsePublic = await API.graphql(graphqlOperation(custom.listRecentDiscussions, {isPrivate: false})) as {data}
+    const recentDiscussions = {
+      privateDiscussions: responsePrivate.data.searchDiscussions.items,
+      publicDiscussions: responsePublic.data.searchDiscussions.items,
+    }
+    dispatch(setRecentDiscussions(recentDiscussions))
   }
 }
 
