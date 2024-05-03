@@ -41,7 +41,6 @@ function updateDiscussionLayout(changeNote: string) {
       const goalsSummary = getGoalsSummary(state.discussions)
       // gql requires null (not undefined or empty string) to clear invite code
       const inviteCode = state.discussions.inviteCode || null
-      console.log('ic2', inviteCode)
       const variables = {
         input: {id, version, revision, layout, goalsSummary, inviteCode},
         condition: {revision: {eq: oldRevision}}
@@ -49,7 +48,6 @@ function updateDiscussionLayout(changeNote: string) {
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
       dlog('updateLayout', revision, changeNote)
       dispatch(incrementRevision(revision))
-      console.log('s', state.discussions.discussants)
     }
     catch (exception: any) {
       const errorType = exception.errors ? exception.errors[0].errorType : null
@@ -598,10 +596,12 @@ export function loadRecentDiscussions() {
 export function acceptInviteCode(inviteCode) {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch) => {
-    const variables = {inviteCode}
-    const response = await API.graphql(graphqlOperation(custom.discussionByInviteCode, variables)) as {data}
+    const inviteVariables = {inviteCode}
+    const response = await API.graphql(graphqlOperation(custom.discussionByInviteCode, inviteVariables)) as {data}
     if (response.data) {
       const discussionId = response.data.discussionByInviteCode.items[0].id
+      const users = response.data.discussionByInviteCode.items[0].users.items.map(i => i.userID)
+      console.log('users', users)
       dispatch(setNewDiscussionId(discussionId))
     }
   }

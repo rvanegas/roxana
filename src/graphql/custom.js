@@ -51,6 +51,15 @@ export const discussionByInviteCode = /* GraphQL */ `
         inviteCode
         createdAt
         updatedAt
+        users {
+          items {
+            id
+            discussionID
+            userID
+            createdAt
+            updatedAt
+          }
+        }
       }
     }
   }
