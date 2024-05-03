@@ -51,7 +51,11 @@ export function DiscussionsList() {
       >{discussion.id}
       </Link>
       <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
-      <span className="text-ellipsis">{discussion.goalsSummary}</span>
+      <span className="text-ellipsis">
+        {discussion.isPrivate ? 'private' : 'public'}{' '}
+        {discussion.users.items.map(i => i.userID).join(',')}{' '}
+        {discussion.goalsSummary}
+      </span>
     </React.Fragment>
   ))
 

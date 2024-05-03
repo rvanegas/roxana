@@ -1,37 +1,23 @@
-import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
+import React, {useEffect, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
 import {SwitchField, Heading, Button, View, Text, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
-import {CurrentUserContext} from '../user/User'
 import * as custom from '../../graphql/custom'
-import {dlog} from '../../app/util'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
 import {getDiscussionAction, initializeDiscussionAction,
   createInviteCodeAction, revokeInviteCodeAction} from './data'
 
 export function Discussion() {
   const dispatch = useDispatch()
-  const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser?.username
   const params = useParams()
   const propositionsListRef = useRef() as MutableRefObject<HTMLElement>
   const argumentsListRef = useRef() as MutableRefObject<HTMLElement>
   const discussions = useSelector(selectDiscussions)
-  const usernameChanged = discussions.username !== username
   const discussionId = discussions.discussionId
-  const {setUsername, toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
+  const {toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
   const inviteLink = `${window.location.protocol}//${window.location.host}/invite/${discussions.inviteCode}`
-
-  useEffect(() => {
-    if (usernameChanged) {
-      dispatch(setUsername(username))
-      if (username === 'rodvandur') {
-        dlog.enabled = true
-      }
-    }
-  }, [setUsername, dispatch, usernameChanged, discussionId, username])
 
   useEffect(() => {
     if (params.discussionId && discussionId !== params.discussionId) {

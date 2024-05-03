@@ -95,8 +95,19 @@ export const listRecentDiscussions = /* GraphQL */ `
     searchDiscussions(sort: {direction: desc, field: updatedAt}, limit: 30) {
       items {
         id
+        createdAt
         updatedAt
         goalsSummary
+        isPrivate
+        users {
+          items {
+            id
+            discussionID
+            userID
+            createdAt
+            updatedAt
+          }
+        }
       }
     }
   }

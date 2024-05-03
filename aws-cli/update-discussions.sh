@@ -47,11 +47,12 @@ delete_items() {
   done
 }
 
-set_table
-ids=crp
-delete_items
+# set_table
+# ids=""
+# delete_items
 
 # set_ids
+# echo $ids
 # echo $discussion_table
 
 # delete_items

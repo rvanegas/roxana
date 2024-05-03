@@ -5,6 +5,7 @@ import {Authenticator, useAuthenticator, Flex, Text, View, Heading, Button} from
 import classNames from 'classnames'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
+import {dlog} from './app/util'
 import {CurrentUserContext} from './features/user/User'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
@@ -32,9 +33,20 @@ export function App() {
     const navigate = useNavigate()
     const location = useLocation()
     const discussions = useSelector(selectDiscussions)
+    const username = user?.username
+    const usernameChanged = discussions.username !== username
     const isSynced = discussions.eventQueue.length === 0
     const eventMessages = discussions.eventQueue.map(e => e.message).join('\n')
-    const {setNewDiscussionId} = discussionsSlice.actions
+    const {setNewDiscussionId, setUsername} = discussionsSlice.actions
+
+    useEffect(() => {
+      if (usernameChanged) {
+        dispatch(setUsername(username))
+        if (username === 'rodvandur') {
+          dlog.enabled = true
+        }
+      }
+    }, [setUsername, usernameChanged, username])
 
     useEffect(() => {
       const newDiscussionId = discussions.newDiscussionId
@@ -118,11 +130,11 @@ export function App() {
     // SOL
 
     useEffect(() => {
-      if (!discussions.newInviteCode && params.inviteCode) {
+      if (discussions.username && !discussions.newInviteCode && params.inviteCode) {
         dispatch(setNewInviteCode(params.inviteCode))
         dispatch(acceptInviteCode(params.inviteCode))
       }
-    }, [params.inviteCode, setNewInviteCode, discussions.newInviteCode])
+    }, [discussions.username, discussions.newInviteCode, params.inviteCode, setNewInviteCode])
 
     return null
   }

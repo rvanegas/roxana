@@ -16,7 +16,8 @@ interface State {
   recentDiscussions: {
     id: string,
     updatedAt: string,
-    goalsSummary: string
+    isPrivate: boolean,
+    goalsSummary: string,
   }[]
   status: string
   error?: string

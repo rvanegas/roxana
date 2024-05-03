@@ -101,7 +101,9 @@ function createNewDiscussion({isPrivate}) {
     }
     const state = getState()
     const userVariables = {input: {discussionID: discussionId, userID: state.discussions.username}}
-    await API.graphql(graphqlOperation(mutations.createDiscussionUsers, userVariables))
+    if (isPrivate) {
+      await API.graphql(graphqlOperation(mutations.createDiscussionUsers, userVariables))
+    }
   }
 }
 
@@ -219,7 +221,10 @@ function getDiscussion(discussionInput) {
     else {
       const response = await loadDiscussion()
       discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['users', 'isPrivate']))
-      // if (discussion.isPrivate && discussion.users.items)
+      if (discussion.isPrivate && discussion.users.items) {
+        // @ts-ignore
+        console.log('s', discussion.users.items.map(i => i.userID))
+      }
       sentences = response.data.getDiscussion.sentences.items
     }
 
@@ -595,12 +600,17 @@ export function loadRecentDiscussions() {
 
 export function acceptInviteCode(inviteCode) {
   const {setNewDiscussionId} = discussionsSlice.actions
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     const inviteVariables = {inviteCode}
     const response = await API.graphql(graphqlOperation(custom.discussionByInviteCode, inviteVariables)) as {data}
     if (response.data) {
+      const state = getState()
       const discussionId = response.data.discussionByInviteCode.items[0].id
       const users = response.data.discussionByInviteCode.items[0].users.items.map(i => i.userID)
+      if (!users.includes(state.discussions.username)) {
+        const userVariables = {input: {discussionID: discussionId, userID: state.discussions.username}}
+        await API.graphql(graphqlOperation(mutations.createDiscussionUsers, userVariables))
+      }
       console.log('users', users)
       dispatch(setNewDiscussionId(discussionId))
     }
