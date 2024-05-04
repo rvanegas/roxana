@@ -40,7 +40,8 @@ export function DiscussionsList() {
       </View>
     )
     const discussionsList = discussions.recentDiscussions[isPrivate ? 'privateDiscussions' : 'publicDiscussions']
-    const links = discussionsList.map((discussion, index) => (
+    const myDiscussionsList = discussionsList.filter(discussion => !discussion.isPrivate || discussion.users.items.some(i => i.userID === username))
+    const links = myDiscussionsList.map((discussion, index) => (
       <React.Fragment key={index}>
         <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
           to={`/discussions/${discussion.id}`}

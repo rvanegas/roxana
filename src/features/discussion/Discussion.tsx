@@ -1,8 +1,7 @@
-import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
+import React, {useEffect, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
-import {CurrentUserContext} from '../user/User'
 import {SwitchField, Heading, Button, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import * as custom from '../../graphql/custom'
@@ -15,8 +14,6 @@ export function Discussion() {
   const params = useParams()
   const propositionsListRef = useRef() as MutableRefObject<HTMLElement>
   const argumentsListRef = useRef() as MutableRefObject<HTMLElement>
-  const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser?.username
   const discussions = useSelector(selectDiscussions)
   const discussionId = discussions.discussionId
   const {toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
