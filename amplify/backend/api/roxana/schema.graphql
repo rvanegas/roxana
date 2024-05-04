@@ -33,3 +33,14 @@ type Subscription {
   onDiscussionById(id: ID!): Discussion
     @aws_subscribe(mutations: ["updateDiscussion"])
 }
+
+# type DiscussionUser @model {
+#   id: ID!
+#   discussionId: ID @index(name: "byDiscussion")
+#   discussion: Discussion @belongsTo(fields: ["discussionId"])
+#   userId: ID @index(name: "byUser", queryField: "discussionUserByUserId", sortKey: "updatedAt")
+#   user: User @belongsTo(fields: ["userId"])
+#   isPrivate: Boolean!
+#   createdAt: AWSDateTime
+#   updatedAt: AWSDateTime
+# }

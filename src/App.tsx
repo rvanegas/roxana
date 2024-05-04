@@ -73,7 +73,9 @@ export function App() {
 
     const indicatorClasses = classNames('indicator', {'synced': isSynced})
     const locationInDiscussion = (new RegExp('/discussions/\\w+')).test(location.pathname)
-    const discussionElement = <Text>discussion: {discussions.discussionId}</Text>
+    const lockIcon = !discussions.isPrivate ? null :
+      <span style={{paddingLeft: '5px'}} className="oi sentence-icon" data-glyph="lock-locked" />
+    const discussionElement = <Text>discussion: {discussions.discussionId} {lockIcon}</Text>
     const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
     const signInOrOutButton = location.pathname === '/signin' ? null : user ?
       <Button variation="link" size="small" onClick={signOut}>sign out</Button> :

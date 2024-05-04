@@ -175,6 +175,7 @@ function getDiscussion(discussionInput) {
       }
       if (response.data.getDiscussion.isPrivate) {
         const users = response.data.getDiscussion.users.items.map(i => i.userID)
+        // console.log('u2', users, state.discussions.username)
         if (!users.includes(state.discussions.username)) {
           throw new GetDiscussionError('no access to private discussion')
         }

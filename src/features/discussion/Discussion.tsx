@@ -1,8 +1,9 @@
-import React, {useEffect, useRef, MutableRefObject} from 'react'
+import React, {useEffect, useContext, useRef, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
-import {SwitchField, Heading, Button, View, Text, Grid} from '@aws-amplify/ui-react'
+import {CurrentUserContext} from '../user/User'
+import {SwitchField, Heading, Button, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import * as custom from '../../graphql/custom'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
@@ -14,16 +15,20 @@ export function Discussion() {
   const params = useParams()
   const propositionsListRef = useRef() as MutableRefObject<HTMLElement>
   const argumentsListRef = useRef() as MutableRefObject<HTMLElement>
+  const currentUser = useContext(CurrentUserContext) as unknown as {username}
+  const username = currentUser?.username
   const discussions = useSelector(selectDiscussions)
   const discussionId = discussions.discussionId
   const {toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
   const inviteLink = `${window.location.protocol}//${window.location.host}/invite/${discussions.inviteCode}`
 
+  // console.log('u', discussions.username, username)
   useEffect(() => {
-    if (params.discussionId && discussionId !== params.discussionId) {
+    if (discussions.username && params.discussionId && discussionId !== params.discussionId) {
+      // console.log('init')
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
-  }, [dispatch, params, discussionId])
+  }, [dispatch, params, discussionId, discussions.username])
 
   useEffect(() => {
     if (discussionId) {
@@ -85,20 +90,21 @@ export function Discussion() {
     )
   })
 
-  const privateView = (
+  const privateWithInviteButton = (
     <View>
-      <Text>private</Text>
-      <Text>{inviteLink}</Text>
-      <Button onClick={handleCreateInviteLink}>create invite link</Button>
-      invite link
-      <Button onClick={handleCopyInviteLink}>copy</Button>
-      <Button onClick={handleRevokeInviteLink}>revoke</Button>
+      <Button variation="link" size="small" onClick={handleCreateInviteLink}>create invite link</Button>
+    </View>
+  )
+  const privateWithRevokeButton = (
+    <View>
+      <Button variation="link" size="small" onClick={handleCopyInviteLink}>copy invite link</Button>
+      <Button style={{marginLeft: '10px'}} variation="link" size="small" onClick={handleRevokeInviteLink}>revoke invite link</Button>
     </View>
   )
 
   return (
     <View>
-      {discussions.isPrivate ? privateView : undefined}
+      {!discussions.isPrivate ? null : discussions.inviteCode ? privateWithRevokeButton : privateWithInviteButton}
       <View className="view-toggles" columnStart="1" columnEnd="-1">
         {hiddenToggle}
         {discussantToggles}
