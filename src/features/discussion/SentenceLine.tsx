@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect, useContext, MutableRefObject} from 'react'
+import React, {Fragment, useRef, useState, useEffect, useContext, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View, Button} from '@aws-amplify/ui-react'
 import {throttle, sortBy, keys} from 'lodash'
@@ -521,34 +521,30 @@ export function SentenceLine(props: SentenceProps) {
         </View>
       const color = highlightColor('propositions', index - 1)
       return (
-        <React.Fragment key={proposition.key}>
+        <Fragment key={proposition.key}>
           {therefore}
           <View columnStart={2} className={sentenceIndexClassName}>
             <View style={{textAlign: 'right', color}}>{index}</View>
           </View>
           <View columnEnd={-2} className={sentenceEditorClassName} style={{color}}>{proposition.content}</View>
-        </React.Fragment>
+        </Fragment>
       )
     })
     const isLastArgument = discussions.arguments.length - 1 === position
     const padding = isLastArgument ? undefined :
       <View style={{paddingBottom: '10px'}} columnSpan={4} />
-    return (
-      <React.Fragment>
-        {steps}
-        {padding}
-      </React.Fragment>
-    )
+    return <>
+      {steps}
+      {padding}
+    </>
   }
 
-  return (
-    <React.Fragment>
-      {annotationIcons()}
-      {indexElement()}
-      {editorLine()}
-      {inArgumentElement()}
-      {sentenceModal()}
-      {postSentence()}
-    </React.Fragment>
-  )
+  return <>
+    {annotationIcons()}
+    {indexElement()}
+    {editorLine()}
+    {inArgumentElement()}
+    {sentenceModal()}
+    {postSentence()}
+  </>
 }

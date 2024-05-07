@@ -50,8 +50,9 @@ function updateDiscussionLayout(changeNote: string) {
       const goalsSummary = getGoalsSummary(state.discussions)
       // gql requires null (not undefined or empty string) to clear invite code
       const inviteCode = state.discussions.inviteCode || null
+      const pool = 1
       const variables = {
-        input: {id, version, revision, layout, goalsSummary, inviteCode},
+        input: {id, version, revision, layout, goalsSummary, inviteCode, pool},
         condition: {revision: {eq: oldRevision}}
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
@@ -89,7 +90,8 @@ function createNewDiscussion({isPrivate}) {
     const version = 2
     const revision = 1
     const layout = createNewDiscussionLayout()
-    const variables = {input: {id, version, revision, isPrivate, layout}}
+    const pool = 1
+    const variables = {input: {id, version, revision, isPrivate, layout, pool}}
     let discussionId
     for (;;) {
       try {
@@ -619,11 +621,13 @@ export function focusOnSentence(section: Section, position: number) {
 export function loadRecentDiscussions() {
   const {setRecentDiscussions} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const responsePublic = await API.graphql(graphqlOperation(custom.listRecentDiscussions, {isPrivate: false})) as {data}
-    const responsePrivate = await API.graphql(graphqlOperation(custom.listRecentDiscussions, {isPrivate: true})) as {data}
+    const state = getState()
+    const userId = state.discussions.username || 'rodvandur'
+    const responsePublic = await API.graphql(graphqlOperation(custom.queryDiscussionsByPool)) as {data}
+    const responsePrivate = await API.graphql(graphqlOperation(custom.queryUserDiscussionsByUserId, {userId})) as {data}
     const recentDiscussions = {
-      privateDiscussions: responsePrivate.data.searchDiscussions.items,
-      publicDiscussions: responsePublic.data.searchDiscussions.items,
+      publicDiscussions: responsePublic.data.queryDiscussionsByPool.items,
+      privateDiscussions: responsePrivate.data.queryUserDiscussionsByUserId.items,
     }
     dispatch(setRecentDiscussions(recentDiscussions))
   }

@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react'
+import React, {Fragment, useEffect, useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Link} from 'react-router-dom'
 import {Heading, View, Grid, Button} from '@aws-amplify/ui-react'
@@ -40,20 +40,25 @@ export function DiscussionsList() {
       </View>
     )
     const discussionsList = discussions.recentDiscussions[isPrivate ? 'privateDiscussions' : 'publicDiscussions']
-    const myDiscussionsList = discussionsList.filter(discussion => !discussion.isPrivate || discussion.userDiscussions.items.some(i => i.userId === username))
-    const links = myDiscussionsList.map((discussion, index) => (
-      <React.Fragment key={index}>
-        <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
-          to={`/discussions/${discussion.id}`}
-        >{discussion.id}
-        </Link>
-        <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
-        <span className="text-ellipsis">
-          {discussion.userDiscussions.items.map(i => i.userId).join(',')}{' '}
-          {discussion.goalsSummary}
-        </span>
-      </React.Fragment>
-    ))
+    const myDiscussionsList = !isPrivate ? discussionsList : discussionsList.filter(item =>
+      item.discussion.userDiscussions.items.some(i => i.userId === username)
+    )
+    const links = myDiscussionsList.map((item, index) => {
+      const discussion = isPrivate ? item.discussion : item
+      return (
+        <Fragment key={index}>
+          <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
+            to={`/discussions/${discussion.id}`}
+          >{discussion.id}
+          </Link>
+          <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
+          <span className="text-ellipsis">
+            {isPrivate ? discussion.userDiscussions.items.map(i => i.userId).join(',') : undefined}{' '}
+            {discussion.goalsSummary}
+          </span>
+        </Fragment>
+      )
+    })
     return <>
       <Heading>
         {isPrivate ? 'Private' : 'Public'} discussions

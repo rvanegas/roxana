@@ -65,7 +65,7 @@ export const queryDiscussionsByInviteCode = /* GraphQL */ `
       }
     }
   }
-`;
+`
 export const onDiscussionLayoutById = /* GraphQL */ `
   subscription OnDiscussionLayoutById($id: ID!) {
     onDiscussionById(id: $id) {
@@ -103,6 +103,61 @@ export const listRecentDiscussions = /* GraphQL */ `
           }
         }
       }
+    }
+  }
+`
+export const queryDiscussionsByPool = /* GraphQL */ `
+  query QueryDiscussionsByPool {
+    queryDiscussionsByPool(
+      pool: 1
+      sortDirection: DESC
+      filter: {isPrivate: {eq: false}}
+      limit: 20
+    ) {
+      items {
+        id
+        goalsSummary
+        userDiscussions {
+          items {
+            id
+            userId
+          }
+        }
+        pool
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`
+export const queryUserDiscussionsByUserId = /* GraphQL */ `
+  query QueryUserDiscussionsByUserId(
+    $userId: ID!
+  ) {
+    queryUserDiscussionsByUserId(
+      userId: $userId
+      sortDirection: DESC
+      limit: 20
+    ) {
+      items {
+        id
+        discussion {
+          id
+          goalsSummary
+          userDiscussions {
+            items {
+              id
+              userId
+            }
+          }
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
     }
   }
 `

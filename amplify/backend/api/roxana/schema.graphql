@@ -2,7 +2,7 @@
 # all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
 input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
 
-type Discussion @model @searchable {
+type Discussion @model {
   id: ID!
   version: Int!    # == 2
   revision: Int    # incremented on every update
@@ -12,7 +12,7 @@ type Discussion @model @searchable {
   inviteCode: String @index(name: "byInviteCode", queryField: "queryDiscussionsByInviteCode")
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])
   userDiscussions: [UserDiscussion!] @hasMany(indexName: "byDiscussion", fields: ["id"])
-  pool: Int @index(name: "byPool", queryField: "queryDiscussionsByPool", sortKeyFields: ["updatedAt"]) # == 1
+  pool: Int! @index(name: "byPool", queryField: "queryDiscussionsByPool", sortKeyFields: ["updatedAt"]) # == 1
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }

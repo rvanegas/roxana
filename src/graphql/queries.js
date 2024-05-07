@@ -1,60 +1,6 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const searchDiscussions = /* GraphQL */ `
-  query SearchDiscussions(
-    $filter: SearchableDiscussionFilterInput
-    $sort: [SearchableDiscussionSortInput]
-    $limit: Int
-    $nextToken: String
-    $from: Int
-    $aggregates: [SearchableDiscussionAggregationInput]
-  ) {
-    searchDiscussions(
-      filter: $filter
-      sort: $sort
-      limit: $limit
-      nextToken: $nextToken
-      from: $from
-      aggregates: $aggregates
-    ) {
-      items {
-        id
-        version
-        revision
-        layout
-        goalsSummary
-        isPrivate
-        inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
-        pool
-        createdAt
-        updatedAt
-      }
-      nextToken
-      total
-      aggregateItems {
-        name
-        result {
-          ... on SearchableAggregateScalarResult {
-            value
-          }
-          ... on SearchableAggregateBucketResult {
-            buckets {
-              key
-              doc_count
-            }
-          }
-        }
-      }
-    }
-  }
-`;
 export const getDiscussion = /* GraphQL */ `
   query GetDiscussion($id: ID!) {
     getDiscussion(id: $id) {
