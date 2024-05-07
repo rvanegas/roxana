@@ -40,7 +40,7 @@ export function DiscussionsList() {
       </View>
     )
     const discussionsList = discussions.recentDiscussions[isPrivate ? 'privateDiscussions' : 'publicDiscussions']
-    const myDiscussionsList = discussionsList.filter(discussion => !discussion.isPrivate || discussion.users.items.some(i => i.userID === username))
+    const myDiscussionsList = discussionsList.filter(discussion => !discussion.isPrivate || discussion.userDiscussions.items.some(i => i.userId === username))
     const links = myDiscussionsList.map((discussion, index) => (
       <React.Fragment key={index}>
         <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
@@ -49,7 +49,7 @@ export function DiscussionsList() {
         </Link>
         <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
         <span className="text-ellipsis">
-          {discussion.users.items.map(i => i.userID).join(',')}{' '}
+          {discussion.userDiscussions.items.map(i => i.userId).join(',')}{' '}
           {discussion.goalsSummary}
         </span>
       </React.Fragment>

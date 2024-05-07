@@ -7,11 +7,11 @@ export const getDiscussionSimpleWithAssociations = /* GraphQL */ `
       revision
       isPrivate
       inviteCode
-      users {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -37,25 +37,27 @@ export const getDiscussionSimpleWithoutAssociations = /* GraphQL */ `
       layout
       version
       revision
+      isPrivate
       inviteCode
       createdAt
       updatedAt
     }
   }
 `
-export const discussionByInviteCode = /* GraphQL */ `
-  query DiscussionByInviteCode($inviteCode: String!) {
-    discussionByInviteCode(inviteCode: $inviteCode) {
+export const queryDiscussionsByInviteCode = /* GraphQL */ `
+  query QueryDiscussionsByInviteCode($inviteCode: String!) {
+    queryDiscussionsByInviteCode(inviteCode: $inviteCode) {
       items {
         id
         inviteCode
+        isPrivate
         createdAt
         updatedAt
-        users {
+        userDiscussions {
           items {
             id
-            discussionID
-            userID
+            discussionId
+            userId
             createdAt
             updatedAt
           }
@@ -64,25 +66,26 @@ export const discussionByInviteCode = /* GraphQL */ `
     }
   }
 `;
-export const onUpdateDiscussionLayout = /* GraphQL */ `
-  subscription OnUpdateDiscussion {
-    onUpdateDiscussion {
-      id
-      layout
-      version
-      revision
-      inviteCode
-      createdAt
-      updatedAt
-    }
-  }
-`
+// export const onUpdateDiscussionLayout = /* GraphQL */ `
+//   subscription OnUpdateDiscussion {
+//     onUpdateDiscussion {
+//       id
+//       layout
+//       version
+//       revision
+//       inviteCode
+//       createdAt
+//       updatedAt
+//     }
+//   }
+// `
 export const onDiscussionLayoutById = /* GraphQL */ `
   subscription OnDiscussionLayoutById($id: ID!) {
     onDiscussionById(id: $id) {
       id
       version
       revision
+      isPrivate
       inviteCode
       layout
       createdAt
@@ -103,11 +106,11 @@ export const listRecentDiscussions = /* GraphQL */ `
         updatedAt
         goalsSummary
         isPrivate
-        users {
+        userDiscussions {
           items {
             id
-            discussionID
-            userID
+            discussionId
+            userId
             createdAt
             updatedAt
           }

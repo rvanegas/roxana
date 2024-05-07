@@ -30,6 +30,15 @@ function updateDiscussionLayout(changeNote: string) {
     }).join(' \u2014 ') // emdash
     return summary
   }
+  async function updateUserDiscussions(discussionId) {
+    const getVariables = {discussionId}
+    console.log('ud1', discussionId, getVariables)
+    const response = await API.graphql(graphqlOperation(queries.queryUserDiscussionByDiscussionId, getVariables)) as {data}
+    console.log('ud2', discussionId, response)
+    for (let item of response.data.queryUserDiscussionByDiscussionId.items) {
+      console.log('item', item)
+    }
+  }
   return async (dispatch, getState) => {
     try {
       const state = getState()
@@ -46,6 +55,7 @@ function updateDiscussionLayout(changeNote: string) {
         condition: {revision: {eq: oldRevision}}
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
+      updateUserDiscussions(id)
       dlog('updateLayout', revision, changeNote)
       dispatch(incrementRevision(revision))
     }
@@ -100,9 +110,9 @@ function createNewDiscussion({isPrivate}) {
       }
     }
     const state = getState()
-    const userVariables = {input: {discussionID: discussionId, userID: state.discussions.username}}
+    const userVariables = {input: {discussionId, userId: state.discussions.username}}
     if (isPrivate) {
-      await API.graphql(graphqlOperation(mutations.createDiscussionUsers, userVariables))
+      await API.graphql(graphqlOperation(mutations.createUserDiscussion, userVariables))
     }
   }
 }
@@ -156,7 +166,7 @@ function getDiscussion(discussionInput) {
       updatedAt: string,
       isPrivate: boolean,
       inviteCode: string,
-      users: {items: object[]},
+      userDiscussions: {items: object[]},
     }
     let sentences: Sentence[] = []
 
@@ -174,10 +184,10 @@ function getDiscussion(discussionInput) {
         throw new GetDiscussionError('no such discussion')
       }
       if (response.data.getDiscussion.isPrivate) {
-        const users = response.data.getDiscussion.users.items.map(i => i.userID)
-        // console.log('u2', users, state.discussions.username)
-        if (!users.includes(state.discussions.username)) {
-          throw new GetDiscussionError('no access to private discussion')
+        const userDiscussions = response.data.getDiscussion.userDiscussions.items.map(i => i.userId)
+        console.log('u2', userDiscussions, state.discussions.username)
+        if (!userDiscussions.includes(state.discussions.username)) {
+          throw new GetDiscussionError('no access to private discussion2')
         }
       }
       return response
@@ -227,7 +237,7 @@ function getDiscussion(discussionInput) {
       return  // haven't completed initial load
     }
 
-    const commonAttributes = ['id', 'revision', 'version', 'layout', 'updatedAt', 'inviteCode']
+    const commonAttributes = ['id', 'revision', 'version', 'layout', 'updatedAt', 'inviteCode', 'isPrivate']
     if (isUpdate) {
       discussion = pick(discussionInput, commonAttributes)
     }
@@ -237,10 +247,10 @@ function getDiscussion(discussionInput) {
     }
     else {
       const response = await loadDiscussion()
-      discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['users', 'isPrivate']))
-      if (discussion.isPrivate && discussion.users.items) {
+      discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['userDiscussions']))
+      if (discussion.isPrivate && discussion.userDiscussions.items) {
         // @ts-ignore
-        console.log('s', discussion.users.items.map(i => i.userID))
+        console.log('s', discussion.userDiscussions.items.map(i => i.userId))
       }
       sentences = response.data.getDiscussion.sentences.items
     }
@@ -610,8 +620,8 @@ export function focusOnSentence(section: Section, position: number) {
 export function loadRecentDiscussions() {
   const {setRecentDiscussions} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const responsePrivate = await API.graphql(graphqlOperation(custom.listRecentDiscussions, {isPrivate: true})) as {data}
     const responsePublic = await API.graphql(graphqlOperation(custom.listRecentDiscussions, {isPrivate: false})) as {data}
+    const responsePrivate = await API.graphql(graphqlOperation(custom.listRecentDiscussions, {isPrivate: true})) as {data}
     const recentDiscussions = {
       privateDiscussions: responsePrivate.data.searchDiscussions.items,
       publicDiscussions: responsePublic.data.searchDiscussions.items,
@@ -624,16 +634,15 @@ export function acceptInviteCode(inviteCode) {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const inviteVariables = {inviteCode}
-    const response = await API.graphql(graphqlOperation(custom.discussionByInviteCode, inviteVariables)) as {data}
+    const response = await API.graphql(graphqlOperation(custom.queryDiscussionsByInviteCode, inviteVariables)) as {data}
     if (response.data) {
       const state = getState()
-      const discussionId = response.data.discussionByInviteCode.items[0].id
-      const users = response.data.discussionByInviteCode.items[0].users.items.map(i => i.userID)
-      if (!users.includes(state.discussions.username)) {
-        const userVariables = {input: {discussionID: discussionId, userID: state.discussions.username}}
-        await API.graphql(graphqlOperation(mutations.createDiscussionUsers, userVariables))
+      const discussionId = response.data.queryDiscussionsByInviteCode.items[0].id
+      const userDiscussions = response.data.queryDiscussionsByInviteCode.items[0].userDiscussions.items.map(i => i.userId)
+      if (!userDiscussions.includes(state.discussions.username)) {
+        const userVariables = {input: {discussionId, userId: state.discussions.username}}
+        await API.graphql(graphqlOperation(mutations.createUserDiscussion, userVariables))
       }
-      console.log('users', users)
       dispatch(setNewDiscussionId(discussionId))
     }
   }

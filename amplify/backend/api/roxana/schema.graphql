@@ -9,9 +9,10 @@ type Discussion @model @searchable {
   layout: String!
   goalsSummary: String
   isPrivate: Boolean!
-  inviteCode: String @index(name: "byInviteCode", queryField: "discussionByInviteCode")
-  users: [User] @manyToMany(relationName: "DiscussionUsers")
+  inviteCode: String @index(name: "byInviteCode", queryField: "queryDiscussionsByInviteCode")
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])
+  userDiscussions: [UserDiscussion!] @hasMany(indexName: "byDiscussion", fields: ["id"])
+  pool: Int @index(name: "byPool", queryField: "queryDiscussionsByPool", sortKeyFields: ["updatedAt"]) # == 1
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -26,7 +27,7 @@ type Sentence @model {
 
 type User @model {
   username: ID! @primaryKey
-  discussions: [Discussion] @manyToMany(relationName: "DiscussionUsers")
+  userDiscussions: [UserDiscussion!] @hasMany(indexName: "byUser", fields: ["username"])
 }
 
 type Subscription {
@@ -34,13 +35,12 @@ type Subscription {
     @aws_subscribe(mutations: ["updateDiscussion"])
 }
 
-# type DiscussionUser @model {
-#   id: ID!
-#   discussionId: ID @index(name: "byDiscussion")
-#   discussion: Discussion @belongsTo(fields: ["discussionId"])
-#   userId: ID @index(name: "byUser", queryField: "discussionUserByUserId", sortKey: "updatedAt")
-#   user: User @belongsTo(fields: ["userId"])
-#   isPrivate: Boolean!
-#   createdAt: AWSDateTime
-#   updatedAt: AWSDateTime
-# }
+type UserDiscussion @model {
+  id: ID!
+  discussionId: ID @index(name: "byDiscussion", queryField: "queryUserDiscussionByDiscussionId")
+  discussion: Discussion @belongsTo(fields: ["discussionId"])
+  userId: ID @index(name: "byUser", queryField: "queryUserDiscussionsByUserId", sortKeyFields: ["updatedAt"])
+  user: User @belongsTo(fields: ["userId"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}

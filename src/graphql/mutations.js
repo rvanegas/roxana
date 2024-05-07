@@ -14,16 +14,6 @@ export const createDiscussion = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -35,6 +25,17 @@ export const createDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -53,16 +54,6 @@ export const updateDiscussion = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -74,6 +65,17 @@ export const updateDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -92,16 +94,6 @@ export const deleteDiscussion = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -113,6 +105,17 @@ export const deleteDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -136,12 +139,13 @@ export const createSentence = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -168,12 +172,13 @@ export const updateSentence = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -200,12 +205,13 @@ export const deleteSentence = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -221,11 +227,11 @@ export const createUser = /* GraphQL */ `
   ) {
     createUser(input: $input, condition: $condition) {
       username
-      discussions {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -243,11 +249,11 @@ export const updateUser = /* GraphQL */ `
   ) {
     updateUser(input: $input, condition: $condition) {
       username
-      discussions {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -265,11 +271,11 @@ export const deleteUser = /* GraphQL */ `
   ) {
     deleteUser(input: $input, condition: $condition) {
       username
-      discussions {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -280,15 +286,14 @@ export const deleteUser = /* GraphQL */ `
     }
   }
 `;
-export const createDiscussionUsers = /* GraphQL */ `
-  mutation CreateDiscussionUsers(
-    $input: CreateDiscussionUsersInput!
-    $condition: ModelDiscussionUsersConditionInput
+export const createUserDiscussion = /* GraphQL */ `
+  mutation CreateUserDiscussion(
+    $input: CreateUserDiscussionInput!
+    $condition: ModelUserDiscussionConditionInput
   ) {
-    createDiscussionUsers(input: $input, condition: $condition) {
+    createUserDiscussion(input: $input, condition: $condition) {
       id
-      discussionID
-      userID
+      discussionId
       discussion {
         id
         version
@@ -297,18 +302,20 @@ export const createDiscussionUsers = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
+      userId
       user {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt
@@ -319,15 +326,14 @@ export const createDiscussionUsers = /* GraphQL */ `
     }
   }
 `;
-export const updateDiscussionUsers = /* GraphQL */ `
-  mutation UpdateDiscussionUsers(
-    $input: UpdateDiscussionUsersInput!
-    $condition: ModelDiscussionUsersConditionInput
+export const updateUserDiscussion = /* GraphQL */ `
+  mutation UpdateUserDiscussion(
+    $input: UpdateUserDiscussionInput!
+    $condition: ModelUserDiscussionConditionInput
   ) {
-    updateDiscussionUsers(input: $input, condition: $condition) {
+    updateUserDiscussion(input: $input, condition: $condition) {
       id
-      discussionID
-      userID
+      discussionId
       discussion {
         id
         version
@@ -336,18 +342,20 @@ export const updateDiscussionUsers = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
+      userId
       user {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt
@@ -358,15 +366,14 @@ export const updateDiscussionUsers = /* GraphQL */ `
     }
   }
 `;
-export const deleteDiscussionUsers = /* GraphQL */ `
-  mutation DeleteDiscussionUsers(
-    $input: DeleteDiscussionUsersInput!
-    $condition: ModelDiscussionUsersConditionInput
+export const deleteUserDiscussion = /* GraphQL */ `
+  mutation DeleteUserDiscussion(
+    $input: DeleteUserDiscussionInput!
+    $condition: ModelUserDiscussionConditionInput
   ) {
-    deleteDiscussionUsers(input: $input, condition: $condition) {
+    deleteUserDiscussion(input: $input, condition: $condition) {
       id
-      discussionID
-      userID
+      discussionId
       discussion {
         id
         version
@@ -375,18 +382,20 @@ export const deleteDiscussionUsers = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
+      userId
       user {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt

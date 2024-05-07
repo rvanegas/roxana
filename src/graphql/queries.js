@@ -26,12 +26,13 @@ export const searchDiscussions = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -64,16 +65,6 @@ export const getDiscussion = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -85,6 +76,17 @@ export const getDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -105,12 +107,13 @@ export const listDiscussions = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -133,12 +136,13 @@ export const getSentence = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -167,6 +171,7 @@ export const listSentences = /* GraphQL */ `
           goalsSummary
           isPrivate
           inviteCode
+          pool
           createdAt
           updatedAt
         }
@@ -181,11 +186,11 @@ export const getUser = /* GraphQL */ `
   query GetUser($username: ID!) {
     getUser(username: $username) {
       username
-      discussions {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -213,7 +218,7 @@ export const listUsers = /* GraphQL */ `
     ) {
       items {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt
@@ -223,12 +228,11 @@ export const listUsers = /* GraphQL */ `
     }
   }
 `;
-export const getDiscussionUsers = /* GraphQL */ `
-  query GetDiscussionUsers($id: ID!) {
-    getDiscussionUsers(id: $id) {
+export const getUserDiscussion = /* GraphQL */ `
+  query GetUserDiscussion($id: ID!) {
+    getUserDiscussion(id: $id) {
       id
-      discussionID
-      userID
+      discussionId
       discussion {
         id
         version
@@ -237,18 +241,20 @@ export const getDiscussionUsers = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
+      userId
       user {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt
@@ -259,17 +265,16 @@ export const getDiscussionUsers = /* GraphQL */ `
     }
   }
 `;
-export const listDiscussionUsers = /* GraphQL */ `
-  query ListDiscussionUsers(
-    $filter: ModelDiscussionUsersFilterInput
+export const listUserDiscussions = /* GraphQL */ `
+  query ListUserDiscussions(
+    $filter: ModelUserDiscussionFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listDiscussionUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listUserDiscussions(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        discussionID
-        userID
+        discussionId
         discussion {
           id
           version
@@ -278,9 +283,11 @@ export const listDiscussionUsers = /* GraphQL */ `
           goalsSummary
           isPrivate
           inviteCode
+          pool
           createdAt
           updatedAt
         }
+        userId
         user {
           username
           createdAt
@@ -293,15 +300,15 @@ export const listDiscussionUsers = /* GraphQL */ `
     }
   }
 `;
-export const discussionByInviteCode = /* GraphQL */ `
-  query DiscussionByInviteCode(
+export const queryDiscussionsByInviteCode = /* GraphQL */ `
+  query QueryDiscussionsByInviteCode(
     $inviteCode: String!
     $sortDirection: ModelSortDirection
     $filter: ModelDiscussionFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    discussionByInviteCode(
+    queryDiscussionsByInviteCode(
       inviteCode: $inviteCode
       sortDirection: $sortDirection
       filter: $filter
@@ -316,11 +323,139 @@ export const discussionByInviteCode = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
+        }
+        userDiscussions {
+          nextToken
+        }
+        pool
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const queryDiscussionsByPool = /* GraphQL */ `
+  query QueryDiscussionsByPool(
+    $pool: Int!
+    $updatedAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelDiscussionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    queryDiscussionsByPool(
+      pool: $pool
+      updatedAt: $updatedAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        version
+        revision
+        layout
+        goalsSummary
+        isPrivate
+        inviteCode
+        sentences {
+          nextToken
+        }
+        userDiscussions {
+          nextToken
+        }
+        pool
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const queryUserDiscussionByDiscussionId = /* GraphQL */ `
+  query QueryUserDiscussionByDiscussionId(
+    $discussionId: ID!
+    $sortDirection: ModelSortDirection
+    $filter: ModelUserDiscussionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    queryUserDiscussionByDiscussionId(
+      discussionId: $discussionId
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        discussionId
+        discussion {
+          id
+          version
+          revision
+          layout
+          goalsSummary
+          isPrivate
+          inviteCode
+          pool
+          createdAt
+          updatedAt
+        }
+        userId
+        user {
+          username
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const queryUserDiscussionsByUserId = /* GraphQL */ `
+  query QueryUserDiscussionsByUserId(
+    $userId: ID!
+    $updatedAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUserDiscussionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    queryUserDiscussionsByUserId(
+      userId: $userId
+      updatedAt: $updatedAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        discussionId
+        discussion {
+          id
+          version
+          revision
+          layout
+          goalsSummary
+          isPrivate
+          inviteCode
+          pool
+          createdAt
+          updatedAt
+        }
+        userId
+        user {
+          username
+          createdAt
+          updatedAt
         }
         createdAt
         updatedAt

@@ -11,16 +11,6 @@ export const onDiscussionById = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -32,6 +22,17 @@ export const onDiscussionById = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -47,16 +48,6 @@ export const onCreateDiscussion = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -68,6 +59,17 @@ export const onCreateDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -83,16 +85,6 @@ export const onUpdateDiscussion = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -104,6 +96,17 @@ export const onUpdateDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -119,16 +122,6 @@ export const onDeleteDiscussion = /* GraphQL */ `
       goalsSummary
       isPrivate
       inviteCode
-      users {
-        items {
-          id
-          discussionID
-          userID
-          createdAt
-          updatedAt
-        }
-        nextToken
-      }
       sentences {
         items {
           id
@@ -140,6 +133,17 @@ export const onDeleteDiscussion = /* GraphQL */ `
         }
         nextToken
       }
+      userDiscussions {
+        items {
+          id
+          discussionId
+          userId
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      pool
       createdAt
       updatedAt
     }
@@ -160,12 +164,13 @@ export const onCreateSentence = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -189,12 +194,13 @@ export const onUpdateSentence = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -218,12 +224,13 @@ export const onDeleteSentence = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
@@ -236,11 +243,11 @@ export const onCreateUser = /* GraphQL */ `
   subscription OnCreateUser {
     onCreateUser {
       username
-      discussions {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -255,11 +262,11 @@ export const onUpdateUser = /* GraphQL */ `
   subscription OnUpdateUser {
     onUpdateUser {
       username
-      discussions {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -274,11 +281,11 @@ export const onDeleteUser = /* GraphQL */ `
   subscription OnDeleteUser {
     onDeleteUser {
       username
-      discussions {
+      userDiscussions {
         items {
           id
-          discussionID
-          userID
+          discussionId
+          userId
           createdAt
           updatedAt
         }
@@ -289,12 +296,11 @@ export const onDeleteUser = /* GraphQL */ `
     }
   }
 `;
-export const onCreateDiscussionUsers = /* GraphQL */ `
-  subscription OnCreateDiscussionUsers {
-    onCreateDiscussionUsers {
+export const onCreateUserDiscussion = /* GraphQL */ `
+  subscription OnCreateUserDiscussion {
+    onCreateUserDiscussion {
       id
-      discussionID
-      userID
+      discussionId
       discussion {
         id
         version
@@ -303,18 +309,20 @@ export const onCreateDiscussionUsers = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
+      userId
       user {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt
@@ -325,12 +333,11 @@ export const onCreateDiscussionUsers = /* GraphQL */ `
     }
   }
 `;
-export const onUpdateDiscussionUsers = /* GraphQL */ `
-  subscription OnUpdateDiscussionUsers {
-    onUpdateDiscussionUsers {
+export const onUpdateUserDiscussion = /* GraphQL */ `
+  subscription OnUpdateUserDiscussion {
+    onUpdateUserDiscussion {
       id
-      discussionID
-      userID
+      discussionId
       discussion {
         id
         version
@@ -339,18 +346,20 @@ export const onUpdateDiscussionUsers = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
+      userId
       user {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt
@@ -361,12 +370,11 @@ export const onUpdateDiscussionUsers = /* GraphQL */ `
     }
   }
 `;
-export const onDeleteDiscussionUsers = /* GraphQL */ `
-  subscription OnDeleteDiscussionUsers {
-    onDeleteDiscussionUsers {
+export const onDeleteUserDiscussion = /* GraphQL */ `
+  subscription OnDeleteUserDiscussion {
+    onDeleteUserDiscussion {
       id
-      discussionID
-      userID
+      discussionId
       discussion {
         id
         version
@@ -375,18 +383,20 @@ export const onDeleteDiscussionUsers = /* GraphQL */ `
         goalsSummary
         isPrivate
         inviteCode
-        users {
-          nextToken
-        }
         sentences {
           nextToken
         }
+        userDiscussions {
+          nextToken
+        }
+        pool
         createdAt
         updatedAt
       }
+      userId
       user {
         username
-        discussions {
+        userDiscussions {
           nextToken
         }
         createdAt
