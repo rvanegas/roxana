@@ -186,9 +186,9 @@ function getDiscussion(discussionInput) {
         throw new GetDiscussionError('no such discussion')
       }
       if (response.data.getDiscussion.isPrivate) {
-        const userDiscussions = response.data.getDiscussion.userDiscussions.items.map(i => i.userId)
-        if (!userDiscussions.includes(state.discussions.username)) {
-          throw new GetDiscussionError('no access to private discussion2')
+        const usernames = usernamesFromDiscussion(response.data.getDiscussion)
+        if (!usernames.includes(state.discussions.username)) {
+          throw new GetDiscussionError('no access to private discussion')
         }
       }
       return response
@@ -251,7 +251,7 @@ function getDiscussion(discussionInput) {
       discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['userDiscussions']))
       if (discussion.isPrivate && discussion.userDiscussions.items) {
         // @ts-ignore
-        console.log('s', discussion.userDiscussions.items.map(i => i.userId))
+        console.log('s', usernamesFromDiscussion(discussion))
       }
       sentences = response.data.getDiscussion.sentences.items
     }
@@ -603,6 +603,10 @@ export function revokeInviteCodeAction() {
   return dispatch => dispatch(enqueueEvent(action))
 }
 
+export function usernamesFromDiscussion(discussion) {
+  return discussion.userDiscussions.items.map(i => i.userId)
+}
+
 export function focusOnSentence(section: Section, position: number) {
   const {setFocus} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -641,8 +645,8 @@ export function acceptInviteCode(inviteCode) {
     if (response.data) {
       const state = getState()
       const discussionId = response.data.queryDiscussionsByInviteCode.items[0].id
-      const userDiscussions = response.data.queryDiscussionsByInviteCode.items[0].userDiscussions.items.map(i => i.userId)
-      if (!userDiscussions.includes(state.discussions.username)) {
+      const usernames = usernamesFromDiscussion(response.data.queryDiscussionsByInviteCode.items[0])
+      if (!usernames.includes(state.discussions.username)) {
         const userVariables = {input: {discussionId, userId: state.discussions.username}}
         await API.graphql(graphqlOperation(mutations.createUserDiscussion, userVariables))
       }

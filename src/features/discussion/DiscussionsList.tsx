@@ -8,7 +8,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {CurrentUserContext} from '../user/User'
 import {selectDiscussions} from './discussionsSlice'
-import {loadRecentDiscussions, createNewDiscussionAction} from './data'
+import {loadRecentDiscussions, createNewDiscussionAction, usernamesFromDiscussion} from './data'
 dayjs.extend(relativeTime)
 
 let lastLoaded
@@ -40,9 +40,8 @@ export function DiscussionsList() {
       </View>
     )
     const discussionsList = discussions.recentDiscussions[isPrivate ? 'privateDiscussions' : 'publicDiscussions']
-    const myDiscussionsList = !isPrivate ? discussionsList : discussionsList.filter(item =>
-      item.discussion.userDiscussions.items.some(i => i.userId === username)
-    )
+    const myDiscussionsList = !isPrivate ? discussionsList :
+      discussionsList.filter(item => usernamesFromDiscussion(item.discussion).includes(username))
     const links = myDiscussionsList.map((item, index) => {
       const discussion = isPrivate ? item.discussion : item
       return (
@@ -53,7 +52,7 @@ export function DiscussionsList() {
           </Link>
           <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
           <span className="text-ellipsis">
-            {isPrivate ? discussion.userDiscussions.items.map(i => i.userId).join(',') : undefined}{' '}
+            {isPrivate ? usernamesFromDiscussion(discussion).join(',') : undefined}{' '}
             {discussion.goalsSummary}
           </span>
         </Fragment>
