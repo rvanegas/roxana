@@ -19,10 +19,8 @@ export function Discussion() {
   const {toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
   const inviteLink = `${window.location.protocol}//${window.location.host}/invite/${discussions.inviteCode}`
 
-  // console.log('u', discussions.username, username)
   useEffect(() => {
     if (discussions.username && params.discussionId && discussionId !== params.discussionId) {
-      // console.log('init')
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
   }, [dispatch, params, discussionId, discussions.username])

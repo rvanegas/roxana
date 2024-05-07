@@ -183,9 +183,8 @@ function getDiscussion(discussionInput) {
       if (!response.data.getDiscussion) {
         throw new GetDiscussionError('no such discussion')
       }
-      if (response.data.getDiscussion.isPrivate) {
+      if (false && response.data.getDiscussion.isPrivate) {
         const userDiscussions = response.data.getDiscussion.userDiscussions.items.map(i => i.userId)
-        console.log('u2', userDiscussions, state.discussions.username)
         if (!userDiscussions.includes(state.discussions.username)) {
           throw new GetDiscussionError('no access to private discussion2')
         }

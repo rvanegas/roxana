@@ -66,19 +66,6 @@ export const queryDiscussionsByInviteCode = /* GraphQL */ `
     }
   }
 `;
-// export const onUpdateDiscussionLayout = /* GraphQL */ `
-//   subscription OnUpdateDiscussion {
-//     onUpdateDiscussion {
-//       id
-//       layout
-//       version
-//       revision
-//       inviteCode
-//       createdAt
-//       updatedAt
-//     }
-//   }
-// `
 export const onDiscussionLayoutById = /* GraphQL */ `
   subscription OnDiscussionLayoutById($id: ID!) {
     onDiscussionById(id: $id) {
