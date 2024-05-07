@@ -68,4 +68,5 @@ delete_items() {
 #
 # ids=$(aws dynamodb scan --table-name $table \
 #   | jq -r '.Items[] | .id.S | select(test("^\\d+$"))')
-aws appsync list-types --api-id bqkpkb6pszhoxpd3urdmd775km --format JSON --no-paginate | jq '.types[]'
+#
+# aws appsync list-types --api-id bqkpkb6pszhoxpd3urdmd775km --format JSON --no-paginate | jq '.types[]'
