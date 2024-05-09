@@ -11,7 +11,6 @@ set_ids() {
       | jq -r '.Items[] | .id.S'
 #     | jq -r '.propositions[] | .id'
   )
-
   # key=$(printf '{"id":{"S":"%s"}}' $id)
   # aws dynamodb get-item --table-name $sentence_table --key '{}' \
   # | jq -r '.' \
@@ -50,7 +49,7 @@ delete_items() {
 # set_table
 # ids=""
 # delete_items
-
+#
 # set_ids
 # echo $ids
 # echo $discussion_table

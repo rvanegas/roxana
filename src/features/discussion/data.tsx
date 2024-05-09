@@ -360,8 +360,9 @@ export const isActionable = {
   accept: (sentence: Sentence, username: string) => sentence.status === 'committed'
     && isPresent(sentence.content),
   reject: (sentence: Sentence, username: string) => sentence.status === 'committed'
-    && isPresent(sentence.content),
+    && isPresent(sentence.content) && sentence.accepted.includes(username),
   clear: (sentence: Sentence, username: string) => sentence.status === 'committed'
+    && sentence.rejected.includes(username)
 }
 
 interface ChangeSentenceStatusInput {

@@ -178,17 +178,17 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function handleStatusToggle() {
-    if (sentence.status !== 'committed') {
-      return
-    }
-    if (sentence.accepted.includes(username)) {
+    if (isActionable.reject(sentence, username)) {
       dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'reject'}))
     }
-    else if (sentence.rejected.includes(username)) {
+    else if (isActionable.clear(sentence, username)) {
       dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'clear'}))
     }
-    else {
+    else if (isActionable.accept(sentence, username)) {
       dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'accept'}))
+    }
+    else {
+      console.log('no action')
     }
   }
 

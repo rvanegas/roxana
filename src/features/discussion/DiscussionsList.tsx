@@ -52,7 +52,7 @@ export function DiscussionsList() {
           </Link>
           <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
           <span className="text-ellipsis">
-            {isPrivate ? usernamesFromDiscussion(discussion).join(',') : undefined}{' '}
+            [{isPrivate ? usernamesFromDiscussion(discussion).join(', ') : undefined}]{' '}
             {discussion.goalsSummary}
           </span>
         </Fragment>

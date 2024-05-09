@@ -26,7 +26,7 @@ export function parseDiscussionLayout(layout: string) {
 }
 
 export function createDiscussionLayout(args: {propositions: Sentence[], arguments: Sentence[]}) {
-  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'goal', 'hidden']
+  const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'cleared', 'goal', 'hidden']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
   const layoutFilter = sentence => sentence.id !== undefined
   const sentencesToEntries = sentences => sentences.filter(layoutFilter).map(makeLayoutEntry)
