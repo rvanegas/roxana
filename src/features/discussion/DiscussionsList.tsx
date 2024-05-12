@@ -42,6 +42,9 @@ export function DiscussionsList() {
       discussionsList.filter(item => usernamesFromDiscussion(item.discussion).includes(username))
     const links = myDiscussionsList.map((item, index) => {
       const discussion = isPrivate ? item.discussion : item
+      const discussants = () => usernamesFromDiscussion(discussion).join(', ')
+      const description = isPrivate ? `[${discussants()}] ${discussion.goalsSummary}` : discussion.goalsSummary
+
       return (
         <Fragment key={index}>
           <Link style={{fontSize: 'smaller', fontFamily: 'monaco'}}
@@ -49,10 +52,7 @@ export function DiscussionsList() {
           >{discussion.id}
           </Link>
           <span style={{fontSize: 'smaller'}}>{dayjs(discussion.updatedAt).fromNow()}</span>
-          <span className="text-ellipsis">
-            [{isPrivate ? usernamesFromDiscussion(discussion).join(', ') : undefined}]{' '}
-            {discussion.goalsSummary}
-          </span>
+          <span className="text-ellipsis">{description}</span>
         </Fragment>
       )
     })

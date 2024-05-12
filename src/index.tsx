@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {StrictMode} from 'react'
 import ReactDOM from 'react-dom'
 import Bugsnag from '@bugsnag/js'
 import BugsnagPluginReact from '@bugsnag/plugin-react'
@@ -9,10 +9,10 @@ import {App} from './App'
 import {store} from './app/store'
 import {theme} from './theme'
 import * as serviceWorker from './serviceWorker'
-import awsExports from "./aws-exports"
+import awsExports from './aws-exports'
 import packageJson from '../package.json'
 
-Amplify.configure(awsExports);
+Amplify.configure(awsExports)
 console.log('version', packageJson.version)
 
 Bugsnag.start({
@@ -23,8 +23,7 @@ Bugsnag.start({
 
 // @ts-ignore
 const ErrorBoundary = Bugsnag.getPlugin('react').createErrorBoundary(React)
-
-const storeProvider = (
+const providers = (
   <Provider store={store}>
     <AmplifyProvider theme={theme}>
       <Authenticator.Provider>
@@ -34,17 +33,11 @@ const storeProvider = (
   </Provider>
 )
 
-const bugsnagBoundary = <ErrorBoundary>{storeProvider}</ErrorBoundary>
 const isLocalhost = document.location.host === 'localhost:3000'
-
-ReactDOM.render(
-  <React.StrictMode>
-    {isLocalhost ? storeProvider : bugsnagBoundary}
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+const root = isLocalhost ? providers : <ErrorBoundary>{providers}</ErrorBoundary>
+ReactDOM.render(<StrictMode>{root}</StrictMode>, document.getElementById('root'))
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+serviceWorker.unregister()

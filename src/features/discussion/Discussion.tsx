@@ -1,10 +1,11 @@
-import React, {useEffect, useRef, MutableRefObject} from 'react'
+import React, {useEffect, useRef, useContext, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
 import {SwitchField, Heading, Button, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import * as custom from '../../graphql/custom'
+import {CurrentUserContext} from '../user/User'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
 import {getDiscussionAction, initializeDiscussionAction,
   createInviteCodeAction, revokeInviteCodeAction} from './data'
@@ -14,16 +15,20 @@ export function Discussion() {
   const params = useParams()
   const propositionsListRef = useRef() as MutableRefObject<HTMLElement>
   const argumentsListRef = useRef() as MutableRefObject<HTMLElement>
+  const {route} = useContext(CurrentUserContext) as unknown as {user, route}
   const discussions = useSelector(selectDiscussions)
+  const username = discussions.username
   const discussionId = discussions.discussionId
   const {toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
   const inviteLink = `${window.location.protocol}//${window.location.host}/invite/${discussions.inviteCode}`
 
   useEffect(() => {
-    if (discussions.username && params.discussionId && discussionId !== params.discussionId) {
+    const isPublic = route === 'signIn' && username === undefined
+    const isPrivate = route === 'authenticated' && username !== undefined
+    if ((isPublic || isPrivate) && params.discussionId && discussionId !== params.discussionId) {
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
-  }, [dispatch, params.discussionId, discussionId, discussions.username])
+  }, [dispatch, params.discussionId, discussionId, route, username])
 
   useEffect(() => {
     if (discussionId) {
