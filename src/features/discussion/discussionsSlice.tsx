@@ -33,6 +33,7 @@ interface State {
   inviteCode?: string
   // received, to verify and navigate (forced by odd dependency array behavior)
   newInviteCode?: string
+  reloadPath?: string
   propositions: Sentence[]
   arguments: Sentence[]
   discussants: string[]
@@ -73,6 +74,7 @@ const initialState: State = {
   isPrivate: undefined,
   inviteCode: undefined,
   newInviteCode: undefined,
+  reloadPath: undefined,
   propositions: [],
   arguments: [],
   discussants: [],
@@ -159,6 +161,7 @@ export const discussionsSlice = createSlice({
         isPrivate: false,
         inviteCode: undefined,
         newInviteCode: undefined,
+        reloadPath: undefined,
         argumentView: undefined,
       })
     },
@@ -212,6 +215,9 @@ export const discussionsSlice = createSlice({
     },
     setInviteCode(state, action) {
       state.inviteCode = action.payload
+    },
+    setReloadPath(state, action) {
+      state.reloadPath = action.payload
     },
     setNewInviteCode(state, action) {
       state.newInviteCode = action.payload

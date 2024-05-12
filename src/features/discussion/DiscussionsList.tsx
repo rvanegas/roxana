@@ -1,4 +1,5 @@
-import React, {Fragment, useEffect, useContext} from 'react'
+import React, {Fragment, useEffect} from 'react'
+import {useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Link} from 'react-router-dom'
 import {Heading, View, Grid, Button} from '@aws-amplify/ui-react'
@@ -11,22 +12,19 @@ import {selectDiscussions} from './discussionsSlice'
 import {loadRecentDiscussions, createNewDiscussionAction, usernamesFromDiscussion} from './data'
 dayjs.extend(relativeTime)
 
-let lastLoaded
-
 export function DiscussionsList() {
   const dispatch = useDispatch()
-  const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser?.username
+  const {route} = useContext(CurrentUserContext) as unknown as {user, route}
   const discussions = useSelector(selectDiscussions)
+  const username = discussions.username
 
   useEffect(() => {
-    // debounce due to unexpected multiple loads of component
-    const now = Date.now()
-    if (!lastLoaded || now - lastLoaded > 1000) {
-      lastLoaded = now
+    const isPublic = route === 'signIn' && username === undefined
+    const isPrivate = route === 'authenticated' && username !== undefined
+    if (isPublic || isPrivate) {
       dispatch(loadRecentDiscussions())
     }
-  })
+  }, [dispatch, username, route])
 
   function handleNewDiscussion(isPrivate: boolean) {
     dispatch(createNewDiscussionAction({isPrivate}))

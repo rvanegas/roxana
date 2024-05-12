@@ -23,7 +23,7 @@ export function Discussion() {
     if (discussions.username && params.discussionId && discussionId !== params.discussionId) {
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
-  }, [dispatch, params, discussionId, discussions.username])
+  }, [dispatch, params.discussionId, discussionId, discussions.username])
 
   useEffect(() => {
     if (discussionId) {

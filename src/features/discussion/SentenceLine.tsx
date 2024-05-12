@@ -1,4 +1,5 @@
-import React, {Fragment, useRef, useState, useEffect, useContext, MutableRefObject} from 'react'
+import React, {Fragment, useRef, useState, useEffect, useContext, useCallback,
+  MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {Divider, View, Button} from '@aws-amplify/ui-react'
 import {throttle, sortBy, keys} from 'lodash'
@@ -22,12 +23,13 @@ interface SentenceProps {
 
 export function SentenceLine(props: SentenceProps) {
   const {section, sentence, position, sentenceListRef} = props
-  const {unsetFocus, clearSentenceModal, setSentenceModal,
+  const {clearSentenceModal, setSentenceModal,
     clearArgumentView, setArgumentView} = discussionsSlice.actions
+  const unsetFocus = useCallback(discussionsSlice.actions.unsetFocus, [section, position])
   const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
-  const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser?.username
+  const {user} = useContext(CurrentUserContext) as unknown as {user, route}
+  const username = user?.username
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
   const editorContainerRef = useRef() as MutableRefObject<HTMLElement>
   const editorRef = useRef() as MutableRefObject<HTMLElement>
@@ -37,7 +39,7 @@ export function SentenceLine(props: SentenceProps) {
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(initialEditorState)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
-  const placeholder = position !== 0 || !currentUser ? null : (
+  const placeholder = position !== 0 || !username ? null : (
     section === 'propositions' ?
       'Type a proposition. For example, "Socrates is a man".' :
       'Type a sequence of proposition numbers. For example, "1 2 3".'
@@ -56,7 +58,7 @@ export function SentenceLine(props: SentenceProps) {
       editorRef.current.focus()
       dispatch(unsetFocus({section, position}))
     }
-  })
+  }, [dispatch, editorRef, unsetFocus, sentence.autoFocus, section, position])
 
   useEffect(() => {
     const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
@@ -84,7 +86,7 @@ export function SentenceLine(props: SentenceProps) {
     }
   }, [
     sentence, dispatch, editorRef, position, section, editorContainerRef,
-    inSentenceModal, unsetFocus, modalRef, sentenceListRef,
+    inSentenceModal, modalRef, sentenceListRef
   ])
 
   if (discussions.showHidden && sentence.hidden && !inSentenceModal) {

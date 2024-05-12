@@ -30,15 +30,15 @@ function updateDiscussionLayout(changeNote: string) {
     }).join(' \u2014 ') // emdash
     return summary
   }
-  async function updateUserDiscussions(discussionId) {
-    const getVariables = {discussionId}
-    console.log('ud1', discussionId, getVariables)
-    const response = await API.graphql(graphqlOperation(queries.queryUserDiscussionByDiscussionId, getVariables)) as {data}
-    console.log('ud2', discussionId, response)
-    for (let item of response.data.queryUserDiscussionByDiscussionId.items) {
-      console.log('item', item)
-    }
-  }
+  // async function updateUserDiscussions(discussionId) {
+  //   const getVariables = {discussionId}
+  //   console.log('ud1', discussionId, getVariables)
+  //   const response = await API.graphql(graphqlOperation(queries.queryUserDiscussionByDiscussionId, getVariables)) as {data}
+  //   console.log('ud2', discussionId, response)
+  //   for (let item of response.data.queryUserDiscussionByDiscussionId.items) {
+  //     console.log('item', item)
+  //   }
+  // }
   return async (dispatch, getState) => {
     try {
       const state = getState()
@@ -56,7 +56,7 @@ function updateDiscussionLayout(changeNote: string) {
         condition: {revision: {eq: oldRevision}}
       }
       await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
-      updateUserDiscussions(id)
+      // updateUserDiscussions(id)
       dlog('updateLayout', revision, changeNote)
       dispatch(incrementRevision(revision))
     }
@@ -627,14 +627,15 @@ export function loadRecentDiscussions() {
   const {setRecentDiscussions} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
-    const userId = state.discussions.username || 'rodvandur'
+    const userId = state.discussions.username
     const responsePublic = await API.graphql(graphqlOperation(custom.queryDiscussionsByPool)) as {data}
-    const responsePrivate = await API.graphql(graphqlOperation(custom.queryUserDiscussionsByUserId, {userId})) as {data}
-    const recentDiscussions = {
-      publicDiscussions: responsePublic.data.queryDiscussionsByPool.items,
-      privateDiscussions: responsePrivate.data.queryUserDiscussionsByUserId.items,
+    const publicDiscussions = responsePublic.data.queryDiscussionsByPool.items
+    let privateDiscussions = []
+    if (userId) {
+      const responsePrivate = await API.graphql(graphqlOperation(custom.queryUserDiscussionsByUserId, {userId})) as {data}
+      privateDiscussions = responsePrivate.data.queryUserDiscussionsByUserId.items
     }
-    dispatch(setRecentDiscussions(recentDiscussions))
+    dispatch(setRecentDiscussions({publicDiscussions, privateDiscussions}))
   }
 }
 

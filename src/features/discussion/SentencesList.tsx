@@ -8,8 +8,8 @@ import {selectDiscussions} from './discussionsSlice'
 import {focusOnSentence} from './data'
 
 export function SentencesList({section, sentenceListRef}) {
-  const currentUser = useContext(CurrentUserContext) as unknown as {username}
-  const username = currentUser?.username
+  const {user} = useContext(CurrentUserContext) as unknown as {user, route}
+  const username = user?.username
   const dispatch = useDispatch()
   const discussions = useSelector(selectDiscussions)
   const sentences = discussions[section]
