@@ -231,11 +231,21 @@ function getDiscussion(discussionInput) {
     if (state.discussions.discussionId && state.discussions.discussionId !== discussionInput.id) {
       throw new Error('received update from wrong discussion')
     }
-    if (isUpdate && discussionInput['revision'] <= state.discussions.revision) {
-      return  // already up to date
-    }
-    if (isUpdate && state.revision === 0) {
-      return  // haven't completed initial load
+    if (isUpdate) {
+      if (discussionInput['revision'] <= state.discussions.revision) {
+        return  // already up to date
+      }
+      if (state.revision === 0) {
+        return  // haven't completed initial load
+      }
+      const laterUpdate = discussions.eventQueue.some(event =>
+        event.handler === 'getDiscussion'
+        && event.payload.revision !== undefined
+        && event.payload.revision > discussionInput['revision']
+      )
+      if (laterUpdate) {
+        return  // this one is out of date
+      }
     }
 
     const commonAttributes = ['id', 'revision', 'version', 'layout', 'updatedAt', 'inviteCode', 'isPrivate']
@@ -559,47 +569,47 @@ function enqueueEvent(action) {
 }
 
 export function createNewDiscussionAction(value) {
-  const message = `create new discussion ${value}`
+  const message = `create new discussion ${value} t=${tryAgainTrials}`
   const action = {handler: 'createNewDiscussion', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function initializeDiscussionAction(value) {
-  const message = `initialize discussion ${value?.discussionId}`
+  const message = `initialize discussion ${value?.discussionId} t=${tryAgainTrials}`
   const action = {handler: 'initializeDiscussion', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function getDiscussionAction(value) {
-  const message = `get discussion ${value?.id} ${value?.revision}`
+  const message = `get discussion ${value?.id} ${value?.revision} t=${tryAgainTrials}`
   const action = {handler: 'getDiscussion', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function replaceSentenceAction(value) {
-  const message = `replace sentence ${value?.key}`
+  const message = `replace sentence ${value?.key} t=${tryAgainTrials}`
   const action = {handler: 'replaceSentence', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
-  const message = `change sentence status ${value?.key}`
+  const message = `change sentence status ${value?.key} t=${tryAgainTrials}`
   const action = {handler: 'changeSentenceStatus', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeGoalSentenceAction(value) {
-  const message = `change goal sentence ${value?.position}`
+  const message = `change goal sentence ${value?.position} t=${tryAgainTrials}`
   const action = {handler: 'changeGoalSentence', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeSentenceHiddenAction(value) {
-  const message = `change goal sentence ${value?.position} ${value?.section}`
+  const message = `change goal sentence ${value?.position} ${value?.section} t=${tryAgainTrials}`
   const action = {handler: 'changeSentenceHidden', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function createInviteCodeAction() {
-  const message = `create invite code`
+  const message = `create invite code t=${tryAgainTrials}`
   const action = {handler: 'createInviteCode', message}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function revokeInviteCodeAction() {
-  const message = `revoke invite code`
+  const message = `revoke invite code t=${tryAgainTrials}`
   const action = {handler: 'revokeInviteCode', message}
   return dispatch => dispatch(enqueueEvent(action))
 }
