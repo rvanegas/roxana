@@ -175,9 +175,9 @@ export const discussionsSlice = createSlice({
       state.revision = revision
     },
     addSentence(state, action) {
-      const {section, key, status}: {section: Section, key: string, status: SentenceStatus} = action.payload
+      const {section, status}: {section: Section, status: SentenceStatus} = action.payload
       const sentence: Sentence = {
-        key, content: '', index: nextIndex(state[section]),
+        content: '', index: nextIndex(state[section]),
         status, owner: status === 'draft' ? state.username : undefined,
         accepted: [], rejected: [], cleared: [],
         irrational: [], goal: [],
@@ -280,8 +280,8 @@ export const discussionsSlice = createSlice({
       state.eventQueue.shift()
     },
     updateSentence(state, action) {
-      const {section, newSentence}: {section: Section, newSentence: Sentence} = action.payload
-      const sentence = state[section].find(p => p.key === newSentence.key)
+      const {section, position, newSentence}: {section: Section, position: number, newSentence: Sentence} = action.payload
+      const sentence = state[section][position]
       if (sentence) {
         Object.assign(sentence, newSentence)
       }

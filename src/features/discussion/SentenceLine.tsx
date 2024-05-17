@@ -154,7 +154,7 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function handleFocus() {
-    dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'edit'}))
+    dispatch(changeSentenceStatusAction({section, position, change: 'edit'}))
   }
 
   function setFinalContent() {
@@ -175,19 +175,19 @@ export function SentenceLine(props: SentenceProps) {
 
   function handleBlur() {
     const content = setFinalContent()
-    const input = {key: sentence.key, section, content}
+    const input = {section, position, content}
     dispatch(replaceSentenceAction(input))
   }
 
   function handleStatusToggle() {
     if (isActionable.reject(sentence, username)) {
-      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'reject'}))
+      dispatch(changeSentenceStatusAction({section, position, change: 'reject'}))
     }
     else if (isActionable.clear(sentence, username)) {
-      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'clear'}))
+      dispatch(changeSentenceStatusAction({section, position, change: 'clear'}))
     }
     else if (isActionable.accept(sentence, username)) {
-      dispatch(changeSentenceStatusAction({key: sentence.key, section, change: 'accept'}))
+      dispatch(changeSentenceStatusAction({section, position, change: 'accept'}))
     }
     else {
       console.log('no action')
@@ -523,7 +523,7 @@ export function SentenceLine(props: SentenceProps) {
         </View>
       const color = highlightColor('propositions', index - 1)
       return (
-        <Fragment key={proposition.key}>
+        <Fragment key={mapIndex}>
           {therefore}
           <View columnStart={2} className={sentenceIndexClassName}>
             <View style={{textAlign: 'right', color}}>{index}</View>

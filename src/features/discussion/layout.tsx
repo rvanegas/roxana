@@ -1,4 +1,3 @@
-import {nanoid} from '@reduxjs/toolkit'
 import {pick} from 'lodash'
 import {Sentence} from './discussion.d'
 
@@ -44,7 +43,6 @@ export function createNewDiscussionLayout() {
 export function newSentenceFromLayoutEntry(sentence, layoutEntry) {
   const newSentence: Sentence = {
     id: sentence.id,
-    key: sentence.key || nanoid(),
     index: layoutEntry.index,
     content: sentence.content,
     status: layoutEntry.status,

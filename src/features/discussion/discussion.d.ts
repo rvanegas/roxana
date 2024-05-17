@@ -12,7 +12,6 @@ export type Sentence = {
   goal: string[]
   hidden?: boolean
   // the following are only in the store, not layout
-  key: string
   autoFocus?: boolean
   inArgument: boolean
   irrational: string[]

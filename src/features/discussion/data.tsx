@@ -1,5 +1,4 @@
 import {API, graphqlOperation} from 'aws-amplify'
-import {nanoid} from '@reduxjs/toolkit'
 import {pick, sortBy, reverse, concat} from 'lodash'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
@@ -77,9 +76,9 @@ function updateDiscussionLayout(changeNote: string) {
 function addNewSentence(section: Section, status: string) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const key = nanoid()
-    dispatch(addSentence({section, key, status}))
-    dispatch(replaceSentenceAction({key, section, content: ''}))
+    dispatch(addSentence({section, status}))
+    const position = getState().discussions[section].length - 1
+    dispatch(replaceSentenceAction({section, position, content: ''}))
   }
 }
 
@@ -238,7 +237,7 @@ function getDiscussion(discussionInput) {
       if (state.revision === 0) {
         return  // haven't completed initial load
       }
-      const laterUpdate = discussions.eventQueue.some(event =>
+      const laterUpdate = state.discussions.eventQueue.some(event =>
         event.handler === 'getDiscussion'
         && event.payload.revision !== undefined
         && event.payload.revision > discussionInput['revision']
@@ -286,8 +285,8 @@ function getDiscussion(discussionInput) {
   }
 }
 
-function replaceSentence(input: {key: string, section: Section, content: string}) {
-  const {key, section, content} = input
+function replaceSentence(input: {position: number, section: Section, content: string}) {
+  const {position, section, content} = input
   const {updateSentence} = discussionsSlice.actions
   async function createNewSentence(content, discussionId) {
     const variables = {input: {content, discussionId}}
@@ -307,9 +306,9 @@ function replaceSentence(input: {key: string, section: Section, content: string}
         arguments: state.discussions.arguments,
       }
       const sentences = discussionSentences[section]
-      const sentence = sentences.find(s => s.key === key)
+      const sentence = sentences[position]
       if (!sentence) {
-        console.error('not found', key, section, discussionSentences)
+        console.error('not found', position, section, discussionSentences)
         throw new Error('sentence not found')
       }
       let newSentenceId
@@ -331,7 +330,7 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       if (isPresent(content) && !state.discussions.username) {
         throw new Error('why is this happening?')
       }
-      const newSentence = {key, index, content, id: newSentenceId, status, owner}
+      const newSentence = {index, content, id: newSentenceId, status, owner}
       if (isPresent(content)) {
         const asserted = sentence.accepted.includes(state.discussions.username) ||
           sentence.rejected.includes(state.discussions.username) ||
@@ -342,7 +341,7 @@ function replaceSentence(input: {key: string, section: Section, content: string}
       else {
         Object.assign(newSentence, {accepted: [], rejected: [], cleared: [], goal: []})
       }
-      dispatch(updateSentence({section, newSentence}))
+      dispatch(updateSentence({section, position, newSentence}))
       await dispatch(updateDiscussionLayout('replace'))
       if (state.discussions.arguments.length === 0 && state.discussions.propositions.length > 0 && isPresent(content)) {
         await dispatch(addNewSentence('arguments', 'committed'))
@@ -354,7 +353,7 @@ function replaceSentence(input: {key: string, section: Section, content: string}
         console.warn('try again', tryAgainTrials)
         tryAgainTrials++
         dispatch(getDiscussionAction({id: state.discussions.discussionId, withoutSentences: true}))
-        dispatch(replaceSentenceAction({key, section, content}))
+        dispatch(replaceSentenceAction({position, section, content}))
       }
       else {
         throw exception
@@ -376,13 +375,13 @@ export const isActionable = {
 }
 
 interface ChangeSentenceStatusInput {
-  key: string
+  position: number
   section: Section
   change: 'edit' | 'commit' | 'accept' | 'reject' | 'clear'
 }
 
 function changeSentenceStatus(input: ChangeSentenceStatusInput) {
-  const {key, section, change} = input
+  const {position, section, change} = input
   const {updateSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
@@ -393,9 +392,9 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         arguments: state.discussions.arguments,
       }
       const sentences = discussionSentences[section]
-      const sentence = sentences.find(s => s.key === key)
+      const sentence = sentences[position]
       if (!sentence) {
-        console.error('not found', key, section, discussionSentences)
+        console.error('not found', position, section, discussionSentences)
         throw new Error('sentence not found')
       }
       let newSentence: Sentence
@@ -450,7 +449,7 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
         console.warn('unknown action or invalid conditions:', change, sentence)
         return
       }
-      dispatch(updateSentence({section, newSentence}))
+      dispatch(updateSentence({section, position, newSentence}))
       await dispatch(updateDiscussionLayout(change))
       tryAgainTrials = 0
     }
@@ -584,12 +583,12 @@ export function getDiscussionAction(value) {
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function replaceSentenceAction(value) {
-  const message = `replace sentence ${value?.key} t=${tryAgainTrials}`
+  const message = `replace sentence ${value?.position} t=${tryAgainTrials}`
   const action = {handler: 'replaceSentence', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
-  const message = `change sentence status ${value?.key} t=${tryAgainTrials}`
+  const message = `change sentence status ${value?.position} t=${tryAgainTrials}`
   const action = {handler: 'changeSentenceStatus', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
