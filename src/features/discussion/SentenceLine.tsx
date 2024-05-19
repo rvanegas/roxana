@@ -37,7 +37,7 @@ export function SentenceLine(props: SentenceProps) {
   const dispatch = useDispatch()
   const propositions = discussions.propositions
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
-  const [editorState, setEditorState] = useState(initialEditorState)
+  const [editorState, setEditorState] = useState(setEditorStateFromProp)
   const [argumentInputInvalid, setArgumentInputInvalid] = useState(false)
   const placeholder = position !== 0 || !username ? null : (
     section === 'propositions' ?
@@ -48,10 +48,13 @@ export function SentenceLine(props: SentenceProps) {
   const inSentenceModal = discussions.sentenceModal &&
     discussions.sentenceModal.section === section &&
     discussions.sentenceModal.position === position
-
   const [offsetHeight, setOffsetHeight] = useState<number>(0)
-
   let canonicalContent
+
+  function setEditorStateFromProp() {
+    const contentState = ContentState.createFromText(sentence.content)
+    return EditorState.createWithContent(contentState)
+  }
 
   useEffect(() => {
     if (sentence.autoFocus) {
@@ -96,11 +99,6 @@ export function SentenceLine(props: SentenceProps) {
   function highlightColor(section, position, defaultColor = 'black') {
     return section === 'propositions' &&
       discussions.argumentView?.primaryPropositionPosition === position ? 'red' : defaultColor
-  }
-
-  function initialEditorState() {
-    const contentState = ContentState.createFromText(sentence.content)
-    return EditorState.createWithContent(contentState)
   }
 
   function setDisplayFromArgumentInput(argumentInput) {

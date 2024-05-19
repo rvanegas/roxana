@@ -20,7 +20,7 @@ export function SentencesList({section, sentenceListRef}) {
 
   let elements = sentences.map((sentence, position) => (
     <SentenceLine
-      key={position} section={section} sentence={sentence}
+      key={sentence.id || position} section={section} sentence={sentence}
       position={position} sentenceListRef={sentenceListRef}
     />
   ))

@@ -16,7 +16,7 @@ function generateRandomString(length) {
   return cryptoRandomString({length, type: 'distinguishable'}).toLowerCase();
 }
 
-const idLength = 3
+const idLength = 4
 export function generateDiscussionId() {
   return generateRandomString(idLength)
 }
