@@ -1,4 +1,6 @@
 ## Roxana
 
-A medium for guided rational discussions, hosted at [https://www.tryroxana.com/discussions](https://www.tryroxana.com/discussions).
+A social medium for guided rational discussions.
+
+[https://www.tryroxana.com/](https://www.tryroxana.com/)
 
