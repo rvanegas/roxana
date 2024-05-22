@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useContext, MutableRefObject} from 'react'
+import React, {useState, useEffect, useRef, useContext, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
@@ -22,6 +22,7 @@ export function Discussion() {
   const discussionId = discussions.discussionId
   const {toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
   const inviteLink = `${window.location.protocol}//${window.location.host}/invite/${discussions.inviteCode}`
+  const [refreshSubscription, setRefreshSubscription] = useState(false)
 
   useEffect(() => {
     const isPublic = route === 'signIn' && username === undefined
@@ -43,14 +44,17 @@ export function Discussion() {
           dlog('subscribed update', discussion.revision)
           dispatch(getDiscussionAction(discussion))
         },
-        error: error => console.error(error),
+        error: error => {
+          dlog('subscription error', error)
+          setRefreshSubscription(!refreshSubscription)
+        },
       })
       return () => {
         dlog('unsubscribe')
         subscription.unsubscribe()
       }
     }
-  }, [dispatch, discussionId])
+  }, [dispatch, discussionId, refreshSubscription])
 
   function handleDiscussantSwitch(e, discussant) {
     e.preventDefault()
