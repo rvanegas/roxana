@@ -27,7 +27,7 @@ function Home() {
 
   useEffect(() => {
     dispatch(setUsername(username))
-    if (username === 'rodvandur') {
+    if (username === 'rodvandur' || username === 'kaipebbles') {
       dlog.enabled = true
     }
   }, [dispatch, setUsername, username])

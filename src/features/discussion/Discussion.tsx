@@ -4,6 +4,7 @@ import {useParams} from 'react-router-dom'
 import {API, graphqlOperation} from 'aws-amplify'
 import {SwitchField, Heading, Button, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
+import {dlog} from '../../app/util'
 import * as custom from '../../graphql/custom'
 import {CurrentUserContext} from '../user/User'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
@@ -35,14 +36,19 @@ export function Discussion() {
       const variables = {id: discussionId}
       const op = graphqlOperation(custom.onDiscussionLayoutById, variables)
       const request = API.graphql(op) as unknown as {subscribe(any)}
+      dlog('subscribe')
       const subscription = request.subscribe({
         next: next => {
           const discussion = next.value.data.onDiscussionById
+          dlog('subscribed update', discussion.revision)
           dispatch(getDiscussionAction(discussion))
         },
         error: error => console.error(error),
       })
-      return () => subscription.unsubscribe()
+      return () => {
+        dlog('unsubscribe')
+        subscription.unsubscribe()
+      }
     }
   }, [dispatch, discussionId])
 
