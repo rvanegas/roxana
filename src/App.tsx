@@ -85,7 +85,7 @@ function Home() {
               Roxana
             </Heading>
             {locationInDiscussion ? discussionElement : undefined}
-            </Flex>
+          </Flex>
           <Flex
             justifyContent="flex-end"
             alignItems="center"
