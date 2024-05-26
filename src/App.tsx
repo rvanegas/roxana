@@ -55,12 +55,17 @@ function Home() {
     navigate('/signin')
   }
 
+  const roxanaHeader = <Heading level={3} onClick={handleHome}
+    style={{cursor: 'pointer'}}>Roxana</Heading>
   const indicatorClasses = classNames('indicator', {'synced': isSynced})
   const locationInDiscussion = (new RegExp('/discussions/\\w+')).test(location.pathname)
   const lockIcon = !discussions.isPrivate ? null :
     <span style={{paddingLeft: '5px'}} className="oi sentence-icon" data-glyph="lock-locked" />
   const discussionElement = <Text>discussion: {discussions.discussionId} {lockIcon}</Text>
+  const discussionElementIfAny = locationInDiscussion ? discussionElement : undefined
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
+  const syncIndicatorIfAny = user ? syncIndicator : undefined
+  const usernameIfAny = <Text>{user?.username}</Text>
   const signInOrOutButton = location.pathname === '/signin' ? null : user ?
     <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
@@ -73,28 +78,43 @@ function Home() {
           justifyContent="space-between"
           className="navbar"
         >
+          <View display={{small: 'none'}}>
+            {roxanaHeader}
+            {discussionElementIfAny}
+          </View>
+          <View display={{small: 'none'}}>
+            <Flex
+              justifyContent="flex-end"
+              alignItems="center"
+              style={{paddingTop: '6px'}}
+            >
+              {usernameIfAny}
+            </Flex>
+            <Flex
+              justifyContent="flex-end"
+              alignItems="center"
+              style={{paddingTop: '6px'}}
+            >
+              {syncIndicatorIfAny}
+              {signInOrOutButton}
+            </Flex>
+          </View>
           <Flex
+            display={{base: 'none', small: 'flex'}}
             justifyContent="flex-end"
             alignItems="baseline"
           >
-            <Heading
-              level={3}
-              onClick={handleHome}
-              style={{cursor: 'pointer'}}
-            >
-              Roxana
-            </Heading>
-            {locationInDiscussion ? discussionElement : undefined}
+            {roxanaHeader}
+            {discussionElementIfAny}
           </Flex>
           <Flex
+            display={{base: 'none', small: 'flex'}}
             justifyContent="flex-end"
             alignItems="center"
             style={{paddingTop: '6px'}}
           >
-            {user ? syncIndicator : undefined}
-            <Text>
-              {user?.username}
-            </Text>
+            {syncIndicatorIfAny}
+            {usernameIfAny}
             {signInOrOutButton}
           </Flex>
         </Flex>
