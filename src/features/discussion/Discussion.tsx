@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef, useContext, MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {useParams} from 'react-router-dom'
-import {API, graphqlOperation} from 'aws-amplify'
+import { generateClient } from 'aws-amplify/api'
 import {SwitchField, Heading, Button, View, Grid} from '@aws-amplify/ui-react'
 import {SentencesList} from './SentencesList'
 import {dlog} from '../../app/util'
@@ -10,12 +10,16 @@ import {CurrentUserContext} from '../user/User'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
 import {getDiscussionAction, initializeDiscussionAction,
   createInviteCodeAction, revokeInviteCodeAction} from './data'
+import {AppDispatch} from '../../app/store'
+
+let _client: ReturnType<typeof generateClient> | null = null
+const client = () => { if (!_client) _client = generateClient({ authMode: 'apiKey' }); return _client }
 
 export function Discussion() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const params = useParams()
-  const propositionsListRef = useRef() as MutableRefObject<HTMLElement>
-  const argumentsListRef = useRef() as MutableRefObject<HTMLElement>
+  const propositionsListRef = useRef() as MutableRefObject<HTMLDivElement>
+  const argumentsListRef = useRef() as MutableRefObject<HTMLDivElement>
   const {route} = useContext(CurrentUserContext) as unknown as {user, route}
   const discussions = useSelector(selectDiscussions)
   const username = discussions.username
@@ -25,28 +29,26 @@ export function Discussion() {
   const [refreshSubscription, setRefreshSubscription] = useState(false)
 
   useEffect(() => {
-    const isPublic = route === 'signIn' && username === undefined
-    const isPrivate = route === 'authenticated' && username !== undefined
-    if ((isPublic || isPrivate) && params.discussionId && discussionId !== params.discussionId) {
+    if (params.discussionId && discussionId !== params.discussionId) {
       dispatch(initializeDiscussionAction({discussionId: params.discussionId}))
     }
-  }, [dispatch, params.discussionId, discussionId, route, username])
+  }, [dispatch, params.discussionId, discussionId])
 
   useEffect(() => {
     if (discussionId) {
-      const variables = {id: discussionId}
-      const op = graphqlOperation(custom.onDiscussionLayoutById, variables)
-      const request = API.graphql(op) as unknown as {subscribe(any)}
       dlog('subscribe')
-      const subscription = request.subscribe({
-        next: next => {
-          const discussion = next.value.data.onDiscussionById
+      const subscription = (client().graphql({
+        query: custom.onDiscussionLayoutById,
+        variables: { id: discussionId },
+      }) as any).subscribe({
+        next: ({ data }: any) => {
+          const discussion = data.onDiscussionById
           dlog('subscribed update', discussion.revision)
           dispatch(getDiscussionAction(discussion))
         },
-        error: error => {
+        error: (error: any) => {
           dlog('subscription error', error)
-          setRefreshSubscription(!refreshSubscription)
+          setRefreshSubscription(r => !r)
         },
       })
       return () => {

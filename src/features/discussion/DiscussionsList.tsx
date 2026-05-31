@@ -1,6 +1,7 @@
 import React, {Fragment, useEffect} from 'react'
 import {useContext} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
+import {AppDispatch} from '../../app/store'
 import {Link} from 'react-router-dom'
 import {Heading, View, Grid, Button} from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
@@ -13,18 +14,14 @@ import {loadRecentDiscussions, createNewDiscussionAction, usernamesFromDiscussio
 dayjs.extend(relativeTime)
 
 export function DiscussionsList() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const {route} = useContext(CurrentUserContext) as unknown as {user, route}
   const discussions = useSelector(selectDiscussions)
   const username = discussions.username
 
   useEffect(() => {
-    const isPublic = route === 'signIn' && username === undefined
-    const isPrivate = route === 'authenticated' && username !== undefined
-    if (isPublic || isPrivate) {
-      dispatch(loadRecentDiscussions())
-    }
-  }, [dispatch, username, route])
+    dispatch(loadRecentDiscussions())
+  }, [dispatch, username])
 
   function handleNewDiscussion(isPrivate: boolean) {
     dispatch(createNewDiscussionAction({isPrivate}))
@@ -37,7 +34,7 @@ export function DiscussionsList() {
         >new</Button>
       </View>
     )
-    const discussionsList = discussions.recentDiscussions[isPrivate ? 'privateDiscussions' : 'publicDiscussions']
+    const discussionsList = discussions.recentDiscussions?.[isPrivate ? 'privateDiscussions' : 'publicDiscussions'] ?? []
     const myDiscussionsList = !isPrivate ? discussionsList :
       discussionsList.filter(item => usernamesFromDiscussion(item.discussion).includes(username))
     const links = myDiscussionsList.map((item, index) => {
@@ -72,14 +69,10 @@ export function DiscussionsList() {
     </>
   }
 
-  const recentDiscussions = !discussions.recentDiscussions ? null : <>
-    {discussionsSection(false)}
-    {discussionsSection(true)}
-  </>
-
   return (
     <View style={{paddingTop: '30px'}}>
-      {recentDiscussions}
+      {discussionsSection(false)}
+      {discussionsSection(true)}
     </View>
   )
 }

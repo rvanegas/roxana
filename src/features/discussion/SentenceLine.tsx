@@ -1,6 +1,7 @@
 import React, {Fragment, useRef, useState, useEffect, useContext, useCallback,
   MutableRefObject} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
+import {AppDispatch} from '../../app/store'
 import {Divider, View, Button} from '@aws-amplify/ui-react'
 import {throttle, sortBy, keys} from 'lodash'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
@@ -31,10 +32,10 @@ export function SentenceLine(props: SentenceProps) {
   const {user} = useContext(CurrentUserContext) as unknown as {user, route}
   const username = user?.username
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
-  const editorContainerRef = useRef() as MutableRefObject<HTMLElement>
+  const editorContainerRef = useRef() as MutableRefObject<HTMLDivElement>
   const editorRef = useRef() as MutableRefObject<HTMLElement>
-  const modalRef = useRef() as MutableRefObject<HTMLElement>
-  const dispatch = useDispatch()
+  const modalRef = useRef() as MutableRefObject<HTMLDivElement>
+  const dispatch = useDispatch<AppDispatch>()
   const propositions = discussions.propositions
   const [displayPropositionIndexes, setDisplayPropositionIndexes] = useState(propositionIndexes)
   const [editorState, setEditorState] = useState(setEditorStateFromProp)
@@ -312,7 +313,7 @@ export function SentenceLine(props: SentenceProps) {
     return (
       <View
         columnStart={1} className={annotationIconsClassName}
-        onClick={username ? handleStatusToggle : null}
+        onClick={username ? handleStatusToggle : undefined}
       >
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
         <View style={{textAlign: 'right'}}>

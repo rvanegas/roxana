@@ -6,3 +6,5 @@ export const store = configureStore({
     discussions: discussionsSlice.reducer,
   }
 })
+
+export type AppDispatch = typeof store.dispatch

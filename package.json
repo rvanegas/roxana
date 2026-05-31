@@ -2,38 +2,28 @@
   "name": "roxana",
   "version": "0.10.5",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "@aws-amplify/ui-react": "^2.1.9",
-    "@bugsnag/js": "^7.16.2",
-    "@bugsnag/plugin-react": "^7.16.2",
-    "@reduxjs/toolkit": "^1.7.1",
-    "@testing-library/jest-dom": "^5.16.1",
-    "@testing-library/react": "^12.1.2",
-    "@testing-library/user-event": "^7.2.1",
-    "@types/jest": "^27.4.1",
-    "@types/node": "^17.0.21",
-    "aws-amplify": "^3.0.25",
-    "classnames": "^2.3.1",
-    "crypto-random-string": "^4.0.0",
+    "@aws-amplify/ui-react": "^6.0.0",
+    "@bugsnag/js": "^7.22.0",
+    "@bugsnag/plugin-react": "^7.22.0",
+    "@reduxjs/toolkit": "^2.0.0",
+    "aws-amplify": "^6.0.0",
+    "classnames": "^2.3.3",
+    "crypto-random-string": "^5.0.0",
     "dayjs": "^1.11.0",
     "draft-js": "^0.11.7",
     "lodash": "^4.17.21",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-redux": "^7.2.6",
-    "react-router-dom": "^6.2.2",
-    "react-scripts": "^3.0.1",
-    "typescript": "^4.6.2",
-    "universal-cookie": "^4.0.4"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-redux": "^9.0.0",
+    "react-router-dom": "^6.22.0",
+    "universal-cookie": "^7.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "browserslist": {
     "production": [
@@ -48,8 +38,12 @@
     ]
   },
   "devDependencies": {
-    "@types/react": "^17.0.41",
-    "@types/react-dom": "^17.0.13",
-    "@types/react-redux": "^7.1.23"
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
   }
 }

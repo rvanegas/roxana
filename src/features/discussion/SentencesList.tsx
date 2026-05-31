@@ -2,6 +2,7 @@ import React, {useContext} from 'react'
 import {pullAt, concat, sortBy} from 'lodash'
 import {useDispatch, useSelector} from 'react-redux'
 import {View, Button, Grid} from '@aws-amplify/ui-react'
+import {AppDispatch} from '../../app/store'
 import {SentenceLine} from './SentenceLine'
 import {CurrentUserContext} from '../user/User'
 import {selectDiscussions} from './discussionsSlice'
@@ -10,7 +11,7 @@ import {focusOnSentence} from './data'
 export function SentencesList({section, sentenceListRef}) {
   const {user} = useContext(CurrentUserContext) as unknown as {user, route}
   const username = user?.username
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const discussions = useSelector(selectDiscussions)
   const sentences = discussions[section]
 

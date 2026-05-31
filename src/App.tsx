@@ -11,9 +11,10 @@ import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions, discussionsSlice} from './features/discussion/discussionsSlice'
 import {acceptInviteCode} from './features/discussion/data'
+import {AppDispatch} from './app/store'
 
 function Home() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   // @ts-ignore
   const {user, signOut, route}: {user: any, signOut: () => {}, route: string} = useAuthenticator(context => [context.user])
 
@@ -65,7 +66,7 @@ function Home() {
   const discussionElementIfAny = locationInDiscussion ? discussionElement : undefined
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
   const syncIndicatorIfAny = user ? syncIndicator : undefined
-  const usernameIfAny = <Text>{user?.username}</Text>
+  const usernameIfAny = user ? <Text>{user.username}</Text> : undefined
   const signInOrOutButton = location.pathname === '/signin' ? null : user ?
     <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
@@ -129,7 +130,7 @@ function SignIn() {
 
   return (
     <Authenticator>
-      {({signOut, user}: {signOut, user}) => {
+      {({signOut, user}) => {
         window.location.href = discussions.reloadPath
         return <div/>
       }}
@@ -138,17 +139,10 @@ function SignIn() {
 }
 
 function Invite() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const params = useParams()
   const discussions = useSelector(selectDiscussions)
   const {setNewInviteCode} = discussionsSlice.actions
-
-  // search for discussion by id
-  // if found,
-  // add to users
-  // navigate to /discussions/id
-  // else
-  // SOL
 
   useEffect(() => {
     if (discussions.username && !discussions.newInviteCode && params.inviteCode) {

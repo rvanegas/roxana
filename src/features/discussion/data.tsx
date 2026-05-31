@@ -1,4 +1,4 @@
-import {API, graphqlOperation} from 'aws-amplify'
+import { generateClient } from 'aws-amplify/api'
 import {pick, sortBy, reverse, concat} from 'lodash'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
@@ -9,6 +9,9 @@ import {Section, Sentence} from './discussion.d'
 import {createDiscussionLayout, createNewDiscussionLayout,
   newSentenceFromLayoutEntry, parseDiscussionLayout} from './layout'
 import {discussionsSlice, nextUniqueIndex, sentenceCommittedOthers} from './discussionsSlice'
+
+let _client: ReturnType<typeof generateClient> | null = null
+const client = () => { if (!_client) _client = generateClient({ authMode: 'apiKey' }); return _client }
 
 let tryAgainTrials = 0
 const tryAgainTrialsMax = 6
@@ -54,7 +57,7 @@ function updateDiscussionLayout(changeNote: string) {
         input: {id, version, revision, layout, goalsSummary, inviteCode, pool},
         condition: {revision: {eq: oldRevision}}
       }
-      await API.graphql(graphqlOperation(mutations.updateDiscussion, variables))
+      await client().graphql({ query: mutations.updateDiscussion, variables })
       // updateUserDiscussions(id)
       dlog('updateLayout', revision, changeNote)
       dispatch(incrementRevision(revision))
@@ -96,7 +99,7 @@ function createNewDiscussion({isPrivate}) {
       try {
         discussionId = generateDiscussionId()
         variables.input.id = discussionId
-        await API.graphql(graphqlOperation(mutations.createDiscussion, variables))
+        await client().graphql({ query: mutations.createDiscussion, variables })
         dispatch(setNewDiscussionId(discussionId))
         break
       }
@@ -113,7 +116,7 @@ function createNewDiscussion({isPrivate}) {
     const state = getState()
     const userVariables = {input: {discussionId, userId: state.discussions.username}}
     if (isPrivate) {
-      await API.graphql(graphqlOperation(mutations.createUserDiscussion, userVariables))
+      await client().graphql({ query: mutations.createUserDiscussion, variables: userVariables })
     }
   }
 }
@@ -180,7 +183,7 @@ function getDiscussion(discussionInput) {
       const query = discussionInput.withoutSentences ?
         custom.getDiscussionSimpleWithoutAssociations :
         custom.getDiscussionSimpleWithAssociations
-      const response = await API.graphql(graphqlOperation(query, input)) as {data}
+      const response = await client().graphql({ query, variables: input }) as {data: any}
       if (!response.data.getDiscussion) {
         throw new GetDiscussionError('no such discussion')
       }
@@ -194,7 +197,7 @@ function getDiscussion(discussionInput) {
     }
 
     async function getSentence(id) {
-      const response = await API.graphql(graphqlOperation(queries.getSentence, {id})) as {data}
+      const response = await client().graphql({ query: queries.getSentence, variables: { id } }) as {data: any}
       return response.data.getSentence
     }
 
@@ -249,15 +252,15 @@ function getDiscussion(discussionInput) {
 
     const commonAttributes = ['id', 'revision', 'version', 'layout', 'updatedAt', 'inviteCode', 'isPrivate']
     if (isUpdate) {
-      discussion = pick(discussionInput, commonAttributes)
+      discussion = pick(discussionInput, commonAttributes) as any
     }
     else if (discussionInput.withoutSentences === true) {
       const response = await loadDiscussion()
-      discussion = pick(response.data.getDiscussion, commonAttributes)
+      discussion = pick(response.data.getDiscussion, commonAttributes) as any
     }
     else {
       const response = await loadDiscussion()
-      discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['userDiscussions']))
+      discussion = pick(response.data.getDiscussion, concat(commonAttributes, ['userDiscussions'])) as any
       if (discussion.isPrivate && discussion.userDiscussions.items) {
         // @ts-ignore
         console.log('s', usernamesFromDiscussion(discussion))
@@ -290,12 +293,12 @@ function replaceSentence(input: {position: number, section: Section, content: st
   const {updateSentence} = discussionsSlice.actions
   async function createNewSentence(content, discussionId) {
     const variables = {input: {content, discussionId}}
-    const response = await API.graphql(graphqlOperation(mutations.createSentence, variables)) as {data}
+    const response = await client().graphql({ query: mutations.createSentence, variables }) as {data: any}
     return response.data.createSentence.id
   }
   async function disassociateSentence(id) {
     const variables = {input: {id, discussionId: null}}
-    API.graphql(graphqlOperation(mutations.updateSentence, variables))
+    client().graphql({ query: mutations.updateSentence, variables })
   }
   return async (dispatch, getState) => {
     const state = getState()
@@ -545,7 +548,7 @@ const eventHandlerFunctions = {
 function enqueueEvent(action) {
   const {setStatus, eventEnqueue, eventDequeue} = discussionsSlice.actions
   if (!action.handler) {
-    throw new Error('unknown handler', action.handler)
+    throw new Error(`unknown handler: ${action.handler}`)
   }
   return async (dispatch, getState) => {
     dispatch(eventEnqueue(action))
@@ -637,11 +640,11 @@ export function loadRecentDiscussions() {
   return async (dispatch, getState) => {
     const state = getState()
     const userId = state.discussions.username
-    const responsePublic = await API.graphql(graphqlOperation(custom.queryDiscussionsByPool)) as {data}
+    const responsePublic = await client().graphql({ query: custom.queryDiscussionsByPool }) as {data: any}
     const publicDiscussions = responsePublic.data.queryDiscussionsByPool.items
     let privateDiscussions = []
     if (userId) {
-      const responsePrivate = await API.graphql(graphqlOperation(custom.queryUserDiscussionsByUserId, {userId})) as {data}
+      const responsePrivate = await client().graphql({ query: custom.queryUserDiscussionsByUserId, variables: { userId } }) as {data: any}
       privateDiscussions = responsePrivate.data.queryUserDiscussionsByUserId.items
     }
     dispatch(setRecentDiscussions({publicDiscussions, privateDiscussions}))
@@ -652,14 +655,14 @@ export function acceptInviteCode(inviteCode) {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const inviteVariables = {inviteCode}
-    const response = await API.graphql(graphqlOperation(custom.queryDiscussionsByInviteCode, inviteVariables)) as {data}
+    const response = await client().graphql({ query: custom.queryDiscussionsByInviteCode, variables: inviteVariables }) as {data: any}
     if (response.data) {
       const state = getState()
       const discussionId = response.data.queryDiscussionsByInviteCode.items[0].id
       const usernames = usernamesFromDiscussion(response.data.queryDiscussionsByInviteCode.items[0])
       if (!usernames.includes(state.discussions.username)) {
         const userVariables = {input: {discussionId, userId: state.discussions.username}}
-        await API.graphql(graphqlOperation(mutations.createUserDiscussion, userVariables))
+        await client().graphql({ query: mutations.createUserDiscussion, variables: userVariables })
       }
       dispatch(setNewDiscussionId(discussionId))
     }

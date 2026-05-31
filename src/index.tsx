@@ -1,14 +1,13 @@
-import React, {StrictMode} from 'react'
-import ReactDOM from 'react-dom'
+import React, { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 import Bugsnag from '@bugsnag/js'
 import BugsnagPluginReact from '@bugsnag/plugin-react'
-import {AmplifyProvider, Authenticator} from '@aws-amplify/ui-react'
-import Amplify from 'aws-amplify'
-import {Provider} from 'react-redux'
-import {App} from './App'
-import {store} from './app/store'
-import {theme} from './theme'
-import * as serviceWorker from './serviceWorker'
+import { ThemeProvider, Authenticator } from '@aws-amplify/ui-react'
+import { Amplify } from 'aws-amplify'
+import { Provider } from 'react-redux'
+import { App } from './App'
+import { store } from './app/store'
+import { theme } from './theme'
 import awsExports from './aws-exports'
 import packageJson from '../package.json'
 
@@ -25,19 +24,15 @@ Bugsnag.start({
 const ErrorBoundary = Bugsnag.getPlugin('react').createErrorBoundary(React)
 const providers = (
   <Provider store={store}>
-    <AmplifyProvider theme={theme}>
+    <ThemeProvider theme={theme}>
       <Authenticator.Provider>
         <App />
       </Authenticator.Provider>
-    </AmplifyProvider>
+    </ThemeProvider>
   </Provider>
 )
 
-const isLocalhost = document.location.host === 'localhost:3000'
-const root = isLocalhost ? providers : <ErrorBoundary>{providers}</ErrorBoundary>
-ReactDOM.render(<StrictMode>{root}</StrictMode>, document.getElementById('root'))
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister()
+const isLocalhost = document.location.host.startsWith('localhost')
+const rootElement = document.getElementById('root')!
+const app = isLocalhost ? providers : <ErrorBoundary>{providers}</ErrorBoundary>
+createRoot(rootElement).render(<StrictMode>{app}</StrictMode>)
