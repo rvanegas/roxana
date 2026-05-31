@@ -1,16 +1,16 @@
 {
   "name": "roxana-cli",
-  "version": "0.0.1",
-  "description": "",
-  "main": "index.tsx",
+  "version": "0.1.0",
+  "description": "Admin CLI for Roxana",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "roxana": "npm run build && node build/index.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-appsync": "^3.81.0",
-    "@aws-sdk/client-dynamodb": "^3.78.0",
-    "typescript": "^4.6.3"
+    "@aws-sdk/client-dynamodb": "^3.78.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
   }
 }
