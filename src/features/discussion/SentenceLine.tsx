@@ -26,7 +26,7 @@ interface SentenceProps {
 export function SentenceLine(props: SentenceProps) {
   const {section, sentence, position, sentenceListRef} = props
   const {clearSentenceModal, setSentenceModal,
-    clearArgumentView, setArgumentView} = discussionsSlice.actions
+    clearArgumentView, setArgumentView, setArgumentViewFromArgument} = discussionsSlice.actions
   const unsetFocus = useCallback(discussionsSlice.actions.unsetFocus, [section, position])
   const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
@@ -223,6 +223,12 @@ export function SentenceLine(props: SentenceProps) {
     const isSettable = discussions.argumentView === undefined ||
       discussions.argumentView.primaryPropositionPosition !== position
     isSettable ? dispatch(setArgumentView(position)) : dispatch(clearArgumentView())
+  }
+
+  function handleFromArgument() {
+    const isSettable = discussions.argumentView === undefined ||
+      discussions.argumentView.primaryArgumentPosition !== position
+    isSettable ? dispatch(setArgumentViewFromArgument(position)) : dispatch(clearArgumentView())
   }
 
   function handleOverlay() {
@@ -518,6 +524,7 @@ export function SentenceLine(props: SentenceProps) {
         'sentence-hidden': sentence.hidden,
       }
     )
+    const isArgumentActive = discussions.argumentView?.primaryArgumentPosition === position
     const steps = displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null :
@@ -526,10 +533,20 @@ export function SentenceLine(props: SentenceProps) {
             {'\u2234'}
           </View>
         </View>
+      const arrowCell = mapIndex === 0 ? (
+        <View columnStart={1} className={sentenceMetaClassName} onClick={handleFromArgument}>
+          <View style={{textAlign: 'right'}}>
+            <span className="oi sentence-icon"
+              style={{color: isArgumentActive ? 'red' : 'gray'}}
+              data-glyph="arrow-thick-left" />
+          </View>
+        </View>
+      ) : null
       const color = highlightColor('propositions', index - 1)
       return (
         <Fragment key={mapIndex}>
           {therefore}
+          {arrowCell}
           <View columnStart={2} className={sentenceIndexClassName}>
             <View style={{textAlign: 'right', color}}>{index}</View>
           </View>

@@ -49,6 +49,7 @@ interface State {
     primaryPropositionPosition: number
     secondaryPropositionPositions: number[]
     argumentPositions: number[]
+    primaryArgumentPosition?: number
   }
   // users: string[]
 }
@@ -258,6 +259,17 @@ export const discussionsSlice = createSlice({
     },
     clearArgumentView(state) {
       state.argumentView = undefined
+    },
+    setArgumentViewFromArgument(state, action) {
+      const argumentPosition: number = action.payload
+      const argument = state.arguments[argumentPosition]
+      const propositionPositions = propositionIndexesFromArgument(argument).map(i => i - 1)
+      state.argumentView = {
+        primaryPropositionPosition: -1,
+        secondaryPropositionPositions: propositionPositions,
+        argumentPositions: [argumentPosition],
+        primaryArgumentPosition: argumentPosition,
+      }
     },
     setSentenceHidden(state, action) {
       const {section, position, hidden}:

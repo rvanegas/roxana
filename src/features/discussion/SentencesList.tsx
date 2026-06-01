@@ -27,8 +27,10 @@ export function SentencesList({section, sentenceListRef}) {
   ))
 
   if (section === 'propositions' && discussions.argumentView) {
-    const positions = concat([discussions.argumentView.primaryPropositionPosition], discussions.argumentView.secondaryPropositionPositions)
-    elements = pullAt(elements, sortBy(positions))
+    const {primaryPropositionPosition, secondaryPropositionPositions, primaryArgumentPosition} = discussions.argumentView
+    const primary = primaryPropositionPosition >= 0 ? [primaryPropositionPosition] : []
+    const positions = concat(primary, secondaryPropositionPositions)
+    elements = pullAt(elements, primaryArgumentPosition !== undefined ? positions : sortBy(positions))
   }
   else if (section === 'arguments' && discussions.argumentView) {
     elements = pullAt(elements, discussions.argumentView.argumentPositions)
