@@ -1,4 +1,5 @@
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb'
+import { DynamoDBClient, ScanCommand, DeleteItemCommand,
+  QueryCommand } from '@aws-sdk/client-dynamodb'
 
 const db = new DynamoDBClient({ region: 'us-west-2' })
 
@@ -35,9 +36,66 @@ async function listUsers() {
   console.log(`\n${usernames.length} user(s)`)
 }
 
+async function deleteDiscussion() {
+  const id = process.argv[3]
+  const confirmed = process.argv.includes('--confirm')
+
+  if (!id) {
+    console.error('Usage: roxana delete <id> [--confirm]')
+    process.exit(1)
+  }
+
+  // Find sentences belonging to this discussion
+  const sentenceResult = await db.send(new ScanCommand({
+    TableName: table('Sentence'),
+    FilterExpression: 'discussionId = :id',
+    ExpressionAttributeValues: { ':id': { S: id } },
+    ProjectionExpression: 'id',
+  }))
+  const sentenceIds = (sentenceResult.Items ?? []).map(s => s.id?.S ?? '')
+
+  // Find UserDiscussion entries for this discussion
+  const udResult = await db.send(new ScanCommand({
+    TableName: table('UserDiscussion'),
+    FilterExpression: 'discussionId = :id',
+    ExpressionAttributeValues: { ':id': { S: id } },
+    ProjectionExpression: 'discussionId, userId',
+  }))
+  const userDiscussions = (udResult.Items ?? []).map(u => u.userId?.S ?? '')
+
+  console.log(`Discussion:   ${id}`)
+  console.log(`Sentences:    ${sentenceIds.length}`)
+  console.log(`Participants: ${userDiscussions.join(', ') || 'none'}`)
+
+  if (!confirmed) {
+    console.log('\nDry run — pass --confirm to delete.')
+    return
+  }
+
+  await db.send(new DeleteItemCommand({
+    TableName: table('Discussion'),
+    Key: { id: { S: id } },
+  }))
+  for (const sid of sentenceIds) {
+    await db.send(new DeleteItemCommand({
+      TableName: table('Sentence'),
+      Key: { id: { S: sid } },
+    }))
+  }
+  for (const userId of userDiscussions) {
+    await db.send(new DeleteItemCommand({
+      TableName: table('UserDiscussion'),
+      Key: { discussionId: { S: id }, userId: { S: userId } },
+    }))
+  }
+
+  console.log('Deleted.')
+}
+
 const commands: Record<string, () => Promise<void>> = {
   discussions: listDiscussions,
   users:       listUsers,
+  delete:      deleteDiscussion,
 }
 
 const cmd = process.argv[2]
