@@ -42,7 +42,7 @@ export function SentencesList({section, sentenceListRef}) {
 
   return (
     <Grid
-      templateColumns="5rem 20px 1fr 3rem"
+      templateColumns="5rem 2rem 1fr 3rem"
       columnGap="5px"
     >
       {elements}

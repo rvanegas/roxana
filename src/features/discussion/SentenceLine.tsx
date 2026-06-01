@@ -325,11 +325,11 @@ export function SentenceLine(props: SentenceProps) {
 
   function indexElement() {
     const goal = sentence.goal.filter(d => !discussions.hideDiscussants[d])
+    const goalBorder = goal.includes(username) ? '2px royalblue solid' :
+      goal.length !== 0 ? '2px royalblue dashed' :
+        '2px transparent solid'
     const indexStyle = {
-      border: goal.includes(username) ? '2px royalblue solid' :
-        goal.length !== 0 ? '2px royalblue dashed' :
-          '2px transparent solid',
-      color: highlightColor(section, position)
+      color: highlightColor(section, position),
     }
     const indexClassName = classNames(
       'sentence-line-cell', 'sentence-index', {
@@ -343,7 +343,7 @@ export function SentenceLine(props: SentenceProps) {
         onClick={handleIndex}
       >
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-        <View style={{textAlign: 'right'}}>
+        <View style={{border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto'}}>
           {isArguments ? toAlphaIndex(position) : position + 1}
         </View>
       </View>

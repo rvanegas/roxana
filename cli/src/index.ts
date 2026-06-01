@@ -59,13 +59,13 @@ async function deleteDiscussion() {
     TableName: table('UserDiscussion'),
     FilterExpression: 'discussionId = :id',
     ExpressionAttributeValues: { ':id': { S: id } },
-    ProjectionExpression: 'discussionId, userId',
+    ProjectionExpression: 'id, userId',
   }))
-  const userDiscussions = (udResult.Items ?? []).map(u => u.userId?.S ?? '')
+  const userDiscussions = (udResult.Items ?? []).map(u => ({ id: u.id?.S ?? '', userId: u.userId?.S ?? '' }))
 
   console.log(`Discussion:   ${id}`)
   console.log(`Sentences:    ${sentenceIds.length}`)
-  console.log(`Participants: ${userDiscussions.join(', ') || 'none'}`)
+  console.log(`Participants: ${userDiscussions.map(u => u.userId).join(', ') || 'none'}`)
 
   if (!confirmed) {
     console.log('\nDry run — pass --confirm to delete.')
@@ -82,10 +82,10 @@ async function deleteDiscussion() {
       Key: { id: { S: sid } },
     }))
   }
-  for (const userId of userDiscussions) {
+  for (const ud of userDiscussions) {
     await db.send(new DeleteItemCommand({
       TableName: table('UserDiscussion'),
-      Key: { discussionId: { S: id }, userId: { S: userId } },
+      Key: { id: { S: ud.id } },
     }))
   }
 
