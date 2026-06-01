@@ -1,5 +1,6 @@
 import React, {Fragment, useRef, useState, useEffect, useContext, useCallback,
   MutableRefObject} from 'react'
+import {createPortal} from 'react-dom'
 import {useSelector, useDispatch} from 'react-redux'
 import {AppDispatch} from '../../app/store'
 import {Divider, View, Button} from '@aws-amplify/ui-react'
@@ -460,11 +461,6 @@ export function SentenceLine(props: SentenceProps) {
       return elements
     }
 
-    const sentenceModalStyle = {
-      top: `${-offsetHeight - 23}px`,
-      paddingTop: `${offsetHeight + 30}px`,
-      paddingBottom: '5px',
-    }
     const modalActions = [
       <Button key="h" variation="link" size="small" onClick={e => handleSetHidden(e)}>
         {sentence.hidden ? 'unhide' : 'hide'}
@@ -477,19 +473,29 @@ export function SentenceLine(props: SentenceProps) {
         </Button>
       )
     }
-    return !inSentenceModal ? undefined : (
-      <View columnStart={1} columnEnd={4} className="sentence-modal-wrapper">
+    if (!inSentenceModal) return undefined
+    const editorRect = editorContainerRef.current?.getBoundingClientRect()
+    const listRect = sentenceListRef.current?.getBoundingClientRect()
+    if (!editorRect || !listRect) return undefined
+    const sentenceModalStyle = {
+      position: 'fixed' as const,
+      top: `${editorRect.top - 16}px`,
+      left: `${listRect.left}px`,
+      width: `${listRect.width}px`,
+      paddingTop: `${offsetHeight + 30}px`,
+      paddingBottom: '5px',
+    }
+    return createPortal(
+      <>
         <View ref={modalRef} className="sentence-modal" style={sentenceModalStyle}>
           <View style={{paddingLeft: '52px', paddingBottom: '10px'}}>
             {modalAnnotations()}
           </View>
           <View style={{paddingLeft: '50px'}}>{username ? modalActions : undefined}</View>
         </View>
-        <View
-          className="sentence-modal-overlay"
-          onClick={handleOverlay}
-        />
-      </View>
+        <View className="sentence-modal-overlay" onClick={handleOverlay} />
+      </>,
+      document.body
     )
   }
 
