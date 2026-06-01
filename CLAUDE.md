@@ -14,6 +14,13 @@ Node 24.13.0 required (see `.node-version`). No test suite configured.
 
 The `cli/` directory is a separate TypeScript tool for AWS admin operations; run it independently with its own `npm` commands.
 
+## aws-exports.js
+
+This file is gitignored (contains secrets) but required to run the app. The production values can be found in the AWS Console:
+- **AppSync endpoint and API key**: AppSync → roxana-roxana → Settings
+- **Cognito user pool and client**: Cognito → User pools → roxana31481408_userpool_31481408-roxana
+- **Identity pool**: Cognito → Identity pools
+
 ## Architecture
 
 **Roxana** is a React/TypeScript SPA for structured rational discussions. Users propose ideas (propositions) and supporting/opposing arguments (arguments) expressed as discrete sentences; other participants accept, reject, or clear each sentence. AWS Amplify provides the full backend.
