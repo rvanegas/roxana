@@ -16,7 +16,7 @@ The `cli/` directory is a separate TypeScript tool for AWS admin operations; run
 
 ## aws-exports.js
 
-This file is gitignored (contains secrets) but required to run the app. The production values can be found in the AWS Console:
+`aws-exports.js` is gitignored (contains secrets) but required to run the app. The production values can be found in the AWS Console:
 - **AppSync endpoint and API key**: AppSync → roxana-roxana → Settings
 - **Cognito user pool and client**: Cognito → User pools → roxana31481408_userpool_31481408-roxana
 - **Identity pool**: Cognito → Identity pools
