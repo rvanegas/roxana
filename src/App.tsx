@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {BrowserRouter, Routes, Route, Outlet, useParams, useLocation, useNavigate} from 'react-router-dom'
 import {Authenticator, useAuthenticator, Flex, Text, View, Heading, Button} from '@aws-amplify/ui-react'
@@ -12,6 +12,45 @@ import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions, discussionsSlice} from './features/discussion/discussionsSlice'
 import {acceptInviteCode} from './features/discussion/data'
 import {AppDispatch} from './app/store'
+
+function HamburgerMenu({username, signOut}: {username: string, signOut: () => void}) {
+  const [open, setOpen] = useState(false)
+
+  function handleSignOut() {
+    setOpen(false)
+    signOut()
+  }
+
+  return (
+    <View style={{position: 'relative'}}>
+      <Button variation="link" size="small" onClick={() => setOpen(o => !o)}>
+        <span className="oi" data-glyph="menu" />
+      </Button>
+      {open && <>
+        <View style={{
+          position: 'absolute', right: 0, top: '100%', zIndex: 10,
+          backgroundColor: 'white', border: '1px solid #ccc',
+          borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          minWidth: '120px',
+        }}>
+          <Text style={{padding: '8px 12px', color: 'gray', fontSize: '0.85em', borderBottom: '1px solid #eee'}}>
+            {username}
+          </Text>
+          <Button variation="link" size="small" onClick={() => setOpen(false)}
+            style={{display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px'}}>
+            select
+          </Button>
+          <Button variation="link" size="small" onClick={handleSignOut}
+            style={{display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px'}}>
+            sign out
+          </Button>
+        </View>
+        <View style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9}}
+          onClick={() => setOpen(false)} />
+      </>}
+    </View>
+  )
+}
 
 function Home() {
   const dispatch = useDispatch<AppDispatch>()
@@ -66,9 +105,8 @@ function Home() {
   const discussionElementIfAny = locationInDiscussion ? discussionElement : undefined
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
   const syncIndicatorIfAny = user ? syncIndicator : undefined
-  const usernameIfAny = user ? <Text>{user.username}</Text> : undefined
   const signInOrOutButton = location.pathname === '/signin' ? null : user ?
-    <Button variation="link" size="small" onClick={signOut}>sign out</Button> :
+    <HamburgerMenu username={username} signOut={signOut} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
 
   return (
@@ -84,13 +122,6 @@ function Home() {
             {discussionElementIfAny}
           </View>
           <View display={{small: 'none'}}>
-            <Flex
-              justifyContent="flex-end"
-              alignItems="center"
-              style={{paddingTop: '6px'}}
-            >
-              {usernameIfAny}
-            </Flex>
             <Flex
               justifyContent="flex-end"
               alignItems="center"
@@ -115,7 +146,6 @@ function Home() {
             style={{paddingTop: '6px'}}
           >
             {syncIndicatorIfAny}
-            {usernameIfAny}
             {signInOrOutButton}
           </Flex>
         </Flex>
