@@ -348,12 +348,16 @@ export const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {revision, inviteCode, isPrivate, newSentences}:
-        {revision: number, inviteCode: string, isPrivate: boolean, newSentences: Sentence[]} =
+      const {revision, inviteCode, isPrivate, newSentences, selectMode, selectedPropositions, selectedArguments}:
+        {revision: number, inviteCode: string, isPrivate: boolean, newSentences: Sentence[],
+         selectMode: boolean, selectedPropositions: number[], selectedArguments: number[]} =
         action.payload
       state.revision = revision
       state.isPrivate = isPrivate
       state.inviteCode = inviteCode
+      state.selectMode = selectMode
+      state.selectedPropositions = selectedPropositions
+      state.selectedArguments = selectedArguments
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
       updateSentenceDerivatives(state)

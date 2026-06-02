@@ -10,7 +10,7 @@ import {CurrentUserContext} from './features/user/User'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions, discussionsSlice} from './features/discussion/discussionsSlice'
-import {acceptInviteCode, createDiscussionFromSelectionAction} from './features/discussion/data'
+import {acceptInviteCode, createDiscussionFromSelectionAction, enterSelectModeAction, exitSelectModeAction} from './features/discussion/data'
 import {AppDispatch} from './app/store'
 
 function HamburgerMenu({username, signOut, onSelect}: {username: string, signOut: () => void, onSelect: () => void}) {
@@ -68,7 +68,7 @@ function Home() {
   const username = user?.username
   const isSynced = discussions.eventQueue.length === 0
   const eventMessages = discussions.eventQueue.map(e => e.message).join('\n')
-  const {setNewDiscussionId, setReloadPath, setUsername, enterSelectMode, exitSelectMode} = discussionsSlice.actions
+  const {setNewDiscussionId, setReloadPath, setUsername} = discussionsSlice.actions
 
   useEffect(() => {
     dispatch(setUsername(username))
@@ -111,11 +111,11 @@ function Home() {
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
   const syncIndicatorIfAny = user ? syncIndicator : undefined
   const hamburger = location.pathname === '/signin' ? null : user ?
-    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectMode())} /> :
+    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
   const navbarRight = discussions.selectMode ? (
     <>
-      <Button variation="link" size="small" onClick={() => dispatch(exitSelectMode())}>cancel</Button>
+      <Button variation="link" size="small" onClick={() => dispatch(exitSelectModeAction())}>cancel</Button>
       <Button variation="link" size="small" onClick={() => dispatch(createDiscussionFromSelectionAction())}>new</Button>
     </>
   ) : hamburger

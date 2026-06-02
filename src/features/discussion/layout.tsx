@@ -24,14 +24,23 @@ export function parseDiscussionLayout(layout: string) {
   return parsedLayout
 }
 
-export function createDiscussionLayout(args: {propositions: Sentence[], arguments: Sentence[]}) {
+export function createDiscussionLayout(args: {
+  propositions: Sentence[],
+  arguments: Sentence[],
+  selectMode?: boolean,
+  selectedPropositions?: number[],
+  selectedArguments?: number[],
+}) {
   const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'cleared', 'goal', 'hidden']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
   const layoutFilter = sentence => sentence.id !== undefined
   const sentencesToEntries = sentences => sentences.filter(layoutFilter).map(makeLayoutEntry)
   const layout = JSON.stringify({
     propositions: sentencesToEntries(args.propositions),
-    arguments: sentencesToEntries(args.arguments)
+    arguments: sentencesToEntries(args.arguments),
+    selectMode: args.selectMode || false,
+    selectedPropositions: args.selectedPropositions || [],
+    selectedArguments: args.selectedArguments || [],
   })
   return layout
 }

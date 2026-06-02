@@ -13,7 +13,8 @@ import {Section, Sentence} from './discussion.d'
 import {selectDiscussions, propositionIndexesFromArgument,
   forcedPropositionPositions, discussionsSlice} from './discussionsSlice'
 import {replaceSentenceAction, changeGoalSentenceAction, focusOnSentence,
-  changeSentenceStatusAction, changeSentenceHiddenAction, isActionable} from './data'
+  changeSentenceStatusAction, changeSentenceHiddenAction, isActionable,
+  toggleSelectPropositionAction, toggleSelectArgumentAction} from './data'
 import './discussion.css'
 
 interface SentenceProps {
@@ -26,8 +27,7 @@ interface SentenceProps {
 export function SentenceLine(props: SentenceProps) {
   const {section, sentence, position, sentenceListRef} = props
   const {clearSentenceModal, setSentenceModal,
-    clearArgumentView, setArgumentView, setArgumentViewFromArgument,
-    toggleSelectProposition, toggleSelectArgument} = discussionsSlice.actions
+    clearArgumentView, setArgumentView, setArgumentViewFromArgument} = discussionsSlice.actions
   const unsetFocus = useCallback(discussionsSlice.actions.unsetFocus, [section, position])
   const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
@@ -221,7 +221,7 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function handleSelectToggle() {
-    const action = isArguments ? toggleSelectArgument : toggleSelectProposition
+    const action = isArguments ? toggleSelectArgumentAction : toggleSelectPropositionAction
     dispatch(action(position))
   }
 

@@ -45,7 +45,7 @@ function updateDiscussionLayout(changeNote: string) {
   return async (dispatch, getState) => {
     try {
       const state = getState()
-      const layout = createDiscussionLayout(pick(state.discussions, ['propositions', 'arguments']))
+      const layout = createDiscussionLayout(pick(state.discussions, ['propositions', 'arguments', 'selectMode', 'selectedPropositions', 'selectedArguments']))
       const id = state.discussions.discussionId
       const version = 2
       const oldRevision = state.discussions.revision
@@ -281,7 +281,10 @@ function getDiscussion(discussionInput) {
       revision: discussion.revision,
       isPrivate: discussion.isPrivate,
       inviteCode: discussion.inviteCode,
-      newSentences
+      newSentences,
+      selectMode: parsedLayout.selectMode || false,
+      selectedPropositions: parsedLayout.selectedPropositions || [],
+      selectedArguments: parsedLayout.selectedArguments || [],
     }))
     if (layoutUpdated) {
       await dispatch(updateDiscussionLayout('expire commits'))
@@ -572,6 +575,38 @@ function enqueueEvent(action) {
   }
 }
 
+function enterSelectMode() {
+  const {enterSelectMode: enterSelectModeLocal} = discussionsSlice.actions
+  return async (dispatch) => {
+    dispatch(enterSelectModeLocal())
+    await dispatch(updateDiscussionLayout('enter select mode'))
+  }
+}
+
+function exitSelectMode() {
+  const {exitSelectMode: exitSelectModeLocal} = discussionsSlice.actions
+  return async (dispatch) => {
+    dispatch(exitSelectModeLocal())
+    await dispatch(updateDiscussionLayout('exit select mode'))
+  }
+}
+
+function toggleSelectProposition(position: number) {
+  const {toggleSelectProposition: toggleLocal} = discussionsSlice.actions
+  return async (dispatch) => {
+    dispatch(toggleLocal(position))
+    await dispatch(updateDiscussionLayout('toggle select proposition'))
+  }
+}
+
+function toggleSelectArgument(position: number) {
+  const {toggleSelectArgument: toggleLocal} = discussionsSlice.actions
+  return async (dispatch) => {
+    dispatch(toggleLocal(position))
+    await dispatch(updateDiscussionLayout('toggle select argument'))
+  }
+}
+
 function createDiscussionFromSelection() {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -620,6 +655,18 @@ function createDiscussionFromSelection() {
   }
 }
 
+export function enterSelectModeAction() {
+  return dispatch => dispatch(enterSelectMode())
+}
+export function exitSelectModeAction() {
+  return dispatch => dispatch(exitSelectMode())
+}
+export function toggleSelectPropositionAction(position: number) {
+  return dispatch => dispatch(toggleSelectProposition(position))
+}
+export function toggleSelectArgumentAction(position: number) {
+  return dispatch => dispatch(toggleSelectArgument(position))
+}
 export function createNewDiscussionAction(value) {
   const message = `create new discussion ${value} t=${tryAgainTrials}`
   const action = {handler: 'createNewDiscussion', message, payload: value}
