@@ -13,12 +13,17 @@ import {selectDiscussions, discussionsSlice} from './features/discussion/discuss
 import {acceptInviteCode} from './features/discussion/data'
 import {AppDispatch} from './app/store'
 
-function HamburgerMenu({username, signOut}: {username: string, signOut: () => void}) {
+function HamburgerMenu({username, signOut, onSelect}: {username: string, signOut: () => void, onSelect: () => void}) {
   const [open, setOpen] = useState(false)
 
   function handleSignOut() {
     setOpen(false)
     signOut()
+  }
+
+  function handleSelect() {
+    setOpen(false)
+    onSelect()
   }
 
   return (
@@ -36,7 +41,7 @@ function HamburgerMenu({username, signOut}: {username: string, signOut: () => vo
           <Text style={{padding: '8px 12px', color: 'gray', fontSize: '0.85em', borderBottom: '1px solid #eee'}}>
             {username}
           </Text>
-          <Button variation="link" size="small" onClick={() => setOpen(false)}
+          <Button variation="link" size="small" onClick={handleSelect}
             style={{display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px'}}>
             select
           </Button>
@@ -63,7 +68,7 @@ function Home() {
   const username = user?.username
   const isSynced = discussions.eventQueue.length === 0
   const eventMessages = discussions.eventQueue.map(e => e.message).join('\n')
-  const {setNewDiscussionId, setReloadPath, setUsername} = discussionsSlice.actions
+  const {setNewDiscussionId, setReloadPath, setUsername, enterSelectMode, exitSelectMode} = discussionsSlice.actions
 
   useEffect(() => {
     dispatch(setUsername(username))
@@ -105,9 +110,15 @@ function Home() {
   const discussionElementIfAny = locationInDiscussion ? discussionElement : undefined
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
   const syncIndicatorIfAny = user ? syncIndicator : undefined
-  const signInOrOutButton = location.pathname === '/signin' ? null : user ?
-    <HamburgerMenu username={username} signOut={signOut} /> :
+  const hamburger = location.pathname === '/signin' ? null : user ?
+    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectMode())} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
+  const navbarRight = discussions.selectMode ? (
+    <>
+      <Button variation="link" size="small" onClick={() => dispatch(exitSelectMode())}>cancel</Button>
+      <Button variation="link" size="small">save</Button>
+    </>
+  ) : hamburger
 
   return (
     // @ts-ignore
@@ -128,7 +139,7 @@ function Home() {
               style={{paddingTop: '6px'}}
             >
               {syncIndicatorIfAny}
-              {signInOrOutButton}
+              {navbarRight}
             </Flex>
           </View>
           <Flex
@@ -146,7 +157,7 @@ function Home() {
             style={{paddingTop: '6px'}}
           >
             {syncIndicatorIfAny}
-            {signInOrOutButton}
+            {navbarRight}
           </Flex>
         </Flex>
         <Outlet />

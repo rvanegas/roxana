@@ -51,6 +51,9 @@ interface State {
     argumentPositions: number[]
     primaryArgumentPosition?: number
   }
+  selectMode: boolean
+  selectedPropositions: number[]
+  selectedArguments: number[]
   // users: string[]
 }
 
@@ -85,6 +88,9 @@ const initialState: State = {
   offsetHeight: undefined,
   newDiscussionId: undefined,
   argumentView: undefined,
+  selectMode: false,
+  selectedPropositions: [],
+  selectedArguments: [],
   // users: [],
 }
 
@@ -284,6 +290,36 @@ export const discussionsSlice = createSlice({
       const newDiscussionId: string = action.payload
       state.newDiscussionId = newDiscussionId
     },
+    enterSelectMode(state) {
+      state.selectMode = true
+      state.selectedPropositions = []
+      state.selectedArguments = []
+    },
+    exitSelectMode(state) {
+      state.selectMode = false
+      state.selectedPropositions = []
+      state.selectedArguments = []
+    },
+    toggleSelectProposition(state, action) {
+      const position: number = action.payload
+      const forced = forcedPropositionPositions(state)
+      if (forced.has(position)) return
+      const idx = state.selectedPropositions.indexOf(position)
+      if (idx === -1) {
+        state.selectedPropositions.push(position)
+      } else {
+        state.selectedPropositions.splice(idx, 1)
+      }
+    },
+    toggleSelectArgument(state, action) {
+      const position: number = action.payload
+      const idx = state.selectedArguments.indexOf(position)
+      if (idx === -1) {
+        state.selectedArguments.push(position)
+      } else {
+        state.selectedArguments.splice(idx, 1)
+      }
+    },
     eventEnqueue(state, action) {
       const event: Event = action.payload
       state.eventQueue.push(event)
@@ -337,6 +373,16 @@ export function sentenceCommittedOthers(sentence: Sentence, username: string): b
 
 export function propositionIndexesFromArgument(argument) {
   return argument.content ? argument.content.split(' ').map(i => parseInt(i)) : []
+}
+
+export function forcedPropositionPositions(state): Set<number> {
+  const forced = new Set<number>()
+  for (const pos of state.selectedArguments) {
+    for (const idx of propositionIndexesFromArgument(state.arguments[pos])) {
+      forced.add(idx - 1)
+    }
+  }
+  return forced
 }
 
 export const selectDiscussions = state => state.discussions

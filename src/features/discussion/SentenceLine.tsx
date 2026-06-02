@@ -11,7 +11,7 @@ import {CurrentUserContext} from '../user/User'
 import {toAlphaIndex, verticalPixelsBelowViewport} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
 import {selectDiscussions, propositionIndexesFromArgument,
-  discussionsSlice} from './discussionsSlice'
+  forcedPropositionPositions, discussionsSlice} from './discussionsSlice'
 import {replaceSentenceAction, changeGoalSentenceAction, focusOnSentence,
   changeSentenceStatusAction, changeSentenceHiddenAction, isActionable} from './data'
 import './discussion.css'
@@ -26,7 +26,8 @@ interface SentenceProps {
 export function SentenceLine(props: SentenceProps) {
   const {section, sentence, position, sentenceListRef} = props
   const {clearSentenceModal, setSentenceModal,
-    clearArgumentView, setArgumentView, setArgumentViewFromArgument} = discussionsSlice.actions
+    clearArgumentView, setArgumentView, setArgumentViewFromArgument,
+    toggleSelectProposition, toggleSelectArgument} = discussionsSlice.actions
   const unsetFocus = useCallback(discussionsSlice.actions.unsetFocus, [section, position])
   const discussions = useSelector(selectDiscussions)
   const isArguments = section === 'arguments'
@@ -46,7 +47,7 @@ export function SentenceLine(props: SentenceProps) {
       'Type a proposition. For example, "Socrates is a man".' :
       'Type a sequence of proposition numbers. For example, "1 2 3".'
   )
-  const readOnly = !(username && isActionable.edit(sentence, username))
+  const readOnly = discussions.selectMode || !(username && isActionable.edit(sentence, username))
   const inSentenceModal = discussions.sentenceModal &&
     discussions.sentenceModal.section === section &&
     discussions.sentenceModal.position === position
@@ -219,6 +220,11 @@ export function SentenceLine(props: SentenceProps) {
     }
   }
 
+  function handleSelectToggle() {
+    const action = isArguments ? toggleSelectArgument : toggleSelectProposition
+    dispatch(action(position))
+  }
+
   function handleInArgument() {
     const isSettable = discussions.argumentView === undefined ||
       discussions.argumentView.primaryPropositionPosition !== position
@@ -317,14 +323,40 @@ export function SentenceLine(props: SentenceProps) {
       }
     )
 
+    let checkbox = null
+    if (discussions.selectMode) {
+      const forced = forcedPropositionPositions(discussions)
+      let checked, disabled
+      if (isArguments) {
+        checked = discussions.selectedArguments.includes(position)
+        disabled = false
+      } else {
+        const isForced = forced.has(position)
+        checked = isForced || discussions.selectedPropositions.includes(position)
+        disabled = isForced
+      }
+      checkbox = (
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          readOnly
+          style={{cursor: disabled ? 'default' : 'pointer', marginRight: '4px', flexShrink: 0}}
+        />
+      )
+    }
+
     return (
       <View
         columnStart={1} className={annotationIconsClassName}
-        onClick={username ? handleStatusToggle : undefined}
+        onClick={discussions.selectMode ? handleSelectToggle : username ? handleStatusToggle : undefined}
       >
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-        <View style={{textAlign: 'right'}}>
-          {annotations}
+        <View style={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end'}}>
+          {checkbox}
+          <View style={{textAlign: 'right'}}>
+            {annotations}
+          </View>
         </View>
       </View>
     )
@@ -347,7 +379,7 @@ export function SentenceLine(props: SentenceProps) {
     return (
       <View
         columnStart={2} className={indexClassName} style={indexStyle}
-        onClick={handleIndex}
+        onClick={discussions.selectMode ? handleSelectToggle : handleIndex}
       >
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
         <View style={{border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto'}}>
@@ -393,7 +425,8 @@ export function SentenceLine(props: SentenceProps) {
       </View>
     )
     return (
-      <View columnStart={3} className={editorLineClassName} style={{paddingTop: '2px'}}>
+      <View columnStart={3} className={editorLineClassName} style={{paddingTop: '2px'}}
+        onClick={discussions.selectMode ? handleSelectToggle : undefined}>
         {editorContainer}
       </View>
     )
@@ -548,10 +581,12 @@ export function SentenceLine(props: SentenceProps) {
         <Fragment key={mapIndex}>
           {therefore}
           {arrowCell}
-          <View columnStart={2} className={sentenceIndexClassName}>
+          <View columnStart={2} className={sentenceIndexClassName}
+            onClick={discussions.selectMode ? handleSelectToggle : undefined}>
             <View style={{textAlign: 'right', color}}>{index}</View>
           </View>
-          <View columnEnd={-2} className={sentenceEditorClassName} style={{paddingTop: '4px'}}>{proposition.content}</View>
+          <View columnEnd={-2} className={sentenceEditorClassName} style={{paddingTop: '4px'}}
+            onClick={discussions.selectMode ? handleSelectToggle : undefined}>{proposition.content}</View>
         </Fragment>
       )
     })

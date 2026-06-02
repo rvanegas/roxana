@@ -36,7 +36,7 @@ export function SentencesList({section, sentenceListRef}) {
     elements = pullAt(elements, discussions.argumentView.argumentPositions)
   }
 
-  const newButton = !(username && sentences.length !== 0) ? undefined : (
+  const newButton = !(username && sentences.length !== 0) || discussions.selectMode ? undefined : (
     <View columnSpan={2} style={{placeSelf: 'center start', paddingLeft: '60px', paddingBottom: '20px'}}>
       <Button variation="link" size="small" onClick={handleNew}>new</Button>
     </View>
