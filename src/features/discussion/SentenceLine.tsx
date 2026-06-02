@@ -100,7 +100,7 @@ export function SentenceLine(props: SentenceProps) {
 
   function highlightColor(section, position, defaultColor = 'black') {
     return section === 'propositions' &&
-      discussions.argumentView?.primaryPropositionPosition === position ? 'red' : defaultColor
+      discussions.argumentView?.primaryPropositionPosition === position ? '#0099ff' : defaultColor
   }
 
   function setDisplayFromArgumentInput(argumentInput) {
@@ -386,7 +386,7 @@ export function SentenceLine(props: SentenceProps) {
 
     const dividerStyle = argumentInputInvalid ? {borderColor: 'red'} : undefined
     const editorContainer = (
-      <View ref={editorContainerRef} className={editorClassName} style={{color: highlightColor(section, position)}}>
+      <View ref={editorContainerRef} className={editorClassName}>
         {editorElement}
         {anothersDraft ? editingStatus : undefined}
         <Divider style={dividerStyle} />
@@ -538,7 +538,7 @@ export function SentenceLine(props: SentenceProps) {
         <View columnStart={1} className={fromArgumentClassName} onClick={handleFromArgument}>
           <View style={{textAlign: 'right'}}>
             <span className="oi sentence-icon"
-              style={{color: isArgumentActive ? 'red' : 'gray'}}
+              style={{color: isArgumentActive ? '#0099ff' : 'gray'}}
               data-glyph="arrow-thick-left" />
           </View>
         </View>
@@ -551,7 +551,7 @@ export function SentenceLine(props: SentenceProps) {
           <View columnStart={2} className={sentenceIndexClassName}>
             <View style={{textAlign: 'right', color}}>{index}</View>
           </View>
-          <View columnEnd={-2} className={sentenceEditorClassName} style={{color, paddingTop: '4px'}}>{proposition.content}</View>
+          <View columnEnd={-2} className={sentenceEditorClassName} style={{paddingTop: '4px'}}>{proposition.content}</View>
         </Fragment>
       )
     })
