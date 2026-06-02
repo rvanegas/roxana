@@ -8,7 +8,8 @@ import {dlog, hoursAgo, isPresent,
 import {Section, Sentence} from './discussion.d'
 import {createDiscussionLayout, createNewDiscussionLayout,
   newSentenceFromLayoutEntry, parseDiscussionLayout} from './layout'
-import {discussionsSlice, nextUniqueIndex, sentenceCommittedOthers} from './discussionsSlice'
+import {discussionsSlice, nextUniqueIndex, sentenceCommittedOthers,
+  propositionIndexesFromArgument, forcedPropositionPositions} from './discussionsSlice'
 
 let _client: ReturnType<typeof generateClient> | null = null
 const client = () => { if (!_client) _client = generateClient({ authMode: 'apiKey' }); return _client }
@@ -535,6 +536,7 @@ function revokeInviteCode() {
 
 const eventHandlerFunctions = {
   createNewDiscussion,
+  createDiscussionFromSelection,
   initializeDiscussion,
   getDiscussion,
   replaceSentence,
@@ -570,9 +572,62 @@ function enqueueEvent(action) {
   }
 }
 
+function createDiscussionFromSelection() {
+  const {setNewDiscussionId} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState().discussions
+    const forced = forcedPropositionPositions(state)
+    const allPropPositions = Array.from(
+      new Set([...state.selectedPropositions, ...forced])
+    ).sort((a, b) => a - b)
+
+    const propNumberMap = new Map<number, number>()
+    allPropPositions.forEach((pos, i) => propNumberMap.set(pos + 1, i + 1))
+
+    const discussionId = generateDiscussionId()
+
+    const propEntries: object[] = []
+    for (let i = 0; i < allPropPositions.length; i++) {
+      const sentence = state.propositions[allPropPositions[i]]
+      const response = await client().graphql({
+        query: mutations.createSentence,
+        variables: { input: { content: sentence.content, discussionId } }
+      }) as {data: any}
+      propEntries.push(pick({
+        ...sentence, id: response.data.createSentence.id, index: i + 1
+      }, ['id', 'index', 'status', 'owner', 'accepted', 'rejected', 'cleared', 'goal', 'hidden']))
+    }
+
+    const sortedArgPositions = [...state.selectedArguments].sort((a, b) => a - b)
+    const argEntries: object[] = []
+    for (let i = 0; i < sortedArgPositions.length; i++) {
+      const sentence = state.arguments[sortedArgPositions[i]]
+      const newContent = propositionIndexesFromArgument(sentence)
+        .map(n => propNumberMap.get(n)).join(' ')
+      const response = await client().graphql({
+        query: mutations.createSentence,
+        variables: { input: { content: newContent, discussionId } }
+      }) as {data: any}
+      argEntries.push(pick({
+        ...sentence, id: response.data.createSentence.id, index: i + 1, content: newContent
+      }, ['id', 'index', 'status', 'owner', 'accepted', 'rejected', 'cleared', 'goal', 'hidden']))
+    }
+
+    const layout = JSON.stringify({ propositions: propEntries, arguments: argEntries })
+    const variables = { input: { id: discussionId, version: 2, revision: 1, isPrivate: false, layout, pool: 1 } }
+    await client().graphql({ query: mutations.createDiscussion, variables })
+    dispatch(setNewDiscussionId(discussionId))
+  }
+}
+
 export function createNewDiscussionAction(value) {
   const message = `create new discussion ${value} t=${tryAgainTrials}`
   const action = {handler: 'createNewDiscussion', message, payload: value}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function createDiscussionFromSelectionAction() {
+  const message = `create discussion from selection t=${tryAgainTrials}`
+  const action = {handler: 'createDiscussionFromSelection', message}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function initializeDiscussionAction(value) {

@@ -10,7 +10,7 @@ import {CurrentUserContext} from './features/user/User'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions, discussionsSlice} from './features/discussion/discussionsSlice'
-import {acceptInviteCode} from './features/discussion/data'
+import {acceptInviteCode, createDiscussionFromSelectionAction} from './features/discussion/data'
 import {AppDispatch} from './app/store'
 
 function HamburgerMenu({username, signOut, onSelect}: {username: string, signOut: () => void, onSelect: () => void}) {
@@ -116,7 +116,7 @@ function Home() {
   const navbarRight = discussions.selectMode ? (
     <>
       <Button variation="link" size="small" onClick={() => dispatch(exitSelectMode())}>cancel</Button>
-      <Button variation="link" size="small">save</Button>
+      <Button variation="link" size="small" onClick={() => dispatch(createDiscussionFromSelectionAction())}>new</Button>
     </>
   ) : hamburger
 

@@ -170,6 +170,9 @@ export const discussionsSlice = createSlice({
         newInviteCode: undefined,
         reloadPath: undefined,
         argumentView: undefined,
+        selectMode: false,
+        selectedPropositions: [],
+        selectedArguments: [],
       })
     },
     incrementRevision(state, action) {
