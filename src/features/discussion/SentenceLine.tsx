@@ -393,7 +393,7 @@ export function SentenceLine(props: SentenceProps) {
       </View>
     )
     return (
-      <View columnStart={3} className={editorLineClassName}>
+      <View columnStart={3} className={editorLineClassName} style={{paddingTop: '2px'}}>
         {editorContainer}
       </View>
     )
@@ -533,8 +533,9 @@ export function SentenceLine(props: SentenceProps) {
             {'\u2234'}
           </View>
         </View>
+      const fromArgumentClassName = classNames(sentenceMetaClassName, 'sentence-from-argument')
       const arrowCell = mapIndex === 0 ? (
-        <View columnStart={1} className={sentenceMetaClassName} onClick={handleFromArgument}>
+        <View columnStart={1} className={fromArgumentClassName} onClick={handleFromArgument}>
           <View style={{textAlign: 'right'}}>
             <span className="oi sentence-icon"
               style={{color: isArgumentActive ? 'red' : 'gray'}}
@@ -550,7 +551,7 @@ export function SentenceLine(props: SentenceProps) {
           <View columnStart={2} className={sentenceIndexClassName}>
             <View style={{textAlign: 'right', color}}>{index}</View>
           </View>
-          <View columnEnd={-2} className={sentenceEditorClassName} style={{color}}>{proposition.content}</View>
+          <View columnEnd={-2} className={sentenceEditorClassName} style={{color, paddingTop: '4px'}}>{proposition.content}</View>
         </Fragment>
       )
     })

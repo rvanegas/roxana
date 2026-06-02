@@ -60,7 +60,7 @@
 .sentence-meta {
   position: relative;
   user-select: none;
-  padding-top: 2px;
+  padding-top: 6px;
   padding-right: 5px;
   font-size: 10pt;
   height: 100%;
@@ -78,18 +78,23 @@
   font-weight: bold;
   height: 20px;
   width: 2rem;
+  padding-top: 5px;
   padding-right: 5px;
-  align-self: center;
+  align-self: start;
 }
 
 .sentence-in-argument {
   position: relative;
   user-select: none;
-  padding-top: 4px;
+  padding-top: 7px;
   padding-left: 5px;
   font-size: 10pt;
   height: 100%;
   width: 100%;
+}
+
+.sentence-from-argument {
+  padding-top: 10px;
 }
 
 .sentence-line-cell-in-modal {
