@@ -126,3 +126,18 @@ A small dot appears in the top-right area of the navbar:
 - **Red** — changes are pending or a sync error occurred.
 
 If the indicator stays red, try refreshing the page.
+
+---
+
+## Admin CLI
+
+A command-line tool for AWS admin operations. After running `npm link` once from the project root, use it from anywhere:
+
+```bash
+roxana discussions            # list all discussions
+roxana users                  # list all users
+roxana delete <id>            # dry-run: show what would be deleted
+roxana delete <id> --confirm  # delete a discussion and all its records
+```
+
+Requires AWS credentials configured in your environment.

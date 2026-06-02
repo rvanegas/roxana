@@ -21,10 +21,14 @@
     "ts-node": "^10.9.2",
     "universal-cookie": "^7.0.0"
   },
+  "bin": {
+    "roxana": "cli-build/cli.js"
+  },
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "roxana": "tsc -p tsconfig.cli.json"
   },
   "browserslist": {
     "production": [
@@ -39,6 +43,7 @@
     ]
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1058.0",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",

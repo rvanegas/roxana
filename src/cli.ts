@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { DynamoDBClient, ScanCommand, DeleteItemCommand,
   QueryCommand } from '@aws-sdk/client-dynamodb'
 
