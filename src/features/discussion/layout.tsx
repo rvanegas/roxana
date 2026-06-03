@@ -30,6 +30,7 @@ export function createDiscussionLayout(args: {
   selectMode?: boolean,
   selectedPropositions?: number[],
   selectedArguments?: number[],
+  navigateTo?: string,
 }) {
   const sentenceProperties = ['index', 'id', 'status', 'owner', 'accepted', 'rejected', 'cleared', 'goal', 'hidden']
   const makeLayoutEntry = sentence => pick(sentence, sentenceProperties)
@@ -41,6 +42,7 @@ export function createDiscussionLayout(args: {
     selectMode: args.selectMode || false,
     selectedPropositions: args.selectedPropositions || [],
     selectedArguments: args.selectedArguments || [],
+    ...(args.navigateTo ? { navigateTo: args.navigateTo } : {}),
   })
   return layout
 }

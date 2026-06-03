@@ -286,6 +286,10 @@ function getDiscussion(discussionInput) {
       selectedPropositions: parsedLayout.selectedPropositions || [],
       selectedArguments: parsedLayout.selectedArguments || [],
     }))
+    if (isUpdate && parsedLayout.navigateTo) {
+      const {setNewDiscussionId} = discussionsSlice.actions
+      dispatch(setNewDiscussionId(parsedLayout.navigateTo))
+    }
     if (layoutUpdated) {
       await dispatch(updateDiscussionLayout('expire commits'))
     }
@@ -607,6 +611,27 @@ function toggleSelectArgument(position: number) {
   }
 }
 
+function broadcastNavigation(newDiscussionId: string) {
+  const {incrementRevision} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    const layout = createDiscussionLayout({
+      ...pick(state.discussions, ['propositions', 'arguments', 'selectMode', 'selectedPropositions', 'selectedArguments']),
+      navigateTo: newDiscussionId,
+    })
+    const id = state.discussions.discussionId
+    const oldRevision = state.discussions.revision
+    const revision = oldRevision + 1
+    const inviteCode = state.discussions.inviteCode || null
+    const variables = {
+      input: {id, version: 2, revision, layout, goalsSummary: '', inviteCode, pool: 1},
+      condition: {revision: {eq: oldRevision}}
+    }
+    await client().graphql({ query: mutations.updateDiscussion, variables })
+    dispatch(incrementRevision(revision))
+  }
+}
+
 function createDiscussionFromSelection() {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -651,6 +676,7 @@ function createDiscussionFromSelection() {
     const layout = JSON.stringify({ propositions: propEntries, arguments: argEntries })
     const variables = { input: { id: discussionId, version: 2, revision: 1, isPrivate: false, layout, pool: 1 } }
     await client().graphql({ query: mutations.createDiscussion, variables })
+    await dispatch(broadcastNavigation(discussionId))
     dispatch(setNewDiscussionId(discussionId))
   }
 }
