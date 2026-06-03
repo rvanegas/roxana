@@ -677,6 +677,7 @@ function createDiscussionFromSelection() {
     const variables = { input: { id: discussionId, version: 2, revision: 1, isPrivate: false, layout, pool: 1 } }
     await client().graphql({ query: mutations.createDiscussion, variables })
     await dispatch(broadcastNavigation(discussionId))
+    await dispatch(exitSelectMode())
     dispatch(setNewDiscussionId(discussionId))
   }
 }
