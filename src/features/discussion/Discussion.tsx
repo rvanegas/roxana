@@ -115,7 +115,7 @@ export function Discussion() {
   )
 
   return (
-    <View>
+    <View style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
       {!discussions.isPrivate ? null : discussions.inviteCode ? privateWithRevokeButton : privateWithInviteButton}
       <View className="view-toggles" columnStart="1" columnEnd="-1">
         {hiddenToggle}
@@ -129,7 +129,7 @@ export function Discussion() {
           Arguments
         </Heading>
       </Grid>
-      <View className="discussion-container">
+      <View className="discussion-container" style={{flex: 1, minHeight: 0}}>
         <View ref={propositionsListRef} className="sentence-list" style={{left: 0}}>
           <Heading className="sentence-list-header sentence-list-header-stacked">
             Propositions

@@ -1,4 +1,4 @@
-import React, {Fragment, useRef, useState, useEffect, useContext, useCallback,
+import React, {Fragment, useRef, useState, useEffect, useLayoutEffect, useContext, useCallback,
   MutableRefObject} from 'react'
 import {createPortal} from 'react-dom'
 import {useSelector, useDispatch} from 'react-redux'
@@ -94,6 +94,13 @@ export function SentenceLine(props: SentenceProps) {
     sentence, dispatch, editorRef, position, section, editorContainerRef,
     inSentenceModal, modalRef, sentenceListRef
   ])
+
+  useLayoutEffect(() => {
+    if (inSentenceModal) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [inSentenceModal])
 
   if (discussions.showHidden && sentence.hidden && !inSentenceModal) {
     return null

@@ -123,10 +123,12 @@ function Home() {
   return (
     // @ts-ignore
     <CurrentUserContext.Provider value={{user, route}}>
-      <View padding="10px 10px 0">
+      <View padding="10px 10px 0"
+        style={{height: '100vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden'}}>
         <Flex
           justifyContent="space-between"
           className="navbar"
+          style={{flexShrink: 0}}
         >
           <View display={{small: 'none'}}>
             {roxanaHeader}
@@ -160,7 +162,9 @@ function Home() {
             {navbarRight}
           </Flex>
         </Flex>
-        <Outlet />
+        <View style={{flex: 1, minHeight: 0, overflow: 'auto'}}>
+          <Outlet />
+        </View>
       </View>
     </CurrentUserContext.Provider>
   )
