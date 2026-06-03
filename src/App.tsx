@@ -13,7 +13,7 @@ import {selectDiscussions, discussionsSlice} from './features/discussion/discuss
 import {acceptInviteCode, createDiscussionFromSelectionAction, enterSelectModeAction, exitSelectModeAction} from './features/discussion/data'
 import {AppDispatch} from './app/store'
 
-function HamburgerMenu({username, signOut, onSelect}: {username: string, signOut: () => void, onSelect: () => void}) {
+function HamburgerMenu({username, signOut, onSelect, showSelect}: {username: string, signOut: () => void, onSelect: () => void, showSelect: boolean}) {
   const [open, setOpen] = useState(false)
 
   function handleSignOut() {
@@ -41,10 +41,10 @@ function HamburgerMenu({username, signOut, onSelect}: {username: string, signOut
           <Text style={{padding: '8px 12px', color: 'gray', fontSize: '0.85em', borderBottom: '1px solid #eee'}}>
             {username}
           </Text>
-          <Button variation="link" size="small" onClick={handleSelect}
+          {showSelect && <Button variation="link" size="small" onClick={handleSelect}
             style={{display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px'}}>
             select
-          </Button>
+          </Button>}
           <Button variation="link" size="small" onClick={handleSignOut}
             style={{display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px'}}>
             sign out
@@ -111,7 +111,7 @@ function Home() {
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
   const syncIndicatorIfAny = user ? syncIndicator : undefined
   const hamburger = location.pathname === '/signin' ? null : user ?
-    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} /> :
+    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
   const navbarRight = discussions.selectMode ? (
     <>
