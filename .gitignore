@@ -11,6 +11,7 @@
 # production
 /build
 /cli/build
+/cli-build
 
 # misc
 .DS_Store
@@ -44,4 +45,5 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
-dist.zip\ndist/
+dist.zip
+backup
