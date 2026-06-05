@@ -5,7 +5,7 @@ import { DynamoDBClient, ScanCommand, DeleteItemCommand,
 const db = new DynamoDBClient({ region: 'us-west-2' })
 
 const ENV = 'roxana'
-const API_ID = 'u7epzlbjkngxjlz5cpiql2qium'
+const API_ID = 'ogl3fer6ojag7awhbu33p664va'
 const table = (name: string) => `${name}-${API_ID}-${ENV}`
 
 async function listDiscussions() {
