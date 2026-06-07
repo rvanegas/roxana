@@ -1,4 +1,9 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - echo "Backend managed externally - skipping amplify push"
 frontend:
   phases:
     preBuild:
