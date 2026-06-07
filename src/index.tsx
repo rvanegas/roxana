@@ -8,10 +8,29 @@ import { Provider } from 'react-redux'
 import { App } from './App'
 import { store } from './app/store'
 import { theme } from './theme'
-import awsExports from './aws-exports'
 import packageJson from '../package.json'
 
-Amplify.configure(awsExports)
+Amplify.configure({
+  aws_project_region: import.meta.env.VITE_AWS_REGION,
+  aws_appsync_graphqlEndpoint: import.meta.env.VITE_APPSYNC_ENDPOINT,
+  aws_appsync_region: import.meta.env.VITE_AWS_REGION,
+  aws_appsync_authenticationType: 'API_KEY',
+  aws_appsync_apiKey: import.meta.env.VITE_APPSYNC_API_KEY,
+  aws_cognito_identity_pool_id: import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID,
+  aws_cognito_region: import.meta.env.VITE_AWS_REGION,
+  aws_user_pools_id: import.meta.env.VITE_COGNITO_USER_POOL_ID,
+  aws_user_pools_web_client_id: import.meta.env.VITE_COGNITO_WEB_CLIENT_ID,
+  aws_cognito_username_attributes: [],
+  aws_cognito_social_providers: [],
+  aws_cognito_signup_attributes: ['EMAIL'],
+  aws_cognito_mfa_configuration: 'OFF',
+  aws_cognito_mfa_types: ['SMS'],
+  aws_cognito_password_protection_settings: {
+    passwordPolicyMinLength: 8,
+    passwordPolicyCharacters: [],
+  },
+  aws_cognito_verification_mechanisms: ['EMAIL'],
+})
 console.log('version', packageJson.version)
 
 Bugsnag.start({
