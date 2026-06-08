@@ -115,6 +115,24 @@
   background-color: #0f9960;
 }
 
+.dianoia-loading {
+  background-color: #4a90d9;
+  animation: dianoia-pulse 1s ease-in-out infinite;
+}
+
+.dianoia-done {
+  background-color: #4a90d9;
+}
+
+.dianoia-error {
+  background-color: #e07b39;
+}
+
+@keyframes dianoia-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .sentence-modal-wrapper {
   position: relative;
 }

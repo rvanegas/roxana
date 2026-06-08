@@ -8,6 +8,7 @@ import {throttle, sortBy, keys} from 'lodash'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
+import {useDianoia} from './DianoiaContext'
 import {toAlphaIndex, verticalPixelsBelowViewport} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
 import {selectDiscussions, propositionIndexesFromArgument,
@@ -33,6 +34,7 @@ export function SentenceLine(props: SentenceProps) {
   const isArguments = section === 'arguments'
   const {user} = useContext(CurrentUserContext) as unknown as {user, route}
   const username = user?.username
+  const {startAnalysis, results: dianoiaResults, status: dianoiaStatus, analyzedPosition: dianoiaAnalyzedPosition} = useDianoia()
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
   const editorContainerRef = useRef() as MutableRefObject<HTMLDivElement>
   const editorRef = useRef() as MutableRefObject<HTMLElement>
@@ -389,7 +391,13 @@ export function SentenceLine(props: SentenceProps) {
         onClick={discussions.selectMode ? handleSelectToggle : handleIndex}
       >
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-        <View style={{border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto'}}>
+        <View style={{
+          border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto',
+          backgroundColor: isArguments && dianoiaAnalyzedPosition === position && dianoiaStatus === 'loading' ? '#dbeafe'
+            : isArguments && dianoiaAnalyzedPosition === position && dianoiaStatus === 'done' ? '#bfdbfe'
+            : undefined,
+          borderRadius: '3px',
+        }}>
           {isArguments ? toAlphaIndex(position) : position + 1}
         </View>
       </View>
@@ -519,6 +527,44 @@ export function SentenceLine(props: SentenceProps) {
         </Button>
       )
     }
+    if (section === 'arguments' && sentence.status === 'committed' && import.meta.env.VITE_DIANOIA_URL) {
+      const argSteps = displayPropositionIndexes
+        .map(displayIdx => {
+          const prop = propositions[displayIdx - 1]
+          return prop && prop.status === 'committed' && !prop.hidden
+            ? {sentence: prop, displayIdx}
+            : null
+        })
+        .filter(Boolean) as Array<{sentence: typeof propositions[0], displayIdx: number}>
+      modalActions.push(
+        <Button key="analyze" variation="link" size="small"
+          onClick={() => startAnalysis(argSteps, discussions.discussionId!, position)}>
+          analyze
+        </Button>
+      )
+    }
+    const dianoiaStepScores = section === 'arguments' && dianoiaResults
+      ? displayPropositionIndexes.map(displayIdx => ({
+          displayIdx,
+          score: dianoiaResults[String(displayIdx)],
+        })).filter(({score}) => score !== undefined)
+      : []
+    const dianoiaScoreBadge = dianoiaStepScores.length > 0 ? (
+      <View style={{paddingLeft: '50px', paddingTop: '6px'}}>
+        {dianoiaStepScores.map(({displayIdx, score}) => (
+          <View key={displayIdx} style={{marginBottom: '2px'}}>
+            <span style={{fontSize: '0.8em', marginRight: '6px', color: 'gray'}}>{displayIdx}</span>
+            <span style={{
+              fontSize: '0.8em', padding: '2px 8px', borderRadius: '10px',
+              backgroundColor: score >= 0.7 ? '#d4edda' : score >= 0.4 ? '#fff3cd' : '#f8d7da',
+              color: score >= 0.7 ? '#155724' : score >= 0.4 ? '#856404' : '#721c24',
+            }}>
+              {(score * 100).toFixed(0)}%
+            </span>
+          </View>
+        ))}
+      </View>
+    ) : null
     if (!inSentenceModal) return undefined
     const editorRect = editorContainerRef.current?.getBoundingClientRect()
     const listRect = sentenceListRef.current?.getBoundingClientRect()
@@ -538,6 +584,7 @@ export function SentenceLine(props: SentenceProps) {
             {modalAnnotations()}
           </View>
           <View style={{paddingLeft: '50px'}}>{username ? modalActions : undefined}</View>
+          {dianoiaScoreBadge}
         </View>
         <View className="sentence-modal-overlay" onClick={handleOverlay} />
       </>,

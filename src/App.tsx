@@ -7,6 +7,7 @@ import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
 import {dlog} from './app/util'
 import {CurrentUserContext} from './features/user/User'
+import {DianoiaProvider, useDianoia} from './features/discussion/DianoiaContext'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions, discussionsSlice} from './features/discussion/discussionsSlice'
@@ -110,6 +111,10 @@ function Home() {
   const discussionElementIfAny = locationInDiscussion ? discussionElement : undefined
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
   const syncIndicatorIfAny = user ? syncIndicator : undefined
+  const {status: dianoiaStatus} = useDianoia()
+  const dianoiaIndicator = import.meta.env.VITE_DIANOIA_URL && dianoiaStatus !== 'idle'
+    ? <View className={`indicator dianoia-${dianoiaStatus}`} title={`Dianoia: ${dianoiaStatus}`} style={{marginRight: '4px'}} />
+    : null
   const hamburger = location.pathname === '/signin' ? null : user ?
     <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
@@ -140,6 +145,7 @@ function Home() {
               alignItems="center"
               style={{paddingTop: '6px'}}
             >
+              {dianoiaIndicator}
               {syncIndicatorIfAny}
               {navbarRight}
             </Flex>
@@ -158,6 +164,7 @@ function Home() {
             alignItems="center"
             style={{paddingTop: '6px'}}
           >
+            {dianoiaIndicator}
             {syncIndicatorIfAny}
             {navbarRight}
           </Flex>
@@ -202,19 +209,21 @@ function Invite() {
 export function App() {
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home/>} >
-          <Route path="signin" element={<SignIn/>} />
-          <Route path="discussions">
-            <Route index element={<DiscussionsList/>} />
-            <Route path=":discussionId" element={<Discussion/>} />
+    <DianoiaProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home/>} >
+            <Route path="signin" element={<SignIn/>} />
+            <Route path="discussions">
+              <Route index element={<DiscussionsList/>} />
+              <Route path=":discussionId" element={<Discussion/>} />
+            </Route>
+            <Route path="invite">
+              <Route path=":inviteCode" element={<Invite/>} />
+            </Route>
           </Route>
-          <Route path="invite">
-            <Route path=":inviteCode" element={<Invite/>} />
-          </Route>
-        </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </DianoiaProvider>
   )
 }
