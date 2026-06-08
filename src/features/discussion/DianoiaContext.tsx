@@ -57,7 +57,7 @@ interface DianoiaState {
   analyzedSteps: Record<number, AnalyzedStep[]>
   resultsDiscussionId: string | null
   analyzedPosition: number | null
-  viewOpen: boolean
+  analysisViewOpen: boolean
   viewPosition: number | null
   startAnalysis: (steps: AnalyzedStep[], discussionId: string, argumentPosition: number) => void
   cancelAnalysis: () => void
@@ -72,7 +72,7 @@ const DianoiaContext = createContext<DianoiaState>({
   analyzedSteps: {},
   resultsDiscussionId: null,
   analyzedPosition: null,
-  viewOpen: false,
+  analysisViewOpen: false,
   viewPosition: null,
   startAnalysis: () => {},
   cancelAnalysis: () => {},
@@ -87,7 +87,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
   const [analyzedSteps, setAnalyzedSteps] = useState<Record<number, AnalyzedStep[]>>({})
   const [resultsDiscussionId, setResultsDiscussionId] = useState<string | null>(null)
   const [analyzedPosition, setAnalyzedPosition] = useState<number | null>(null)
-  const [viewOpen, setViewOpen] = useState(false)
+  const [analysisViewOpen, setViewOpen] = useState(false)
   const [viewPosition, setViewPosition] = useState<number | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -241,7 +241,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
   return (
     <DianoiaContext.Provider value={{
       status, results, analyzedSteps, resultsDiscussionId, analyzedPosition,
-      viewOpen, viewPosition,
+      analysisViewOpen, viewPosition,
       startAnalysis, cancelAnalysis, resetAnalysis, openView, closeView,
     }}>
       {children}

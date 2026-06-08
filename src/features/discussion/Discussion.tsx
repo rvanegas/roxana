@@ -20,7 +20,7 @@ const client = () => { if (!_client) _client = generateClient({ authMode: 'apiKe
 export function Discussion() {
   const dispatch = useDispatch<AppDispatch>()
   const params = useParams()
-  const {viewOpen} = useDianoia()
+  const {analysisViewOpen} = useDianoia()
   const propositionsListRef = useRef() as MutableRefObject<HTMLDivElement>
   const argumentsListRef = useRef() as MutableRefObject<HTMLDivElement>
   const {route} = useContext(CurrentUserContext) as unknown as {user, route}
@@ -119,7 +119,7 @@ export function Discussion() {
 
   return (
     <View style={{height: '100%', display: 'flex', flexDirection: 'column', position: 'relative'}}>
-      {viewOpen && <DianoiaView />}
+      {analysisViewOpen && <DianoiaView />}
       {!discussions.isPrivate ? null : discussions.inviteCode ? privateWithRevokeButton : privateWithInviteButton}
       <View className="view-toggles" columnStart="1" columnEnd="-1">
         {hiddenToggle}
