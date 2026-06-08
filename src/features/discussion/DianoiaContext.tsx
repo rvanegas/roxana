@@ -3,29 +3,72 @@ import {Sentence} from './discussion.d'
 
 const sessionId = crypto.randomUUID()
 
+export interface TruthEvaluation {
+  symbol: string
+  truth_value: number
+  reasoning?: string
+}
+
+export interface ValidityEvaluation {
+  symbol: string
+  validity_value: number
+  reasoning?: string
+}
+
+export interface IncoherentSet {
+  symbols: string[]
+  incoherence_value: number
+  reasoning?: string
+}
+
+export interface DianoiaResultData {
+  truthEvaluations: TruthEvaluation[]
+  validityEvaluations: ValidityEvaluation[]
+  incoherentSets: IncoherentSet[]
+  logicalIssues: string[]
+  recommendations: string[]
+}
+
+export type AnalyzedStep = {sentence: Sentence, displayIdx: number}
+
 interface DianoiaState {
   status: 'idle' | 'loading' | 'done' | 'error'
-  results: Record<string, number> | null
+  results: Record<number, DianoiaResultData>
+  analyzedSteps: Record<number, AnalyzedStep[]>
   resultsDiscussionId: string | null
   analyzedPosition: number | null
-  startAnalysis: (steps: Array<{sentence: Sentence, displayIdx: number}>, discussionId: string, argumentPosition: number) => void
-  resetAnalysis: () => void
+  viewOpen: boolean
+  viewPosition: number | null
+  startAnalysis: (steps: AnalyzedStep[], discussionId: string, argumentPosition: number) => void
+  cancelAnalysis: () => void
+  resetAnalysis: (position?: number) => void
+  openView: (position: number) => void
+  closeView: () => void
 }
 
 const DianoiaContext = createContext<DianoiaState>({
   status: 'idle',
-  results: null,
+  results: {},
+  analyzedSteps: {},
   resultsDiscussionId: null,
   analyzedPosition: null,
+  viewOpen: false,
+  viewPosition: null,
   startAnalysis: () => {},
+  cancelAnalysis: () => {},
   resetAnalysis: () => {},
+  openView: () => {},
+  closeView: () => {},
 })
 
 export function DianoiaProvider({children}: {children: React.ReactNode}) {
   const [status, setStatus] = useState<DianoiaState['status']>('idle')
-  const [results, setResults] = useState<Record<string, number> | null>(null)
+  const [results, setResults] = useState<Record<number, DianoiaResultData>>({})
+  const [analyzedSteps, setAnalyzedSteps] = useState<Record<number, AnalyzedStep[]>>({})
   const [resultsDiscussionId, setResultsDiscussionId] = useState<string | null>(null)
   const [analyzedPosition, setAnalyzedPosition] = useState<number | null>(null)
+  const [viewOpen, setViewOpen] = useState(false)
+  const [viewPosition, setViewPosition] = useState<number | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   function clearPoll() {
@@ -35,23 +78,63 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     }
   }
 
-  function resetAnalysis() {
+  function cancelAnalysis() {
     clearPoll()
     setStatus('idle')
-    setResults(null)
-    setResultsDiscussionId(null)
     setAnalyzedPosition(null)
   }
 
-  async function startAnalysis(steps: Array<{sentence: Sentence, displayIdx: number}>, discussionId: string, argumentPosition: number) {
+  function resetAnalysis(position?: number) {
+    if (position === undefined) {
+      clearPoll()
+      setStatus('idle')
+      setResults({})
+      setAnalyzedSteps({})
+      setResultsDiscussionId(null)
+      setAnalyzedPosition(null)
+      setViewOpen(false)
+      setViewPosition(null)
+    } else {
+      setResults(prev => {
+        const next = {...prev}
+        delete next[position]
+        return next
+      })
+      setAnalyzedSteps(prev => {
+        const next = {...prev}
+        delete next[position]
+        return next
+      })
+      if (analyzedPosition === position) {
+        clearPoll()
+        setStatus('idle')
+        setAnalyzedPosition(null)
+      }
+      if (viewPosition === position) {
+        setViewOpen(false)
+        setViewPosition(null)
+      }
+    }
+  }
+
+  function openView(position: number) {
+    setViewPosition(position)
+    setViewOpen(true)
+  }
+
+  function closeView() {
+    setViewOpen(false)
+  }
+
+  async function startAnalysis(steps: AnalyzedStep[], discussionId: string, argumentPosition: number) {
     const baseUrl = import.meta.env.VITE_DIANOIA_URL
-    console.log('[dianoia] startAnalysis', {baseUrl, discussionId, stepCount: steps.length, argumentPosition})
     if (!baseUrl) return
 
     clearPoll()
     setStatus('loading')
     setResultsDiscussionId(discussionId)
     setAnalyzedPosition(argumentPosition)
+    setAnalyzedSteps(prev => ({...prev, [argumentPosition]: steps}))
 
     const conversationId = `${sessionId}:${discussionId}`
     const argument = steps.map(({sentence, displayIdx}) => ({
@@ -61,58 +144,58 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
       truth_score: '',
     }))
 
-    console.log('[dianoia] POST argument', argument)
-
     const postUrl = `${baseUrl}/api/argument/replace?conversation_id=${encodeURIComponent(conversationId)}&snapshot_id=1`
-    console.log('[dianoia] POST', postUrl)
     try {
       const postRes = await fetch(postUrl, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({assumptions: [], argument, file_ids: []}),
       })
-      console.log('[dianoia] POST response', postRes.status, postRes.ok)
-      if (!postRes.ok) {
-        const text = await postRes.text()
-        console.error('[dianoia] POST error body', text)
-        throw new Error(`POST failed: ${postRes.status}`)
-      }
+      if (!postRes.ok) throw new Error(`POST failed: ${postRes.status}`)
     } catch (e) {
-      console.error('[dianoia] POST catch', e)
+      console.error('[dianoia] POST error', e)
       setStatus('error')
       return
     }
 
     const pollUrl = `${baseUrl}/api/agents/results?conversation_id=${encodeURIComponent(conversationId)}&snapshot_id=1`
-    console.log('[dianoia] starting poll', pollUrl)
     pollRef.current = setInterval(async () => {
       try {
         const res = await fetch(pollUrl)
-        console.log('[dianoia] poll response', res.status)
-        if (!res.ok) {
-          const text = await res.text()
-          console.error('[dianoia] poll error body', text)
-          throw new Error(`poll failed: ${res.status}`)
-        }
+        if (!res.ok) throw new Error(`poll failed: ${res.status}`)
         const data = await res.json()
-        console.log('[dianoia] poll data', data)
         if (data.tasks_complete) {
           clearPoll()
-          const contentResults: Array<{result_content?: {truth_evaluations?: Array<{symbol: string, truth_value: number}>}}> =
-            data.results_by_agent?.content_evaluator ?? []
-          console.log('[dianoia] content_evaluator results', contentResults)
-          const scores: Record<string, number> = {}
-          for (const r of contentResults) {
-            for (const ev of r.result_content?.truth_evaluations ?? []) {
-              scores[ev.symbol] = ev.truth_value
-            }
+          const contentResults: Array<{result_content?: {
+            truth_evaluations?: TruthEvaluation[]
+            validity_evaluations?: ValidityEvaluation[]
+            incoherent_sets?: IncoherentSet[]
+            logical_issues?: string[]
+            recommendations?: string[]
+          }}> = data.results_by_agent?.content_evaluator ?? []
+
+          const merged: DianoiaResultData = {
+            truthEvaluations: [],
+            validityEvaluations: [],
+            incoherentSets: [],
+            logicalIssues: [],
+            recommendations: [],
           }
-          console.log('[dianoia] scores', scores)
-          setResults(prev => ({...(prev ?? {}), ...scores}))
+          for (const r of contentResults) {
+            const c = r.result_content
+            if (!c) continue
+            merged.truthEvaluations.push(...(c.truth_evaluations ?? []))
+            merged.validityEvaluations.push(...(c.validity_evaluations ?? []))
+            merged.incoherentSets.push(...(c.incoherent_sets ?? []))
+            merged.logicalIssues.push(...(c.logical_issues ?? []))
+            merged.recommendations.push(...(c.recommendations ?? []))
+          }
+
+          setResults(prev => ({...prev, [argumentPosition]: merged}))
           setStatus('done')
         }
       } catch (e) {
-        console.error('[dianoia] poll catch', e)
+        console.error('[dianoia] poll error', e)
         clearPoll()
         setStatus('error')
       }
@@ -120,7 +203,11 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
   }
 
   return (
-    <DianoiaContext.Provider value={{status, results, resultsDiscussionId, analyzedPosition, startAnalysis, resetAnalysis}}>
+    <DianoiaContext.Provider value={{
+      status, results, analyzedSteps, resultsDiscussionId, analyzedPosition,
+      viewOpen, viewPosition,
+      startAnalysis, cancelAnalysis, resetAnalysis, openView, closeView,
+    }}>
       {children}
     </DianoiaContext.Provider>
   )
