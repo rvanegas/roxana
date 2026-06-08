@@ -29,6 +29,11 @@ function PropIdx({symbol, symbolToIdx}: {symbol: string, symbolToIdx: Record<str
 function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedStep[]}) {
   const symbolToIdx = Object.fromEntries(steps.map(s => [String(s.displayIdx), s.displayIdx]))
 
+  const symbolOrder = steps.map(s => String(s.displayIdx))
+  function byArgOrder<T extends {symbol: string}>(items: T[]): T[] {
+    return [...items].sort((a, b) => symbolOrder.indexOf(a.symbol) - symbolOrder.indexOf(b.symbol))
+  }
+
   const hasFormalizations = data.formalizations.length > 0
   const hasTruth = data.truthEvaluations.length > 0
   const hasValidity = data.validityEvaluations.length > 0
@@ -52,7 +57,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
     <View>
       {hasTruth && (
         <ResultSection title="Truth">
-          {data.truthEvaluations.map((ev, i) => (
+          {byArgOrder(data.truthEvaluations).map((ev, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
               <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
               <ScoreBadge value={ev.truth_value} />
@@ -66,7 +71,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
 
       {hasValidity && (
         <ResultSection title="Content validity">
-          {data.validityEvaluations.map((ev, i) => (
+          {byArgOrder(data.validityEvaluations).map((ev, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
               <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
               <ScoreBadge value={ev.validity_value} />
@@ -80,7 +85,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
 
       {hasFormalizations && (
         <ResultSection title="Formalizations">
-          {data.formalizations.map((f, i) => (
+          {byArgOrder(data.formalizations).map((f, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
               <PropIdx symbol={f.symbol} symbolToIdx={symbolToIdx} />
               <code style={{fontSize: '0.9em'}}>{f.ascii}</code>
@@ -91,7 +96,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
 
       {hasPropEvals && (
         <ResultSection title={`Formal validity${hasArgValidity ? ` — argument: ${Math.round(data.argumentValidity! * 100)}%` : ''}`}>
-          {data.propositionEvaluations.map((ev, i) => (
+          {byArgOrder(data.propositionEvaluations).map((ev, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
               <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
               <ScoreBadge value={ev.validity} />
