@@ -37,7 +37,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
   const hasFormalizations = data.formalizations.length > 0
   const hasTruth = data.truthEvaluations.length > 0
   const hasValidity = data.validityEvaluations.length > 0
-  const hasIncoherent = data.incoherentSets.length > 0
+
   const hasContentIssues = data.contentLogicalIssues.length > 0
   const hasContentRecs = data.contentRecommendations.length > 0
   const hasPropEvals = data.propositionEvaluations.length > 0
@@ -45,7 +45,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
   const hasFormalRecs = data.formalRecommendations.length > 0
   const hasArgValidity = data.argumentValidity !== null
 
-  const hasAnything = hasFormalizations || hasTruth || hasValidity || hasIncoherent
+  const hasAnything = hasFormalizations || hasTruth || hasValidity
     || hasContentIssues || hasContentRecs || hasPropEvals || hasFormalIssues
     || hasFormalRecs || hasArgValidity
 
@@ -108,21 +108,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
         </ResultSection>
       )}
 
-      {hasIncoherent && (
-        <ResultSection title="Incoherent sets">
-          {data.incoherentSets.map((set, i) => (
-            <View key={i} style={{marginBottom: '10px'}}>
-              <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold', marginRight: '8px'}}>
-                {set.symbols.map(s => symbolToIdx[s] ?? s).join(', ')}
-              </span>
-              <ScoreBadge value={set.incoherence_value} />
-              {set.reasoning && (
-                <div style={{marginTop: '2px', marginLeft: '20px', color: '#444'}}>{set.reasoning}</div>
-              )}
-            </View>
-          ))}
-        </ResultSection>
-      )}
+
 
       {(hasFormalIssues || hasContentIssues) && (
         <ResultSection title="Logical issues">
