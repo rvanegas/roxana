@@ -50,7 +50,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
 
     clearPoll()
     setStatus('loading')
-    setResults(null)
     setResultsDiscussionId(discussionId)
     setAnalyzedPosition(argumentPosition)
 
@@ -109,7 +108,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             }
           }
           console.log('[dianoia] scores', scores)
-          setResults(scores)
+          setResults(prev => ({...(prev ?? {}), ...scores}))
           setStatus('done')
         }
       } catch (e) {
