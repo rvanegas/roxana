@@ -8,6 +8,7 @@ type Discussion @model {
   revision: Int    # incremented on every update
   layout: String!
   goalsSummary: String
+  analysisResults: String
   isPrivate: Boolean!
   inviteCode: String @index(name: "byInviteCode", queryField: "queryDiscussionsByInviteCode")
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])

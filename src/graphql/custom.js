@@ -3,6 +3,7 @@ export const getDiscussionSimpleWithAssociations = /* GraphQL */ `
     getDiscussion(id: $id) {
       id
       layout
+      analysisResults
       version
       revision
       isPrivate
@@ -35,6 +36,7 @@ export const getDiscussionSimpleWithoutAssociations = /* GraphQL */ `
     getDiscussion(id: $id) {
       id
       layout
+      analysisResults
       version
       revision
       isPrivate
@@ -75,6 +77,7 @@ export const onDiscussionLayoutById = /* GraphQL */ `
       isPrivate
       inviteCode
       layout
+      analysisResults
       createdAt
       updatedAt
     }

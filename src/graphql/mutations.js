@@ -52,6 +52,7 @@ export const updateDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      analysisResults
       isPrivate
       inviteCode
       sentences {

@@ -34,8 +34,7 @@ export function SentenceLine(props: SentenceProps) {
   const isArguments = section === 'arguments'
   const {user} = useContext(CurrentUserContext) as unknown as {user, route}
   const username = user?.username
-  const {startAnalysis, cancelAnalysis, resetAnalysis, openView,
-    results: dianoiaResults, resultsDiscussionId: dianoiaDiscussionId,
+  const {startAnalysis, cancelAnalysis, resetAnalysis, openView, checkRateLimited,
     status: dianoiaStatus, analyzedPosition: dianoiaAnalyzedPosition} = useDianoia()
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
   const editorContainerRef = useRef() as MutableRefObject<HTMLDivElement>
@@ -397,9 +396,8 @@ export function SentenceLine(props: SentenceProps) {
         <View style={{
           border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto',
           backgroundColor: isArguments && dianoiaAnalyzedPosition === position
-            && dianoiaDiscussionId === discussions.discussionId && dianoiaStatus === 'loading' ? '#dbeafe'
-            : isArguments && dianoiaResults[position] !== undefined
-            && dianoiaDiscussionId === discussions.discussionId ? '#bfdbfe'
+            && dianoiaStatus === 'loading' ? '#dbeafe'
+            : isArguments && discussions.analysisResults?.[position] !== undefined ? '#bfdbfe'
             : undefined,
           borderRadius: '3px',
         }}>
@@ -534,9 +532,7 @@ export function SentenceLine(props: SentenceProps) {
     }
     if (section === 'arguments' && sentence.status === 'committed' && import.meta.env.VITE_DIANOIA_URL) {
       const isThisLoading = dianoiaStatus === 'loading' && dianoiaAnalyzedPosition === position
-        && dianoiaDiscussionId === discussions.discussionId
-      const hasResults = dianoiaResults[position] !== undefined
-        && dianoiaDiscussionId === discussions.discussionId
+      const hasResults = discussions.analysisResults?.[position] !== undefined
 
       const argSteps = displayPropositionIndexes
         .map(displayIdx => {
@@ -547,11 +543,11 @@ export function SentenceLine(props: SentenceProps) {
         })
         .filter(Boolean) as Array<{sentence: typeof propositions[0], displayIdx: number}>
 
-      const analyzeDisabled = isThisLoading || hasResults
+      const analyzeDisabled = isThisLoading || hasResults || checkRateLimited(username)
       modalActions.push(
         <Button key="analyze" variation="link" size="small" isDisabled={analyzeDisabled}
           style={analyzeDisabled ? {color: 'gray'} : undefined}
-          onClick={() => startAnalysis(argSteps, discussions.discussionId!, position)}>
+          onClick={() => startAnalysis(argSteps, discussions.discussionId!, position, username)}>
           analyze
         </Button>
       )

@@ -1,65 +1,40 @@
 import React, {createContext, useContext, useState, useRef} from 'react'
-import {Sentence} from './discussion.d'
+import {useDispatch} from 'react-redux'
+import {AppDispatch} from '../../app/store'
+import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction} from './data'
+import {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
+  IncoherentSet, FormalizationItem, PropositionEvaluation} from './dianoia.types'
+
+export type {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
+  IncoherentSet, FormalizationItem, PropositionEvaluation}
+
+export type AnalyzedStep = {sentence: {content: string}, displayIdx: number}
 
 const sessionId = crypto.randomUUID()
 
-export interface TruthEvaluation {
-  symbol: string
-  truth_value: number
-  reasoning?: string
+const whitelist = new Set(
+  (import.meta.env.VITE_DIANOIA_WHITELIST ?? '').split(',').map((s: string) => s.trim()).filter(Boolean)
+)
+
+const LAST_ANALYZED_KEY = 'dianoia:lastAnalyzed'
+
+function isToday(isoString: string): boolean {
+  return new Date(isoString).toDateString() === new Date().toDateString()
 }
 
-export interface ValidityEvaluation {
-  symbol: string
-  validity_value: number
-  reasoning?: string
+function isRateLimited(username: string | undefined): boolean {
+  if (!username || whitelist.has(username)) return false
+  const stored = localStorage.getItem(LAST_ANALYZED_KEY)
+  return stored !== null && isToday(stored)
 }
-
-export interface IncoherentSet {
-  symbols: string[]
-  incoherence_value: number
-  reasoning?: string
-}
-
-export interface FormalizationItem {
-  symbol: string
-  ascii: string
-  json_structure: string
-}
-
-export interface PropositionEvaluation {
-  symbol: string
-  validity: number
-  reasoning: string
-}
-
-export interface DianoiaResultData {
-  // content_evaluator
-  truthEvaluations: TruthEvaluation[]
-  validityEvaluations: ValidityEvaluation[]
-  incoherentSets: IncoherentSet[]
-  contentLogicalIssues: string[]
-  contentRecommendations: string[]
-  // formalizer
-  formalizations: FormalizationItem[]
-  // form_evaluator
-  propositionEvaluations: PropositionEvaluation[]
-  argumentValidity: number | null
-  formalLogicalIssues: string[]
-  formalRecommendations: string[]
-}
-
-export type AnalyzedStep = {sentence: Sentence, displayIdx: number}
 
 interface DianoiaState {
   status: 'idle' | 'loading' | 'done' | 'error'
-  results: Record<number, DianoiaResultData>
-  analyzedSteps: Record<number, AnalyzedStep[]>
-  resultsDiscussionId: string | null
   analyzedPosition: number | null
   analysisViewOpen: boolean
   viewPosition: number | null
-  startAnalysis: (steps: AnalyzedStep[], discussionId: string, argumentPosition: number) => void
+  checkRateLimited: (username: string | undefined) => boolean
+  startAnalysis: (steps: AnalyzedStep[], discussionId: string, argumentPosition: number, username?: string) => void
   cancelAnalysis: () => void
   resetAnalysis: (position?: number) => void
   openView: (position: number) => void
@@ -68,12 +43,10 @@ interface DianoiaState {
 
 const DianoiaContext = createContext<DianoiaState>({
   status: 'idle',
-  results: {},
-  analyzedSteps: {},
-  resultsDiscussionId: null,
   analyzedPosition: null,
   analysisViewOpen: false,
   viewPosition: null,
+  checkRateLimited: () => false,
   startAnalysis: () => {},
   cancelAnalysis: () => {},
   resetAnalysis: () => {},
@@ -82,13 +55,14 @@ const DianoiaContext = createContext<DianoiaState>({
 })
 
 export function DianoiaProvider({children}: {children: React.ReactNode}) {
+  const dispatch = useDispatch<AppDispatch>()
   const [status, setStatus] = useState<DianoiaState['status']>('idle')
-  const [results, setResults] = useState<Record<number, DianoiaResultData>>({})
-  const [analyzedSteps, setAnalyzedSteps] = useState<Record<number, AnalyzedStep[]>>({})
-  const [resultsDiscussionId, setResultsDiscussionId] = useState<string | null>(null)
   const [analyzedPosition, setAnalyzedPosition] = useState<number | null>(null)
   const [analysisViewOpen, setViewOpen] = useState(false)
   const [viewPosition, setViewPosition] = useState<number | null>(null)
+  const [lastAnalyzedStamp, setLastAnalyzedStamp] = useState<string | null>(
+    () => localStorage.getItem(LAST_ANALYZED_KEY)
+  )
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   function clearPoll() {
@@ -96,6 +70,11 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
       clearInterval(pollRef.current)
       pollRef.current = null
     }
+  }
+
+  function checkRateLimited(username: string | undefined): boolean {
+    if (!username || whitelist.has(username)) return false
+    return lastAnalyzedStamp !== null && isToday(lastAnalyzedStamp)
   }
 
   function cancelAnalysis() {
@@ -108,23 +87,10 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     if (position === undefined) {
       clearPoll()
       setStatus('idle')
-      setResults({})
-      setAnalyzedSteps({})
-      setResultsDiscussionId(null)
       setAnalyzedPosition(null)
       setViewOpen(false)
       setViewPosition(null)
     } else {
-      setResults(prev => {
-        const next = {...prev}
-        delete next[position]
-        return next
-      })
-      setAnalyzedSteps(prev => {
-        const next = {...prev}
-        delete next[position]
-        return next
-      })
       if (analyzedPosition === position) {
         clearPoll()
         setStatus('idle')
@@ -134,6 +100,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
         setViewOpen(false)
         setViewPosition(null)
       }
+      dispatch(deleteArgumentAnalysisResultsAction(position))
     }
   }
 
@@ -146,15 +113,14 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     setViewOpen(false)
   }
 
-  async function startAnalysis(steps: AnalyzedStep[], discussionId: string, argumentPosition: number) {
+  async function startAnalysis(steps: AnalyzedStep[], discussionId: string, argumentPosition: number, username?: string) {
     const baseUrl = import.meta.env.VITE_DIANOIA_URL
     if (!baseUrl) return
+    if (isRateLimited(username)) return
 
     clearPoll()
     setStatus('loading')
-    setResultsDiscussionId(discussionId)
     setAnalyzedPosition(argumentPosition)
-    setAnalyzedSteps(prev => ({...prev, [argumentPosition]: steps}))
 
     const conversationId = `${sessionId}:${discussionId}`
     const symbols = steps.map(({displayIdx}) => String(displayIdx))
@@ -227,7 +193,13 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             merged.formalRecommendations.push(...(c.recommendations ?? []))
           }
 
-          setResults(prev => ({...prev, [argumentPosition]: merged}))
+          dispatch(saveArgumentAnalysisResultsAction(argumentPosition, merged))
+
+          if (!whitelist.has(username ?? '')) {
+            const stamp = new Date().toISOString()
+            localStorage.setItem(LAST_ANALYZED_KEY, stamp)
+            setLastAnalyzedStamp(stamp)
+          }
           setStatus('done')
         }
       } catch (e) {
@@ -240,8 +212,8 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
 
   return (
     <DianoiaContext.Provider value={{
-      status, results, analyzedSteps, resultsDiscussionId, analyzedPosition,
-      analysisViewOpen, viewPosition,
+      status, analyzedPosition, analysisViewOpen, viewPosition,
+      checkRateLimited,
       startAnalysis, cancelAnalysis, resetAnalysis, openView, closeView,
     }}>
       {children}

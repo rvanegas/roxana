@@ -1,7 +1,9 @@
 import React, {useEffect} from 'react'
+import {useSelector} from 'react-redux'
 import {View, Button, Heading} from '@aws-amplify/ui-react'
 import {toAlphaIndex} from '../../app/util'
 import {useDianoia, DianoiaResultData, AnalyzedStep} from './DianoiaContext'
+import {selectDiscussions} from './discussionsSlice'
 
 function ScoreBadge({value}: {value: number}) {
   const pct = Math.round(value * 100)
@@ -140,7 +142,8 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
 }
 
 export function DianoiaView() {
-  const {viewPosition, results, analyzedSteps, closeView} = useDianoia()
+  const {viewPosition, closeView} = useDianoia()
+  const discussions = useSelector(selectDiscussions)
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -151,8 +154,17 @@ export function DianoiaView() {
   }, [closeView])
 
   if (viewPosition === null) return null
-  const data = results[viewPosition]
-  const steps = analyzedSteps[viewPosition] ?? []
+  const data = discussions.analysisResults?.[viewPosition]
+  const argument = discussions.arguments[viewPosition]
+  const propIndexes = argument?.content
+    ? argument.content.split(/\s+/).map(Number).filter(n => n > 0)
+    : []
+  const steps: AnalyzedStep[] = propIndexes
+    .map(idx => {
+      const sentence = discussions.propositions[idx - 1]
+      return sentence ? {sentence, displayIdx: idx} : null
+    })
+    .filter(Boolean) as AnalyzedStep[]
 
   return (
     <View style={{

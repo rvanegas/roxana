@@ -3,6 +3,7 @@ import {pull, uniq} from 'lodash'
 import Cookies from 'universal-cookie'
 import {dlog} from '../../app/util'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
+import {DianoiaResultData} from './dianoia.types'
 
 const cookies = new Cookies()
 
@@ -54,6 +55,7 @@ interface State {
   selectMode: boolean
   selectedPropositions: number[]
   selectedArguments: number[]
+  analysisResults: Record<number, DianoiaResultData>
   // users: string[]
 }
 
@@ -91,6 +93,7 @@ const initialState: State = {
   selectMode: false,
   selectedPropositions: [],
   selectedArguments: [],
+  analysisResults: {},
   // users: [],
 }
 
@@ -173,6 +176,7 @@ export const discussionsSlice = createSlice({
         selectMode: false,
         selectedPropositions: [],
         selectedArguments: [],
+        analysisResults: {},
       })
     },
     incrementRevision(state, action) {
@@ -348,9 +352,10 @@ export const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {revision, inviteCode, isPrivate, newSentences, selectMode, selectedPropositions, selectedArguments}:
+      const {revision, inviteCode, isPrivate, newSentences, selectMode, selectedPropositions, selectedArguments, analysisResults}:
         {revision: number, inviteCode: string, isPrivate: boolean, newSentences: Sentence[],
-         selectMode: boolean, selectedPropositions: number[], selectedArguments: number[]} =
+         selectMode: boolean, selectedPropositions: number[], selectedArguments: number[],
+         analysisResults?: Record<number, DianoiaResultData>} =
         action.payload
       state.revision = revision
       state.isPrivate = isPrivate
@@ -358,10 +363,22 @@ export const discussionsSlice = createSlice({
       state.selectMode = selectMode
       state.selectedPropositions = selectedPropositions
       state.selectedArguments = selectedArguments
+      if (analysisResults !== undefined) {
+        state.analysisResults = analysisResults
+      }
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
       updateSentenceDerivatives(state)
       dlog('revision remote', revision)
+    },
+    setArgumentAnalysisResults(state, action: {payload: {position: number, data: DianoiaResultData}}) {
+      const {position, data} = action.payload
+      state.analysisResults = {...state.analysisResults, [position]: data}
+    },
+    clearArgumentAnalysisResults(state, action: {payload: number}) {
+      const next = {...state.analysisResults}
+      delete next[action.payload]
+      state.analysisResults = next
     }
   }
 })

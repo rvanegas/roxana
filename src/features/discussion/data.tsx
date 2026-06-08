@@ -6,6 +6,7 @@ import * as custom from '../../graphql/custom'
 import {dlog, hoursAgo, isPresent,
   generateDiscussionId, generateInviteCode} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
+import {DianoiaResultData} from './dianoia.types'
 import {createDiscussionLayout, createNewDiscussionLayout,
   newSentenceFromLayoutEntry, parseDiscussionLayout} from './layout'
 import {discussionsSlice, nextUniqueIndex, sentenceCommittedOthers,
@@ -54,8 +55,9 @@ function updateDiscussionLayout(changeNote: string) {
       // gql requires null (not undefined or empty string) to clear invite code
       const inviteCode = state.discussions.inviteCode || null
       const pool = 1
+      const analysisResults = JSON.stringify(state.discussions.analysisResults ?? {})
       const variables = {
-        input: {id, version, revision, layout, goalsSummary, inviteCode, pool},
+        input: {id, version, revision, layout, goalsSummary, analysisResults, inviteCode, pool},
         condition: {revision: {eq: oldRevision}}
       }
       await client().graphql({ query: mutations.updateDiscussion, variables })
@@ -251,7 +253,7 @@ function getDiscussion(discussionInput) {
       }
     }
 
-    const commonAttributes = ['id', 'revision', 'version', 'layout', 'updatedAt', 'inviteCode', 'isPrivate']
+    const commonAttributes = ['id', 'revision', 'version', 'layout', 'analysisResults', 'updatedAt', 'inviteCode', 'isPrivate']
     if (isUpdate) {
       discussion = pick(discussionInput, commonAttributes) as any
     }
@@ -277,6 +279,14 @@ function getDiscussion(discussionInput) {
     parsedLayout = parseDiscussionLayout(discussion.layout)
     await readLayout('propositions')
     await readLayout('arguments')
+    let analysisResults: Record<number, DianoiaResultData> | undefined
+    try {
+      analysisResults = discussion['analysisResults']
+        ? JSON.parse(discussion['analysisResults'])
+        : {}
+    } catch {
+      analysisResults = {}
+    }
     dispatch(updateDiscussion({
       revision: discussion.revision,
       isPrivate: discussion.isPrivate,
@@ -285,6 +295,7 @@ function getDiscussion(discussionInput) {
       selectMode: parsedLayout.selectMode || false,
       selectedPropositions: parsedLayout.selectedPropositions || [],
       selectedArguments: parsedLayout.selectedArguments || [],
+      analysisResults,
     }))
     if (isUpdate && parsedLayout.navigateTo) {
       const {setNewDiscussionId} = discussionsSlice.actions
@@ -743,6 +754,56 @@ export function revokeInviteCodeAction() {
   const message = `revoke invite code t=${tryAgainTrials}`
   const action = {handler: 'revokeInviteCode', message}
   return dispatch => dispatch(enqueueEvent(action))
+}
+
+function saveArgumentAnalysisResults(position: number, data: DianoiaResultData) {
+  const {setArgumentAnalysisResults} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    try {
+      dispatch(setArgumentAnalysisResults({position, data}))
+      await dispatch(updateDiscussionLayout('save analysis results'))
+      tryAgainTrials = 0
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
+        tryAgainTrials++
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withoutSentences: true}))
+        dispatch(saveArgumentAnalysisResultsAction(position, data))
+      } else {
+        throw exception
+      }
+    }
+  }
+}
+
+function deleteArgumentAnalysisResults(position: number) {
+  const {clearArgumentAnalysisResults} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    try {
+      dispatch(clearArgumentAnalysisResults(position))
+      await dispatch(updateDiscussionLayout('clear analysis results'))
+      tryAgainTrials = 0
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
+        tryAgainTrials++
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withoutSentences: true}))
+        dispatch(deleteArgumentAnalysisResultsAction(position))
+      } else {
+        throw exception
+      }
+    }
+  }
+}
+
+export function saveArgumentAnalysisResultsAction(position: number, data: DianoiaResultData) {
+  return (dispatch) => dispatch(saveArgumentAnalysisResults(position, data))
+}
+
+export function deleteArgumentAnalysisResultsAction(position: number) {
+  return (dispatch) => dispatch(deleteArgumentAnalysisResults(position))
 }
 
 export function usernamesFromDiscussion(discussion) {
