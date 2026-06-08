@@ -398,8 +398,8 @@ export function SentenceLine(props: SentenceProps) {
           border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto',
           backgroundColor: isArguments && dianoiaAnalyzedPosition === position
             && dianoiaDiscussionId === discussions.discussionId && dianoiaStatus === 'loading' ? '#dbeafe'
-            : isArguments && dianoiaAnalyzedPosition === position
-            && dianoiaDiscussionId === discussions.discussionId && dianoiaStatus === 'done' ? '#bfdbfe'
+            : isArguments && dianoiaResults[position] !== undefined
+            && dianoiaDiscussionId === discussions.discussionId ? '#bfdbfe'
             : undefined,
           borderRadius: '3px',
         }}>
