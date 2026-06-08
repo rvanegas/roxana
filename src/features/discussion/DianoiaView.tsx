@@ -18,14 +18,35 @@ function ResultSection({title, children}: {title: string, children: React.ReactN
   )
 }
 
+function PropIdx({symbol, symbolToIdx}: {symbol: string, symbolToIdx: Record<string, number>}) {
+  return (
+    <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold', marginRight: '8px'}}>
+      {symbolToIdx[symbol] ?? symbol}
+    </span>
+  )
+}
+
 function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedStep[]}) {
   const symbolToIdx = Object.fromEntries(steps.map(s => [String(s.displayIdx), s.displayIdx]))
 
+  const hasFormalizations = data.formalizations.length > 0
   const hasTruth = data.truthEvaluations.length > 0
   const hasValidity = data.validityEvaluations.length > 0
   const hasIncoherent = data.incoherentSets.length > 0
-  const hasIssues = data.logicalIssues.length > 0
-  const hasRecs = data.recommendations.length > 0
+  const hasContentIssues = data.contentLogicalIssues.length > 0
+  const hasContentRecs = data.contentRecommendations.length > 0
+  const hasPropEvals = data.propositionEvaluations.length > 0
+  const hasFormalIssues = data.formalLogicalIssues.length > 0
+  const hasFormalRecs = data.formalRecommendations.length > 0
+  const hasArgValidity = data.argumentValidity !== null
+
+  const hasAnything = hasFormalizations || hasTruth || hasValidity || hasIncoherent
+    || hasContentIssues || hasContentRecs || hasPropEvals || hasFormalIssues
+    || hasFormalRecs || hasArgValidity
+
+  if (!hasAnything) {
+    return <span style={{color: '#888'}}>No results available.</span>
+  }
 
   return (
     <View>
@@ -33,9 +54,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
         <ResultSection title="Truth">
           {data.truthEvaluations.map((ev, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
-              <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold', marginRight: '8px'}}>
-                {symbolToIdx[ev.symbol] ?? ev.symbol}
-              </span>
+              <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
               <ScoreBadge value={ev.truth_value} />
               {ev.reasoning && (
                 <div style={{marginTop: '2px', marginLeft: '20px', color: '#444'}}>{ev.reasoning}</div>
@@ -46,12 +65,10 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
       )}
 
       {hasValidity && (
-        <ResultSection title="Validity">
+        <ResultSection title="Content validity">
           {data.validityEvaluations.map((ev, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
-              <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold', marginRight: '8px'}}>
-                {symbolToIdx[ev.symbol] ?? ev.symbol}
-              </span>
+              <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
               <ScoreBadge value={ev.validity_value} />
               {ev.reasoning && (
                 <div style={{marginTop: '2px', marginLeft: '20px', color: '#444'}}>{ev.reasoning}</div>
@@ -61,8 +78,33 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
         </ResultSection>
       )}
 
+      {hasFormalizations && (
+        <ResultSection title="Formalizations">
+          {data.formalizations.map((f, i) => (
+            <View key={i} style={{marginBottom: '10px'}}>
+              <PropIdx symbol={f.symbol} symbolToIdx={symbolToIdx} />
+              <code style={{fontSize: '0.9em'}}>{f.ascii}</code>
+            </View>
+          ))}
+        </ResultSection>
+      )}
+
+      {hasPropEvals && (
+        <ResultSection title={`Formal validity${hasArgValidity ? ` — argument: ${Math.round(data.argumentValidity! * 100)}%` : ''}`}>
+          {data.propositionEvaluations.map((ev, i) => (
+            <View key={i} style={{marginBottom: '10px'}}>
+              <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
+              <ScoreBadge value={ev.validity} />
+              {ev.reasoning && (
+                <div style={{marginTop: '2px', marginLeft: '20px', color: '#444'}}>{ev.reasoning}</div>
+              )}
+            </View>
+          ))}
+        </ResultSection>
+      )}
+
       {hasIncoherent && (
-        <ResultSection title="Incoherent Sets">
+        <ResultSection title="Incoherent sets">
           {data.incoherentSets.map((set, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
               <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold', marginRight: '8px'}}>
@@ -77,28 +119,30 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
         </ResultSection>
       )}
 
-      {hasIssues && (
-        <ResultSection title="Logical Issues">
+      {(hasFormalIssues || hasContentIssues) && (
+        <ResultSection title="Logical issues">
           <ul style={{margin: 0, paddingLeft: '20px'}}>
-            {data.logicalIssues.map((issue, i) => (
-              <li key={i} style={{marginBottom: '4px'}}>{issue}</li>
+            {data.formalLogicalIssues.map((issue, i) => (
+              <li key={`f${i}`} style={{marginBottom: '4px'}}>{issue}</li>
+            ))}
+            {data.contentLogicalIssues.map((issue, i) => (
+              <li key={`c${i}`} style={{marginBottom: '4px'}}>{issue}</li>
             ))}
           </ul>
         </ResultSection>
       )}
 
-      {hasRecs && (
+      {(hasFormalRecs || hasContentRecs) && (
         <ResultSection title="Recommendations">
           <ul style={{margin: 0, paddingLeft: '20px'}}>
-            {data.recommendations.map((rec, i) => (
-              <li key={i} style={{marginBottom: '4px'}}>{rec}</li>
+            {data.formalRecommendations.map((rec, i) => (
+              <li key={`f${i}`} style={{marginBottom: '4px'}}>{rec}</li>
+            ))}
+            {data.contentRecommendations.map((rec, i) => (
+              <li key={`c${i}`} style={{marginBottom: '4px'}}>{rec}</li>
             ))}
           </ul>
         </ResultSection>
-      )}
-
-      {!hasTruth && !hasValidity && !hasIncoherent && !hasIssues && !hasRecs && (
-        <span style={{color: '#888'}}>No results available.</span>
       )}
     </View>
   )

@@ -396,8 +396,10 @@ export function SentenceLine(props: SentenceProps) {
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
         <View style={{
           border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto',
-          backgroundColor: isArguments && dianoiaAnalyzedPosition === position && dianoiaStatus === 'loading' ? '#dbeafe'
-            : isArguments && dianoiaAnalyzedPosition === position && dianoiaStatus === 'done' ? '#bfdbfe'
+          backgroundColor: isArguments && dianoiaAnalyzedPosition === position
+            && dianoiaDiscussionId === discussions.discussionId && dianoiaStatus === 'loading' ? '#dbeafe'
+            : isArguments && dianoiaAnalyzedPosition === position
+            && dianoiaDiscussionId === discussions.discussionId && dianoiaStatus === 'done' ? '#bfdbfe'
             : undefined,
           borderRadius: '3px',
         }}>
@@ -536,31 +538,34 @@ export function SentenceLine(props: SentenceProps) {
       const hasResults = dianoiaResults[position] !== undefined
         && dianoiaDiscussionId === discussions.discussionId
 
+      const argSteps = displayPropositionIndexes
+        .map(displayIdx => {
+          const prop = propositions[displayIdx - 1]
+          return prop && prop.status === 'committed' && !prop.hidden
+            ? {sentence: prop, displayIdx}
+            : null
+        })
+        .filter(Boolean) as Array<{sentence: typeof propositions[0], displayIdx: number}>
+
+      const analyzeDisabled = isThisLoading || hasResults
+      modalActions.push(
+        <Button key="analyze" variation="link" size="small" isDisabled={analyzeDisabled}
+          style={analyzeDisabled ? {color: 'gray'} : undefined}
+          onClick={() => startAnalysis(argSteps, discussions.discussionId!, position)}>
+          analyze
+        </Button>
+      )
       if (isThisLoading) {
         modalActions.push(
-          <Button key="analyze" variation="link" size="small" onClick={cancelAnalysis}>
+          <Button key="cancel" variation="link" size="small" onClick={cancelAnalysis}>
             cancel
           </Button>
         )
-      } else if (hasResults) {
+      }
+      if (hasResults) {
         modalActions.push(
-          <Button key="analyze" variation="link" size="small" onClick={() => openView(position)}>
+          <Button key="view" variation="link" size="small" onClick={() => openView(position)}>
             view analysis
-          </Button>
-        )
-      } else {
-        const argSteps = displayPropositionIndexes
-          .map(displayIdx => {
-            const prop = propositions[displayIdx - 1]
-            return prop && prop.status === 'committed' && !prop.hidden
-              ? {sentence: prop, displayIdx}
-              : null
-          })
-          .filter(Boolean) as Array<{sentence: typeof propositions[0], displayIdx: number}>
-        modalActions.push(
-          <Button key="analyze" variation="link" size="small"
-            onClick={() => startAnalysis(argSteps, discussions.discussionId!, position)}>
-            analyze
           </Button>
         )
       }

@@ -21,12 +21,32 @@ export interface IncoherentSet {
   reasoning?: string
 }
 
+export interface FormalizationItem {
+  symbol: string
+  ascii: string
+  json_structure: string
+}
+
+export interface PropositionEvaluation {
+  symbol: string
+  validity: number
+  reasoning: string
+}
+
 export interface DianoiaResultData {
+  // content_evaluator
   truthEvaluations: TruthEvaluation[]
   validityEvaluations: ValidityEvaluation[]
   incoherentSets: IncoherentSet[]
-  logicalIssues: string[]
-  recommendations: string[]
+  contentLogicalIssues: string[]
+  contentRecommendations: string[]
+  // formalizer
+  formalizations: FormalizationItem[]
+  // form_evaluator
+  propositionEvaluations: PropositionEvaluation[]
+  argumentValidity: number | null
+  formalLogicalIssues: string[]
+  formalRecommendations: string[]
 }
 
 export type AnalyzedStep = {sentence: Sentence, displayIdx: number}
@@ -137,10 +157,11 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     setAnalyzedSteps(prev => ({...prev, [argumentPosition]: steps}))
 
     const conversationId = `${sessionId}:${discussionId}`
-    const argument = steps.map(({sentence, displayIdx}) => ({
+    const symbols = steps.map(({displayIdx}) => String(displayIdx))
+    const argument = steps.map(({sentence, displayIdx}, i) => ({
       symbol: String(displayIdx),
       proposition: sentence.content,
-      justifiers: [],
+      justifiers: i === steps.length - 1 ? symbols.slice(0, -1) : [],
       truth_score: '',
     }))
 
@@ -166,29 +187,44 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
         const data = await res.json()
         if (data.tasks_complete) {
           clearPoll()
-          const contentResults: Array<{result_content?: {
-            truth_evaluations?: TruthEvaluation[]
-            validity_evaluations?: ValidityEvaluation[]
-            incoherent_sets?: IncoherentSet[]
-            logical_issues?: string[]
-            recommendations?: string[]
-          }}> = data.results_by_agent?.content_evaluator ?? []
+          const rba = data.results_by_agent ?? {}
 
           const merged: DianoiaResultData = {
             truthEvaluations: [],
             validityEvaluations: [],
             incoherentSets: [],
-            logicalIssues: [],
-            recommendations: [],
+            contentLogicalIssues: [],
+            contentRecommendations: [],
+            formalizations: [],
+            propositionEvaluations: [],
+            argumentValidity: null,
+            formalLogicalIssues: [],
+            formalRecommendations: [],
           }
-          for (const r of contentResults) {
+
+          for (const r of (rba.content_evaluator ?? [])) {
             const c = r.result_content
             if (!c) continue
             merged.truthEvaluations.push(...(c.truth_evaluations ?? []))
             merged.validityEvaluations.push(...(c.validity_evaluations ?? []))
             merged.incoherentSets.push(...(c.incoherent_sets ?? []))
-            merged.logicalIssues.push(...(c.logical_issues ?? []))
-            merged.recommendations.push(...(c.recommendations ?? []))
+            merged.contentLogicalIssues.push(...(c.logical_issues ?? []))
+            merged.contentRecommendations.push(...(c.recommendations ?? []))
+          }
+
+          for (const r of (rba.formalizer ?? [])) {
+            const c = r.result_content
+            if (!c) continue
+            merged.formalizations.push(...(c.formalizations ?? []))
+          }
+
+          for (const r of (rba.form_evaluator ?? [])) {
+            const c = r.result_content
+            if (!c) continue
+            merged.propositionEvaluations.push(...(c.proposition_evaluations ?? []))
+            if (c.argument_validity != null) merged.argumentValidity = c.argument_validity
+            merged.formalLogicalIssues.push(...(c.logical_issues ?? []))
+            merged.formalRecommendations.push(...(c.recommendations ?? []))
           }
 
           setResults(prev => ({...prev, [argumentPosition]: merged}))
