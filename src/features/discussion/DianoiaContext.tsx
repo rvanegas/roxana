@@ -6,20 +6,25 @@ const sessionId = crypto.randomUUID()
 interface DianoiaState {
   status: 'idle' | 'loading' | 'done' | 'error'
   results: Record<string, number> | null
+  resultsDiscussionId: string | null
   analyzedPosition: number | null
   startAnalysis: (steps: Array<{sentence: Sentence, displayIdx: number}>, discussionId: string, argumentPosition: number) => void
+  resetAnalysis: () => void
 }
 
 const DianoiaContext = createContext<DianoiaState>({
   status: 'idle',
   results: null,
+  resultsDiscussionId: null,
   analyzedPosition: null,
   startAnalysis: () => {},
+  resetAnalysis: () => {},
 })
 
 export function DianoiaProvider({children}: {children: React.ReactNode}) {
   const [status, setStatus] = useState<DianoiaState['status']>('idle')
   const [results, setResults] = useState<Record<string, number> | null>(null)
+  const [resultsDiscussionId, setResultsDiscussionId] = useState<string | null>(null)
   const [analyzedPosition, setAnalyzedPosition] = useState<number | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -30,6 +35,14 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     }
   }
 
+  function resetAnalysis() {
+    clearPoll()
+    setStatus('idle')
+    setResults(null)
+    setResultsDiscussionId(null)
+    setAnalyzedPosition(null)
+  }
+
   async function startAnalysis(steps: Array<{sentence: Sentence, displayIdx: number}>, discussionId: string, argumentPosition: number) {
     const baseUrl = import.meta.env.VITE_DIANOIA_URL
     console.log('[dianoia] startAnalysis', {baseUrl, discussionId, stepCount: steps.length, argumentPosition})
@@ -38,6 +51,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     clearPoll()
     setStatus('loading')
     setResults(null)
+    setResultsDiscussionId(discussionId)
     setAnalyzedPosition(argumentPosition)
 
     const conversationId = `${sessionId}:${discussionId}`
@@ -107,7 +121,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
   }
 
   return (
-    <DianoiaContext.Provider value={{status, results, analyzedPosition, startAnalysis}}>
+    <DianoiaContext.Provider value={{status, results, resultsDiscussionId, analyzedPosition, startAnalysis, resetAnalysis}}>
       {children}
     </DianoiaContext.Provider>
   )

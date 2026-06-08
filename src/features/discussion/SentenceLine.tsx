@@ -34,7 +34,8 @@ export function SentenceLine(props: SentenceProps) {
   const isArguments = section === 'arguments'
   const {user} = useContext(CurrentUserContext) as unknown as {user, route}
   const username = user?.username
-  const {startAnalysis, results: dianoiaResults, status: dianoiaStatus, analyzedPosition: dianoiaAnalyzedPosition} = useDianoia()
+  const {startAnalysis, resetAnalysis, results: dianoiaResults, resultsDiscussionId: dianoiaDiscussionId,
+    status: dianoiaStatus, analyzedPosition: dianoiaAnalyzedPosition} = useDianoia()
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
   const editorContainerRef = useRef() as MutableRefObject<HTMLDivElement>
   const editorRef = useRef() as MutableRefObject<HTMLElement>
@@ -187,6 +188,7 @@ export function SentenceLine(props: SentenceProps) {
     const content = setFinalContent()
     const input = {section, position, content}
     dispatch(replaceSentenceAction(input))
+    if (section === 'arguments') resetAnalysis()
   }
 
   function handleStatusToggle() {
@@ -544,6 +546,7 @@ export function SentenceLine(props: SentenceProps) {
       )
     }
     const dianoiaStepScores = section === 'arguments' && dianoiaResults
+      && dianoiaDiscussionId === discussions.discussionId
       ? displayPropositionIndexes.map(displayIdx => ({
           displayIdx,
           score: dianoiaResults[String(displayIdx)],
