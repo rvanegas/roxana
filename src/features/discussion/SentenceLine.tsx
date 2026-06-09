@@ -552,7 +552,7 @@ export function SentenceLine(props: SentenceProps) {
           analyze
         </Button>
       )
-      if (isThisUsersAnalysis) {
+      if (isThisUsersAnalysis && !hasResults) {
         modalActions.push(
           <Button key="cancel" variation="link" size="small" onClick={cancelAnalysis}>
             cancel

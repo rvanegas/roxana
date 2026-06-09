@@ -205,7 +205,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
           }
 
           dispatch(saveArgumentAnalysisResultsAction(argumentPosition, merged))
-          dispatch(setAnalyzingStateAction(null))
 
           if (!whitelist.has(username ?? '')) {
             const stamp = new Date().toISOString()

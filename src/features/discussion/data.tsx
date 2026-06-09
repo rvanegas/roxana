@@ -769,11 +769,12 @@ export function revokeInviteCodeAction() {
 }
 
 function saveArgumentAnalysisResults(position: number, data: DianoiaResultData) {
-  const {setArgumentAnalysisResults} = discussionsSlice.actions
+  const {setArgumentAnalysisResults, setAnalyzingState} = discussionsSlice.actions
   return async (dispatch, getState) => {
     const state = getState()
     try {
       dispatch(setArgumentAnalysisResults({position, data}))
+      dispatch(setAnalyzingState(null))
       await dispatch(updateDiscussionLayout('save analysis results'))
       tryAgainTrials = 0
     }
