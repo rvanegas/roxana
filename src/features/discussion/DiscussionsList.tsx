@@ -36,7 +36,7 @@ export function DiscussionsList() {
     )
     const discussionsList = discussions.recentDiscussions?.[isPrivate ? 'privateDiscussions' : 'publicDiscussions'] ?? []
     const myDiscussionsList = !isPrivate ? discussionsList :
-      discussionsList.filter(item => usernamesFromDiscussion(item.discussion).includes(username))
+      discussionsList.filter(item => item.discussion.isPrivate && usernamesFromDiscussion(item.discussion).includes(username))
     const links = myDiscussionsList.map((item, index) => {
       const discussion = isPrivate ? item.discussion : item
       const discussants = () => usernamesFromDiscussion(discussion).join(', ')

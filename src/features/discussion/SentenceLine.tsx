@@ -393,9 +393,11 @@ export function SentenceLine(props: SentenceProps) {
         onClick={discussions.selectMode ? handleSelectToggle : handleIndex}
       >
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
-        <View style={{
+        <View
+          className={isArguments && discussions.analyzingState?.position === position ? 'argument-symbol-analyzing' : undefined}
+          style={{
           border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto',
-          backgroundColor: isArguments && discussions.analyzingState?.position === position ? '#dbeafe'
+          backgroundColor: isArguments && discussions.analyzingState?.position === position ? undefined
             : isArguments && discussions.analysisResults?.[position] !== undefined ? '#bfdbfe'
             : undefined,
           borderRadius: '3px',

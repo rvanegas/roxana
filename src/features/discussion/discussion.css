@@ -133,6 +133,11 @@
   50% { opacity: 0.4; }
 }
 
+.argument-symbol-analyzing {
+  background-color: #dbeafe;
+  animation: dianoia-pulse 1s ease-in-out infinite;
+}
+
 .sentence-modal-wrapper {
   position: relative;
 }

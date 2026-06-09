@@ -151,6 +151,7 @@ export const queryUserDiscussionsByUserId = /* GraphQL */ `
         discussion {
           id
           goalsSummary
+          isPrivate
           userDiscussions {
             items {
               id
