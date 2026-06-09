@@ -167,54 +167,62 @@ export function DianoiaView() {
     .filter(Boolean) as AnalyzedStep[]
 
   return (
-    <View style={{
-      position: 'fixed', inset: 0, zIndex: 100,
-      backgroundColor: 'white', overflowY: 'auto',
-      display: 'flex', flexDirection: 'column',
-    }}>
+    <>
+      <style>{`
+        .dianoia-content { display: flex; flex: 1; min-height: 0; }
+        .dianoia-props { width: 320px; flex-shrink: 0; padding: 16px; border-right: 1px solid #ccc; overflow-y: auto; }
+        .dianoia-results { flex: 1; padding: 16px; overflow-y: auto; }
+        @media (max-width: 600px) {
+          .dianoia-content { flex-direction: column; flex: none; }
+          .dianoia-props { width: auto; border-right: none; border-bottom: 1px solid #ccc; overflow-y: visible; }
+          .dianoia-results { overflow-y: visible; }
+        }
+      `}</style>
       <View style={{
-        display: 'flex', alignItems: 'center', gap: '16px',
-        padding: '10px 16px', borderBottom: '1px solid #ccc',
-        flexShrink: 0,
+        position: 'fixed', inset: 0, zIndex: 100,
+        backgroundColor: 'white', overflowY: 'auto',
+        display: 'flex', flexDirection: 'column',
       }}>
-        <Button variation="link" size="small" onClick={closeView}>← back</Button>
-        <Heading level={5} style={{margin: 0}}>
-          Argument{' '}
-          <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive'}}>
-            {toAlphaIndex(viewPosition)}
-          </span>
-          {' '}— Analysis
-        </Heading>
-      </View>
-
-      <View style={{flex: 1, display: 'flex', minHeight: 0}}>
         <View style={{
-          width: '320px', flexShrink: 0,
-          padding: '16px', borderRight: '1px solid #ccc',
-          overflowY: 'auto',
+          display: 'flex', alignItems: 'center', gap: '16px',
+          padding: '10px 16px', borderBottom: '1px solid #ccc',
+          flexShrink: 0,
         }}>
-          <div style={{fontWeight: 'bold', marginBottom: '10px'}}>Propositions</div>
-          {steps.map(({sentence, displayIdx}, i) => (
-            <View key={i} style={{display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'flex-start'}}>
-              <span style={{
-                fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold',
-                minWidth: '20px', flexShrink: 0,
-              }}>
-                {displayIdx}
-              </span>
-              <span style={{color: '#333'}}>{sentence.content}</span>
-            </View>
-          ))}
+          <Button variation="link" size="small" onClick={closeView}>← back</Button>
+          <Heading level={5} style={{margin: 0}}>
+            Argument{' '}
+            <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive'}}>
+              {toAlphaIndex(viewPosition)}
+            </span>
+            {' '}— Analysis
+          </Heading>
         </View>
 
-        <View style={{flex: 1, padding: '16px', overflowY: 'auto'}}>
-          {data ? (
-            <ResultsPanel data={data} steps={steps} />
-          ) : (
-            <span style={{color: '#888'}}>Results not yet available.</span>
-          )}
-        </View>
+        <div className="dianoia-content">
+          <div className="dianoia-props">
+            <div style={{fontWeight: 'bold', marginBottom: '10px'}}>Propositions</div>
+            {steps.map(({sentence, displayIdx}, i) => (
+              <View key={i} style={{display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'flex-start'}}>
+                <span style={{
+                  fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold',
+                  minWidth: '20px', flexShrink: 0,
+                }}>
+                  {displayIdx}
+                </span>
+                <span style={{color: '#333'}}>{sentence.content}</span>
+              </View>
+            ))}
+          </div>
+
+          <div className="dianoia-results">
+            {data ? (
+              <ResultsPanel data={data} steps={steps} />
+            ) : (
+              <span style={{color: '#888'}}>Results not yet available.</span>
+            )}
+          </div>
+        </div>
       </View>
-    </View>
+    </>
   )
 }
