@@ -22,7 +22,7 @@ function ResultSection({title, children}: {title: string, children: React.ReactN
 
 function PropIdx({symbol, symbolToIdx}: {symbol: string, symbolToIdx: Record<string, number>}) {
   return (
-    <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold', marginRight: '8px'}}>
+    <span style={{fontWeight: 'bold', marginRight: '8px'}}>
       {symbolToIdx[symbol] ?? symbol}
     </span>
   )
@@ -204,7 +204,7 @@ export function DianoiaView() {
             {steps.map(({sentence, displayIdx}, i) => (
               <View key={i} style={{display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'flex-start'}}>
                 <span style={{
-                  fontFamily: 'Comic Sans MS, Comic Sans, cursive', fontWeight: 'bold',
+                  fontWeight: 'bold',
                   minWidth: '20px', flexShrink: 0,
                 }}>
                   {displayIdx}
