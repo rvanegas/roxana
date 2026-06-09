@@ -1,6 +1,7 @@
 import React, {createContext, useContext, useState, useRef} from 'react'
-import {useDispatch} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {AppDispatch} from '../../app/store'
+import {selectDiscussions} from './discussionsSlice'
 import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction, setAnalyzingStateAction} from './data'
 import {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
   IncoherentSet, FormalizationItem, PropositionEvaluation} from './dianoia.types'
@@ -56,6 +57,7 @@ const DianoiaContext = createContext<DianoiaState>({
 
 export function DianoiaProvider({children}: {children: React.ReactNode}) {
   const dispatch = useDispatch<AppDispatch>()
+  const discussions = useSelector(selectDiscussions)
   const [status, setStatus] = useState<DianoiaState['status']>('idle')
   const [analyzedPosition, setAnalyzedPosition] = useState<number | null>(null)
   const [analysisViewOpen, setViewOpen] = useState(false)
@@ -91,6 +93,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
       setAnalyzedPosition(null)
       setViewOpen(false)
       setViewPosition(null)
+      if (discussions.analyzingState !== null) dispatch(setAnalyzingStateAction(null))
     } else {
       if (analyzedPosition === position) {
         clearPoll()
@@ -101,6 +104,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
         setViewOpen(false)
         setViewPosition(null)
       }
+      if (discussions.analyzingState?.position === position) dispatch(setAnalyzingStateAction(null))
       dispatch(deleteArgumentAnalysisResultsAction(position))
     }
   }
