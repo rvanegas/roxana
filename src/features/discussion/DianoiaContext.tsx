@@ -170,12 +170,17 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             formalRecommendations: [],
           }
 
-          for (const r of (rba.content_evaluator ?? [])) {
+          for (const r of (rba.truth_evaluator ?? [])) {
             const c = r.result_content
             if (!c) continue
             merged.truthEvaluations.push(...(c.truth_evaluations ?? []))
-            merged.validityEvaluations.push(...(c.validity_evaluations ?? []))
             merged.incoherentSets.push(...(c.incoherent_sets ?? []))
+          }
+
+          for (const r of (rba.content_validity_evaluator ?? [])) {
+            const c = r.result_content
+            if (!c) continue
+            merged.validityEvaluations.push(...(c.validity_evaluations ?? []))
             merged.contentLogicalIssues.push(...(c.logical_issues ?? []))
             merged.contentRecommendations.push(...(c.recommendations ?? []))
           }
