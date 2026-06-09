@@ -56,6 +56,7 @@ interface State {
   selectedPropositions: number[]
   selectedArguments: number[]
   analysisResults: Record<number, DianoiaResultData>
+  analyzingState: {position: number, username: string} | null
   // users: string[]
 }
 
@@ -94,6 +95,7 @@ const initialState: State = {
   selectedPropositions: [],
   selectedArguments: [],
   analysisResults: {},
+  analyzingState: null,
   // users: [],
 }
 
@@ -177,6 +179,7 @@ export const discussionsSlice = createSlice({
         selectedPropositions: [],
         selectedArguments: [],
         analysisResults: {},
+        analyzingState: null,
       })
     },
     incrementRevision(state, action) {
@@ -352,10 +355,11 @@ export const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {revision, inviteCode, isPrivate, newSentences, selectMode, selectedPropositions, selectedArguments, analysisResults}:
+      const {revision, inviteCode, isPrivate, newSentences, selectMode, selectedPropositions, selectedArguments, analysisResults, analyzingState}:
         {revision: number, inviteCode: string, isPrivate: boolean, newSentences: Sentence[],
          selectMode: boolean, selectedPropositions: number[], selectedArguments: number[],
-         analysisResults?: Record<number, DianoiaResultData>} =
+         analysisResults?: Record<number, DianoiaResultData>,
+         analyzingState?: {position: number, username: string} | null} =
         action.payload
       state.revision = revision
       state.isPrivate = isPrivate
@@ -365,6 +369,9 @@ export const discussionsSlice = createSlice({
       state.selectedArguments = selectedArguments
       if (analysisResults !== undefined) {
         state.analysisResults = analysisResults
+      }
+      if (analyzingState !== undefined) {
+        state.analyzingState = analyzingState
       }
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
@@ -379,7 +386,10 @@ export const discussionsSlice = createSlice({
       const next = {...state.analysisResults}
       delete next[action.payload]
       state.analysisResults = next
-    }
+    },
+    setAnalyzingState(state, action: {payload: {position: number, username: string} | null}) {
+      state.analyzingState = action.payload
+    },
   }
 })
 

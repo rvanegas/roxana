@@ -56,8 +56,11 @@ function updateDiscussionLayout(changeNote: string) {
       const inviteCode = state.discussions.inviteCode || null
       const pool = 1
       const analysisResults = JSON.stringify(state.discussions.analysisResults ?? {})
+      const analyzingState = state.discussions.analyzingState
+        ? JSON.stringify(state.discussions.analyzingState)
+        : null
       const variables = {
-        input: {id, version, revision, layout, goalsSummary, analysisResults, inviteCode, pool},
+        input: {id, version, revision, layout, goalsSummary, analysisResults, analyzingState, inviteCode, pool},
         condition: {revision: {eq: oldRevision}}
       }
       await client().graphql({ query: mutations.updateDiscussion, variables })
@@ -253,7 +256,7 @@ function getDiscussion(discussionInput) {
       }
     }
 
-    const commonAttributes = ['id', 'revision', 'version', 'layout', 'analysisResults', 'updatedAt', 'inviteCode', 'isPrivate']
+    const commonAttributes = ['id', 'revision', 'version', 'layout', 'analysisResults', 'analyzingState', 'updatedAt', 'inviteCode', 'isPrivate']
     if (isUpdate) {
       discussion = pick(discussionInput, commonAttributes) as any
     }
@@ -287,6 +290,14 @@ function getDiscussion(discussionInput) {
     } catch {
       analysisResults = {}
     }
+    let analyzingState: {position: number, username: string} | null = null
+    try {
+      analyzingState = discussion['analyzingState']
+        ? JSON.parse(discussion['analyzingState'])
+        : null
+    } catch {
+      analyzingState = null
+    }
     dispatch(updateDiscussion({
       revision: discussion.revision,
       isPrivate: discussion.isPrivate,
@@ -296,6 +307,7 @@ function getDiscussion(discussionInput) {
       selectedPropositions: parsedLayout.selectedPropositions || [],
       selectedArguments: parsedLayout.selectedArguments || [],
       analysisResults,
+      analyzingState,
     }))
     if (isUpdate && parsedLayout.navigateTo) {
       const {setNewDiscussionId} = discussionsSlice.actions
@@ -804,6 +816,31 @@ export function saveArgumentAnalysisResultsAction(position: number, data: Dianoi
 
 export function deleteArgumentAnalysisResultsAction(position: number) {
   return (dispatch) => dispatch(deleteArgumentAnalysisResults(position))
+}
+
+function setAnalyzingStateThunk(value: {position: number, username: string} | null) {
+  const {setAnalyzingState} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    try {
+      dispatch(setAnalyzingState(value))
+      await dispatch(updateDiscussionLayout(value ? 'set analyzing state' : 'clear analyzing state'))
+      tryAgainTrials = 0
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
+        tryAgainTrials++
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withoutSentences: true}))
+        dispatch(setAnalyzingStateAction(value))
+      } else {
+        throw exception
+      }
+    }
+  }
+}
+
+export function setAnalyzingStateAction(value: {position: number, username: string} | null) {
+  return (dispatch) => dispatch(setAnalyzingStateThunk(value))
 }
 
 export function usernamesFromDiscussion(discussion) {

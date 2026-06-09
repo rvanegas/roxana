@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useState, useRef} from 'react'
 import {useDispatch} from 'react-redux'
 import {AppDispatch} from '../../app/store'
-import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction} from './data'
+import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction, setAnalyzingStateAction} from './data'
 import {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
   IncoherentSet, FormalizationItem, PropositionEvaluation} from './dianoia.types'
 
@@ -81,6 +81,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     clearPoll()
     setStatus('idle')
     setAnalyzedPosition(null)
+    dispatch(setAnalyzingStateAction(null))
   }
 
   function resetAnalysis(position?: number) {
@@ -121,6 +122,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     clearPoll()
     setStatus('loading')
     setAnalyzedPosition(argumentPosition)
+    dispatch(setAnalyzingStateAction({position: argumentPosition, username: username ?? ''}))
 
     const conversationId = `${sessionId}:${discussionId}`
     const symbols = steps.map(({displayIdx}) => String(displayIdx))
@@ -194,6 +196,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
           }
 
           dispatch(saveArgumentAnalysisResultsAction(argumentPosition, merged))
+          dispatch(setAnalyzingStateAction(null))
 
           if (!whitelist.has(username ?? '')) {
             const stamp = new Date().toISOString()

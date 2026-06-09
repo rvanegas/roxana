@@ -395,8 +395,7 @@ export function SentenceLine(props: SentenceProps) {
         <View style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0, zIndex: -1}}/>
         <View style={{
           border: goalBorder, lineHeight: '16px', paddingRight: '4px', paddingLeft: '4px', width: 'fit-content', marginLeft: 'auto',
-          backgroundColor: isArguments && dianoiaAnalyzedPosition === position
-            && dianoiaStatus === 'loading' ? '#dbeafe'
+          backgroundColor: isArguments && discussions.analyzingState?.position === position ? '#dbeafe'
             : isArguments && discussions.analysisResults?.[position] !== undefined ? '#bfdbfe'
             : undefined,
           borderRadius: '3px',
@@ -531,6 +530,8 @@ export function SentenceLine(props: SentenceProps) {
       )
     }
     if (section === 'arguments' && sentence.status === 'committed' && import.meta.env.VITE_DIANOIA_URL) {
+      const isAnalyzing = discussions.analyzingState?.position === position
+      const isThisUsersAnalysis = isAnalyzing && discussions.analyzingState?.username === username
       const isThisLoading = dianoiaStatus === 'loading' && dianoiaAnalyzedPosition === position
       const hasResults = discussions.analysisResults?.[position] !== undefined
 
@@ -543,7 +544,7 @@ export function SentenceLine(props: SentenceProps) {
         })
         .filter(Boolean) as Array<{sentence: typeof propositions[0], displayIdx: number}>
 
-      const analyzeDisabled = isThisLoading || hasResults || checkRateLimited(username)
+      const analyzeDisabled = isAnalyzing || hasResults || checkRateLimited(username)
       modalActions.push(
         <Button key="analyze" variation="link" size="small" isDisabled={analyzeDisabled}
           style={analyzeDisabled ? {color: 'gray'} : undefined}
@@ -551,7 +552,7 @@ export function SentenceLine(props: SentenceProps) {
           analyze
         </Button>
       )
-      if (isThisLoading) {
+      if (isThisUsersAnalysis && isThisLoading) {
         modalActions.push(
           <Button key="cancel" variation="link" size="small" onClick={cancelAnalysis}>
             cancel
