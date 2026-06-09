@@ -191,9 +191,7 @@ export function DianoiaView() {
           <Button variation="link" size="small" onClick={closeView}>← back</Button>
           <Heading level={5} style={{margin: 0}}>
             Argument{' '}
-            <span style={{fontFamily: 'Comic Sans MS, Comic Sans, cursive'}}>
-              {toAlphaIndex(viewPosition)}
-            </span>
+            {toAlphaIndex(viewPosition)}
             {' '}— Analysis
           </Heading>
         </View>
