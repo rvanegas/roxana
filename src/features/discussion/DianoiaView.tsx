@@ -168,7 +168,7 @@ export function DianoiaView() {
 
   return (
     <View style={{
-      position: 'absolute', inset: 0, zIndex: 100,
+      position: 'fixed', inset: 0, zIndex: 100,
       backgroundColor: 'white', overflowY: 'auto',
       display: 'flex', flexDirection: 'column',
     }}>
