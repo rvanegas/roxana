@@ -1,9 +1,77 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {useSelector} from 'react-redux'
 import {View, Button, Heading} from '@aws-amplify/ui-react'
 import {toAlphaIndex} from '../../app/util'
 import {useDianoia, DianoiaResultData, AnalyzedStep} from './DianoiaContext'
 import {selectDiscussions} from './discussionsSlice'
+
+function buildCopyText(argLabel: string, steps: AnalyzedStep[], data: DianoiaResultData | undefined): string {
+  const lines: string[] = [`Argument ${argLabel} — Analysis`, '']
+
+  if (steps.length > 0) {
+    lines.push('Propositions')
+    for (const {sentence, displayIdx} of steps) {
+      lines.push(`  ${displayIdx}. ${sentence.content}`)
+    }
+    lines.push('')
+  }
+
+  if (!data) return lines.join('\n').trimEnd()
+
+  const symbolOrder = steps.map(s => String(s.displayIdx))
+  function byOrder<T extends {symbol: string}>(items: T[]): T[] {
+    return [...items].sort((a, b) => symbolOrder.indexOf(a.symbol) - symbolOrder.indexOf(b.symbol))
+  }
+
+  if (data.truthEvaluations.length > 0) {
+    lines.push('Truth')
+    for (const ev of byOrder(data.truthEvaluations)) {
+      lines.push(`  ${ev.symbol}: ${Math.round(ev.truth_value * 100)}%${ev.reasoning ? ' — ' + ev.reasoning : ''}`)
+    }
+    lines.push('')
+  }
+
+  if (data.validityEvaluations.length > 0) {
+    lines.push('Content validity')
+    for (const ev of byOrder(data.validityEvaluations)) {
+      lines.push(`  ${ev.symbol}: ${Math.round(ev.validity_value * 100)}%${ev.reasoning ? ' — ' + ev.reasoning : ''}`)
+    }
+    lines.push('')
+  }
+
+  if (data.formalizations.length > 0) {
+    lines.push('Formalizations')
+    for (const f of byOrder(data.formalizations)) {
+      lines.push(`  ${f.symbol}: ${f.ascii}`)
+    }
+    lines.push('')
+  }
+
+  if (data.propositionEvaluations.length > 0) {
+    const argPct = data.argumentValidity !== null ? ` — argument: ${Math.round(data.argumentValidity * 100)}%` : ''
+    lines.push(`Formal validity${argPct}`)
+    for (const ev of byOrder(data.propositionEvaluations)) {
+      lines.push(`  ${ev.symbol}: ${Math.round(ev.validity * 100)}%${ev.reasoning ? ' — ' + ev.reasoning : ''}`)
+    }
+    lines.push('')
+  }
+
+  const allIssues = [...data.formalLogicalIssues, ...data.contentLogicalIssues]
+  if (allIssues.length > 0) {
+    lines.push('Logical issues')
+    for (const issue of allIssues) lines.push(`  - ${issue}`)
+    lines.push('')
+  }
+
+  const allRecs = [...data.formalRecommendations, ...data.contentRecommendations]
+  if (allRecs.length > 0) {
+    lines.push('Recommendations')
+    for (const rec of allRecs) lines.push(`  - ${rec}`)
+    lines.push('')
+  }
+
+  return lines.join('\n').trimEnd()
+}
 
 function ScoreBadge({value}: {value: number}) {
   const pct = Math.round(value * 100)
@@ -144,6 +212,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
 export function DianoiaView() {
   const {viewPosition, closeView} = useDianoia()
   const discussions = useSelector(selectDiscussions)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -189,11 +258,34 @@ export function DianoiaView() {
           flexShrink: 0,
         }}>
           <Button variation="link" size="small" onClick={closeView}>← back</Button>
-          <Heading level={5} style={{margin: 0}}>
+          <Heading level={5} style={{margin: 0, flex: 1}}>
             Argument{' '}
             {toAlphaIndex(viewPosition)}
             {' '}— Analysis
           </Heading>
+          <Button
+            variation="link"
+            size="small"
+            title="Copy to clipboard"
+            onClick={() => {
+              const text = buildCopyText(toAlphaIndex(viewPosition), steps, data)
+              navigator.clipboard.writeText(text).then(() => {
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              })
+            }}
+          >
+            {copied ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2 8l4 4 8-8" stroke="seagreen" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="5" y="1" width="9" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+                <rect x="1" y="4" width="9" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="white"/>
+              </svg>
+            )}
+          </Button>
         </View>
 
         <div className="dianoia-content">
