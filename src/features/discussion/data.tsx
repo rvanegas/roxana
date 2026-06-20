@@ -681,10 +681,22 @@ function createDiscussionFromSelection() {
       }, ['id', 'index', 'status', 'owner', 'accepted', 'rejected', 'cleared', 'goal', 'hidden']))
     }
 
+    const remapSymbol = (sym: string) => String(propNumberMap.get(Number(sym)) ?? sym)
+    const remapAnalysis = (data: DianoiaResultData): DianoiaResultData => ({
+      ...data,
+      truthEvaluations: data.truthEvaluations.map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
+      validityEvaluations: data.validityEvaluations.map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
+      formalizations: data.formalizations.map(f => ({...f, symbol: remapSymbol(f.symbol)})),
+      propositionEvaluations: data.propositionEvaluations.map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
+      incoherentSets: data.incoherentSets.map(s => ({...s, symbols: s.symbols.map(remapSymbol)})),
+    })
+
     const sortedArgPositions = [...state.selectedArguments].sort((a, b) => a - b)
     const argEntries: object[] = []
+    const newAnalysisResults: Record<number, DianoiaResultData> = {}
     for (let i = 0; i < sortedArgPositions.length; i++) {
-      const sentence = state.arguments[sortedArgPositions[i]]
+      const oldPos = sortedArgPositions[i]
+      const sentence = state.arguments[oldPos]
       const newContent = propositionIndexesFromArgument(sentence)
         .map(n => propNumberMap.get(n)).join(' ')
       const response = await client().graphql({
@@ -694,10 +706,14 @@ function createDiscussionFromSelection() {
       argEntries.push(pick({
         ...sentence, id: response.data.createSentence.id, index: i + 1, content: newContent
       }, ['id', 'index', 'status', 'owner', 'accepted', 'rejected', 'cleared', 'goal', 'hidden']))
+      if (state.analysisResults[oldPos]) {
+        newAnalysisResults[i] = remapAnalysis(state.analysisResults[oldPos])
+      }
     }
 
     const layout = JSON.stringify({ propositions: propEntries, arguments: argEntries })
-    const variables = { input: { id: discussionId, version: 2, revision: 1, isPrivate: false, layout, pool: 1 } }
+    const analysisResults = JSON.stringify(newAnalysisResults)
+    const variables = { input: { id: discussionId, version: 2, revision: 1, isPrivate: false, layout, analysisResults, pool: 1 } }
     await client().graphql({ query: mutations.createDiscussion, variables })
     await dispatch(broadcastNavigation(discussionId))
     await dispatch(exitSelectMode())
