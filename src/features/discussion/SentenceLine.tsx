@@ -618,8 +618,8 @@ export function SentenceLine(props: SentenceProps) {
     const steps = displayPropositionIndexes.map((index, mapIndex) => {
       const proposition = propositions[index-1]
       const therefore = (mapIndex !== displayPropositionIndexes.length - 1) ? null :
-        <View columnStart={1} className={sentenceMetaClassName}>
-          <View style={{textAlign: 'right', fontSize: 'larger', lineHeight: '10px'}}>
+        <View columnStart={1} className={sentenceMetaClassName} style={{paddingTop: '3px'}}>
+          <View style={{textAlign: 'right', fontSize: 'larger'}}>
             {'\u2234'}
           </View>
         </View>
@@ -640,7 +640,7 @@ export function SentenceLine(props: SentenceProps) {
           {arrowCell}
           <View columnStart={2} className={sentenceIndexClassName}
             onClick={discussions.selectMode ? handleSelectToggle : undefined}>
-            <View style={{textAlign: 'right', color}}>{index}</View>
+            <View style={{textAlign: 'left', paddingLeft: '2px', color}}>{index}</View>
           </View>
           <View columnEnd={-2} className={sentenceEditorClassName} style={{paddingTop: '4px'}}
             onClick={discussions.selectMode ? handleSelectToggle : undefined}>{proposition.content}</View>
