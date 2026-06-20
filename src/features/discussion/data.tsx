@@ -712,9 +712,11 @@ function createDiscussionFromSelection() {
     }
 
     const layout = JSON.stringify({ propositions: propEntries, arguments: argEntries })
-    const analysisResults = JSON.stringify(newAnalysisResults)
-    const variables = { input: { id: discussionId, version: 2, revision: 1, isPrivate: false, layout, analysisResults, pool: 1 } }
-    await client().graphql({ query: mutations.createDiscussion, variables })
+    await client().graphql({ query: mutations.createDiscussion, variables: { input: { id: discussionId, version: 2, revision: 1, isPrivate: false, layout, pool: 1 } } })
+    if (Object.keys(newAnalysisResults).length > 0) {
+      const analysisResults = JSON.stringify(newAnalysisResults)
+      await client().graphql({ query: mutations.updateDiscussion, variables: { input: { id: discussionId, analysisResults } } })
+    }
     await dispatch(broadcastNavigation(discussionId))
     await dispatch(exitSelectMode())
     dispatch(setNewDiscussionId(discussionId))
