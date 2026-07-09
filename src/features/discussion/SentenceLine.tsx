@@ -9,7 +9,7 @@ import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
 import {useDianoia} from './DianoiaContext'
-import {toAlphaIndex, verticalPixelsBelowViewport} from '../../app/util'
+import {toAlphaIndex, verticalPixelsBelowViewport, scrollableAncestor} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
 import {selectDiscussions, propositionIndexesFromArgument,
   forcedPropositionPositions, discussionsSlice} from './discussionsSlice'
@@ -55,6 +55,7 @@ export function SentenceLine(props: SentenceProps) {
     discussions.sentenceModal.section === section &&
     discussions.sentenceModal.position === position
   const [offsetHeight, setOffsetHeight] = useState<number>(0)
+  const [, setRepositionTick] = useState(0)
   let canonicalContent
 
   function setEditorStateFromProp() {
@@ -80,7 +81,9 @@ export function SentenceLine(props: SentenceProps) {
     if (inSentenceModal && modalRef) {
       let pixelsBelow = verticalPixelsBelowViewport(modalRef.current)
       if (pixelsBelow > 0) {
-        sentenceListRef.current.scrollBy(0, pixelsBelow)
+        scrollableAncestor(sentenceListRef.current)?.scrollBy(0, pixelsBelow)
+        // the modal's fixed top was computed from the pre-scroll editor rect
+        setRepositionTick(t => t + 1)
       }
 
       const throttledHandleResize = throttle(function handleResize() {

@@ -50,6 +50,20 @@ export function verticalPixelsBelowViewport(element) {
   return rect.bottom - (window.innerHeight || document.documentElement.clientHeight)
 }
 
+// on narrow viewports the sentence list is not its own scroll container;
+// the nearest scrollable ancestor is the outlet wrapper in App
+export function scrollableAncestor(element: HTMLElement | null): HTMLElement | null {
+  while (element) {
+    const {overflowY} = getComputedStyle(element)
+    if ((overflowY === 'auto' || overflowY === 'scroll') &&
+        element.scrollHeight > element.clientHeight) {
+      return element
+    }
+    element = element.parentElement
+  }
+  return null
+}
+
 // function toLetters(index) {
 //   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 //   if (index < 26) {

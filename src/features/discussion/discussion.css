@@ -18,6 +18,13 @@ html, body {
   display: none;
 }
 
+/* scroll headroom so the sentence modal for the last sentence can be
+   scrolled fully into the viewport; on narrow viewports the lists are
+   stacked, so only the last one needs it */
+.sentence-list:last-child {
+  padding-bottom: 50vh;
+}
+
 @media (min-width: 768px) {
   .sentence-list-header-stacked {
     display: none;
@@ -39,6 +46,8 @@ html, body {
     height: 100%;
     overflow-y: auto;
     width: 50%;
+    /* side by side, each list is its own scroll container */
+    padding-bottom: 50vh;
   }
 }
 
