@@ -22,7 +22,7 @@ html, body {
    scrolled fully into the viewport; on narrow viewports the lists are
    stacked, so only the last one needs it */
 .sentence-list:last-child {
-  padding-bottom: 50vh;
+  padding-bottom: 200px;
 }
 
 @media (min-width: 768px) {
@@ -47,7 +47,7 @@ html, body {
     overflow-y: auto;
     width: 50%;
     /* side by side, each list is its own scroll container */
-    padding-bottom: 50vh;
+    padding-bottom: 200px;
   }
 }
 
