@@ -48,8 +48,7 @@ function buildCopyText(argLabel: string, steps: AnalyzedStep[], data: DianoiaRes
   }
 
   if (data.propositionEvaluations.length > 0) {
-    const argPct = data.argumentValidity !== null ? ` — argument: ${Math.round(data.argumentValidity * 100)}%` : ''
-    lines.push(`Formal validity${argPct}`)
+    lines.push('Formal validity')
     for (const ev of byOrder(data.propositionEvaluations)) {
       lines.push(`  ${ev.symbol}: ${Math.round(ev.validity * 100)}%${ev.reasoning ? ' — ' + ev.reasoning : ''}`)
     }
@@ -113,11 +112,10 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
   const hasPropEvals = data.propositionEvaluations.length > 0
   const hasFormalIssues = data.formalLogicalIssues.length > 0
   const hasFormalRecs = data.formalRecommendations.length > 0
-  const hasArgValidity = data.argumentValidity !== null
 
   const hasAnything = hasFormalizations || hasTruth || hasValidity
     || hasContentIssues || hasContentRecs || hasPropEvals || hasFormalIssues
-    || hasFormalRecs || hasArgValidity
+    || hasFormalRecs
 
   if (!hasAnything) {
     return <span style={{color: '#888'}}>No results available.</span>
@@ -165,7 +163,7 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
       )}
 
       {hasPropEvals && (
-        <ResultSection title={`Formal validity${hasArgValidity ? ` — argument: ${Math.round(data.argumentValidity! * 100)}%` : ''}`}>
+        <ResultSection title="Formal validity">
           {byArgOrder(data.propositionEvaluations).map((ev, i) => (
             <View key={i} style={{marginBottom: '10px'}}>
               <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
