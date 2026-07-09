@@ -655,6 +655,19 @@ function broadcastNavigation(newDiscussionId: string) {
   }
 }
 
+async function generateAvailableDiscussionId() {
+  // Sentences reference the discussion id before the Discussion row exists, so a
+  // collision cannot be retried after the fact — verify availability upfront.
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const id = generateDiscussionId()
+    const response = await client().graphql({
+      query: queries.getDiscussion, variables: { id }
+    }) as {data: any}
+    if (!response.data.getDiscussion) return id
+  }
+  throw new Error('could not find an available discussion id')
+}
+
 function createDiscussionFromSelection() {
   const {setNewDiscussionId} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -667,7 +680,7 @@ function createDiscussionFromSelection() {
     const propNumberMap = new Map<number, number>()
     allPropPositions.forEach((pos, i) => propNumberMap.set(pos + 1, i + 1))
 
-    const discussionId = generateDiscussionId()
+    const discussionId = await generateAvailableDiscussionId()
 
     const propEntries: object[] = []
     for (let i = 0; i < allPropPositions.length; i++) {
