@@ -129,7 +129,7 @@ function Home() {
     // @ts-ignore
     <CurrentUserContext.Provider value={{user, route}}>
       <View padding="10px 10px 0"
-        style={{height: '100vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden'}}>
+        style={{height: '100dvh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden'}}>
         <Flex
           justifyContent="space-between"
           className="navbar"

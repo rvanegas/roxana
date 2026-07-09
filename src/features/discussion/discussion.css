@@ -1,4 +1,10 @@
 
+/* the app root is exactly 100dvh; any document-level scroll would carry the navbar off-screen */
+html, body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .view-toggles {
   width: 100%;
 }
