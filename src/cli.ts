@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { DynamoDBClient, ScanCommand, DeleteItemCommand,
-  QueryCommand } from '@aws-sdk/client-dynamodb'
+  QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb'
 
 const db = new DynamoDBClient({ region: 'us-west-2' })
 
@@ -93,10 +93,28 @@ async function deleteDiscussion() {
   console.log('Deleted.')
 }
 
+async function publishDiscussion() {
+  const id = process.argv[3]
+  if (!id) {
+    console.error('Usage: roxana publish <id>')
+    process.exit(1)
+  }
+
+  await db.send(new UpdateItemCommand({
+    TableName: table('Discussion'),
+    Key: { id: { S: id } },
+    UpdateExpression: 'SET isPrivate = :f',
+    ExpressionAttributeValues: { ':f': { BOOL: false } },
+    ConditionExpression: 'attribute_exists(id)',
+  }))
+  console.log(`Discussion ${id} is now public.`)
+}
+
 const commands: Record<string, () => Promise<void>> = {
   discussions: listDiscussions,
   users:       listUsers,
   delete:      deleteDiscussion,
+  publish:     publishDiscussion,
 }
 
 const cmd = process.argv[2]
