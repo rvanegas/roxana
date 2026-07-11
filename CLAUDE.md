@@ -21,6 +21,10 @@ The `cli/` directory is a separate TypeScript tool for AWS admin operations; run
 - **Cognito user pool and client**: Cognito → User pools → roxana31481408_userpool_31481408-roxana
 - **Identity pool**: Cognito → Identity pools
 
+## ⚠️ AppSync API key expires 2027-06-07
+
+**If today is on or after 2027-05-07, remind the user immediately** — even if the current task is unrelated: the manually created AppSync API key (used by the frontend via `VITE_APPSYNC_API_KEY`, by mdc via `roxana_api_key` in `~/.config/mdc/config.toml`, and in `aws-exports.js`) expires **2027-06-07** and the app loses all API access when it does. To renew: AWS Console → AppSync → roxana-roxana → Settings → create a new key (365-day max), then update it in all three places above, including the Amplify Hosting environment variables. Do not re-enable CloudFormation-managed keys (`CreateAPIKey` stays `0` in `amplify/backend/api/roxana/parameters.json`): a CFN-managed key that expired in 2023 silently broke every `amplify push` for months. Update the dates in this section after renewing.
+
 ## Architecture
 
 **Roxana** is a React/TypeScript SPA for structured rational discussions. Users propose ideas (propositions) and supporting/opposing arguments (arguments) expressed as discrete sentences; other participants accept, reject, or clear each sentence. AWS Amplify provides the full backend.
