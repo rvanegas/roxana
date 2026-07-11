@@ -55,6 +55,15 @@ function buildCopyText(argLabel: string, steps: AnalyzedStep[], data: DianoiaRes
     lines.push('')
   }
 
+  const phrasingEvaluations = data.phrasingEvaluations ?? []
+  if (phrasingEvaluations.length > 0) {
+    lines.push('Phrasing')
+    for (const ev of byOrder(phrasingEvaluations)) {
+      lines.push(`  ${ev.symbol}: ${ev.issues.join('; ')} — ${ev.recommendation}`)
+    }
+    lines.push('')
+  }
+
   const allIssues = [...data.formalLogicalIssues, ...data.contentLogicalIssues]
   if (allIssues.length > 0) {
     lines.push('Logical issues')
@@ -112,10 +121,12 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
   const hasPropEvals = data.propositionEvaluations.length > 0
   const hasFormalIssues = data.formalLogicalIssues.length > 0
   const hasFormalRecs = data.formalRecommendations.length > 0
+  const phrasingEvaluations = data.phrasingEvaluations ?? []
+  const hasPhrasing = phrasingEvaluations.length > 0
 
   const hasAnything = hasFormalizations || hasTruth || hasValidity
     || hasContentIssues || hasContentRecs || hasPropEvals || hasFormalIssues
-    || hasFormalRecs
+    || hasFormalRecs || hasPhrasing
 
   if (!hasAnything) {
     return <span style={{color: '#888'}}>No results available.</span>
@@ -177,6 +188,20 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
       )}
 
 
+
+      {hasPhrasing && (
+        <ResultSection title="Phrasing">
+          {byArgOrder(phrasingEvaluations).map((ev, i) => (
+            <View key={i} style={{marginBottom: '10px'}}>
+              <PropIdx symbol={ev.symbol} symbolToIdx={symbolToIdx} />
+              <span style={{color: '#444'}}>{ev.issues.join('; ')}</span>
+              {ev.recommendation && (
+                <div style={{marginTop: '2px', marginLeft: '20px', color: '#444'}}>{ev.recommendation}</div>
+              )}
+            </View>
+          ))}
+        </ResultSection>
+      )}
 
       {(hasFormalIssues || hasContentIssues) && (
         <ResultSection title="Logical issues">

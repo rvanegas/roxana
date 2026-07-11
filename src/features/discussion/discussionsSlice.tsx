@@ -3,7 +3,7 @@ import {pull, uniq} from 'lodash'
 import Cookies from 'universal-cookie'
 import {dlog} from '../../app/util'
 import {Section, Sentence, SentenceStatus} from './discussion.d'
-import {DianoiaResultData} from './dianoia.types'
+import {AuditResult, DianoiaResultData} from './dianoia.types'
 
 const cookies = new Cookies()
 
@@ -57,6 +57,7 @@ interface State {
   selectedArguments: number[]
   analysisResults: Record<number, DianoiaResultData>
   analyzingState: {position: number, username: string} | null
+  auditResult: AuditResult | null
   // users: string[]
 }
 
@@ -96,6 +97,7 @@ const initialState: State = {
   selectedArguments: [],
   analysisResults: {},
   analyzingState: null,
+  auditResult: null,
   // users: [],
 }
 
@@ -180,6 +182,7 @@ export const discussionsSlice = createSlice({
         selectedArguments: [],
         analysisResults: {},
         analyzingState: null,
+        auditResult: null,
       })
     },
     incrementRevision(state, action) {
@@ -355,11 +358,12 @@ export const discussionsSlice = createSlice({
         })
         state[section] = newSentences[section].concat(reindexedUnsavedSentences)
       }
-      const {revision, inviteCode, isPrivate, newSentences, selectMode, selectedPropositions, selectedArguments, analysisResults, analyzingState}:
+      const {revision, inviteCode, isPrivate, newSentences, selectMode, selectedPropositions, selectedArguments, analysisResults, analyzingState, auditResult}:
         {revision: number, inviteCode: string, isPrivate: boolean, newSentences: Sentence[],
          selectMode: boolean, selectedPropositions: number[], selectedArguments: number[],
          analysisResults?: Record<number, DianoiaResultData>,
-         analyzingState?: {position: number, username: string} | null} =
+         analyzingState?: {position: number, username: string} | null,
+         auditResult?: AuditResult | null} =
         action.payload
       state.revision = revision
       state.isPrivate = isPrivate
@@ -372,6 +376,9 @@ export const discussionsSlice = createSlice({
       }
       if (analyzingState !== undefined) {
         state.analyzingState = analyzingState
+      }
+      if (auditResult !== undefined) {
+        state.auditResult = auditResult
       }
       mergeInNewSentences('propositions')
       mergeInNewSentences('arguments')
@@ -389,6 +396,9 @@ export const discussionsSlice = createSlice({
     },
     setAnalyzingState(state, action: {payload: {position: number, username: string} | null}) {
       state.analyzingState = action.payload
+    },
+    setAuditResult(state, action: {payload: AuditResult | null}) {
+      state.auditResult = action.payload
     },
   }
 })

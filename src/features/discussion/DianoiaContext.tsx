@@ -1,13 +1,16 @@
 import React, {createContext, useContext, useState, useRef} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import {AppDispatch} from '../../app/store'
-import {selectDiscussions} from './discussionsSlice'
-import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction, setAnalyzingStateAction} from './data'
+import {selectDiscussions, propositionIndexesFromArgument} from './discussionsSlice'
+import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction,
+  setAnalyzingStateAction, saveAuditResultAction} from './data'
 import {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
-  IncoherentSet, FormalizationItem, PropositionEvaluation} from './dianoia.types'
+  IncoherentSet, FormalizationItem, PropositionEvaluation,
+  PhrasingEvaluation, AuditFinding, AuditResult} from './dianoia.types'
 
 export type {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
-  IncoherentSet, FormalizationItem, PropositionEvaluation}
+  IncoherentSet, FormalizationItem, PropositionEvaluation,
+  PhrasingEvaluation, AuditFinding, AuditResult}
 
 export type AnalyzedStep = {sentence: {content: string}, displayIdx: number}
 
@@ -34,12 +37,17 @@ interface DianoiaState {
   analyzedPosition: number | null
   analysisViewOpen: boolean
   viewPosition: number | null
+  auditStatus: 'idle' | 'loading' | 'error'
+  auditViewOpen: boolean
   checkRateLimited: (username: string | undefined) => boolean
   startAnalysis: (steps: AnalyzedStep[], discussionId: string, argumentPosition: number, username?: string) => void
   cancelAnalysis: () => void
   resetAnalysis: (position?: number) => void
   openView: (position: number) => void
   closeView: () => void
+  runAudit: () => void
+  openAuditView: () => void
+  closeAuditView: () => void
 }
 
 const DianoiaContext = createContext<DianoiaState>({
@@ -47,12 +55,17 @@ const DianoiaContext = createContext<DianoiaState>({
   analyzedPosition: null,
   analysisViewOpen: false,
   viewPosition: null,
+  auditStatus: 'idle',
+  auditViewOpen: false,
   checkRateLimited: () => false,
   startAnalysis: () => {},
   cancelAnalysis: () => {},
   resetAnalysis: () => {},
   openView: () => {},
   closeView: () => {},
+  runAudit: () => {},
+  openAuditView: () => {},
+  closeAuditView: () => {},
 })
 
 export function DianoiaProvider({children}: {children: React.ReactNode}) {
@@ -62,6 +75,8 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
   const [analyzedPosition, setAnalyzedPosition] = useState<number | null>(null)
   const [analysisViewOpen, setViewOpen] = useState(false)
   const [viewPosition, setViewPosition] = useState<number | null>(null)
+  const [auditStatus, setAuditStatus] = useState<DianoiaState['auditStatus']>('idle')
+  const [auditViewOpen, setAuditViewOpen] = useState(false)
   const [lastAnalyzedStamp, setLastAnalyzedStamp] = useState<string | null>(
     () => localStorage.getItem(LAST_ANALYZED_KEY)
   )
@@ -168,6 +183,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             contentLogicalIssues: [],
             contentRecommendations: [],
             formalizations: [],
+            phrasingEvaluations: [],
             propositionEvaluations: [],
             argumentValidity: null,
             formalLogicalIssues: [],
@@ -193,6 +209,12 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             const c = r.result_content
             if (!c) continue
             merged.formalizations.push(...(c.formalizations ?? []))
+          }
+
+          for (const r of (rba.phrasing_evaluator ?? [])) {
+            const c = r.result_content
+            if (!c) continue
+            merged.phrasingEvaluations!.push(...(c.phrasing_evaluations ?? []))
           }
 
           for (const r of (rba.form_evaluator ?? [])) {
@@ -221,11 +243,65 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     }, 1000)
   }
 
+  async function runAudit() {
+    const baseUrl = import.meta.env.VITE_DIANOIA_URL
+    if (!baseUrl) return
+
+    // The audit covers the whole graph: every proposition is a step, and each
+    // argument sentence ("1 2 3" = justifiers then conclusion) contributes
+    // justifier edges to its concluding proposition.
+    const justifiersBySymbol: Record<string, Set<string>> = {}
+    for (const argument of discussions.arguments) {
+      const indexes = propositionIndexesFromArgument(argument)
+      if (indexes.length < 2) continue
+      const conclusion = String(indexes[indexes.length - 1])
+      justifiersBySymbol[conclusion] ??= new Set()
+      for (const index of indexes.slice(0, -1)) {
+        justifiersBySymbol[conclusion].add(String(index))
+      }
+    }
+    const argument = discussions.propositions
+      .map((sentence: {content: string}, i: number) => ({
+        symbol: String(i + 1),
+        proposition: sentence.content,
+        justifiers: Array.from(justifiersBySymbol[String(i + 1)] ?? []),
+        truth_score: '',
+      }))
+      .filter((step: {proposition: string}) => step.proposition.trim() !== '')
+
+    setAuditStatus('loading')
+    try {
+      const res = await fetch(`${baseUrl}/api/argument/audit`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({argument, file_ids: []}),
+      })
+      if (!res.ok) throw new Error(`audit failed: ${res.status}`)
+      const result: AuditResult = await res.json()
+      dispatch(saveAuditResultAction(result))
+      setAuditStatus('idle')
+      setAuditViewOpen(true)
+    } catch (e) {
+      console.error('[dianoia] audit error', e)
+      setAuditStatus('error')
+    }
+  }
+
+  function openAuditView() {
+    setAuditViewOpen(true)
+  }
+
+  function closeAuditView() {
+    setAuditViewOpen(false)
+  }
+
   return (
     <DianoiaContext.Provider value={{
       status, analyzedPosition, analysisViewOpen, viewPosition,
+      auditStatus, auditViewOpen,
       checkRateLimited,
       startAnalysis, cancelAnalysis, resetAnalysis, openView, closeView,
+      runAudit, openAuditView, closeAuditView,
     }}>
       {children}
     </DianoiaContext.Provider>

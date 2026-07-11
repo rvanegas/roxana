@@ -6,7 +6,7 @@ import * as custom from '../../graphql/custom'
 import {dlog, hoursAgo, isPresent,
   generateDiscussionId, generateInviteCode} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
-import {DianoiaResultData} from './dianoia.types'
+import {AuditResult, DianoiaResultData} from './dianoia.types'
 import {createDiscussionLayout, createNewDiscussionLayout,
   newSentenceFromLayoutEntry, parseDiscussionLayout} from './layout'
 import {discussionsSlice, nextUniqueIndex, sentenceCommittedOthers,
@@ -59,8 +59,11 @@ function updateDiscussionLayout(changeNote: string) {
       const analyzingState = state.discussions.analyzingState
         ? JSON.stringify(state.discussions.analyzingState)
         : null
+      const auditResult = state.discussions.auditResult
+        ? JSON.stringify(state.discussions.auditResult)
+        : null
       const variables = {
-        input: {id, version, revision, layout, goalsSummary, analysisResults, analyzingState, inviteCode, pool},
+        input: {id, version, revision, layout, goalsSummary, analysisResults, analyzingState, auditResult, inviteCode, pool},
         condition: {revision: {eq: oldRevision}}
       }
       await client().graphql({ query: mutations.updateDiscussion, variables })
@@ -256,7 +259,7 @@ function getDiscussion(discussionInput) {
       }
     }
 
-    const commonAttributes = ['id', 'revision', 'version', 'layout', 'analysisResults', 'analyzingState', 'updatedAt', 'inviteCode', 'isPrivate']
+    const commonAttributes = ['id', 'revision', 'version', 'layout', 'analysisResults', 'analyzingState', 'auditResult', 'updatedAt', 'inviteCode', 'isPrivate']
     if (isUpdate) {
       discussion = pick(discussionInput, commonAttributes) as any
     }
@@ -298,6 +301,14 @@ function getDiscussion(discussionInput) {
     } catch {
       analyzingState = null
     }
+    let auditResult: AuditResult | null = null
+    try {
+      auditResult = discussion['auditResult']
+        ? JSON.parse(discussion['auditResult'])
+        : null
+    } catch {
+      auditResult = null
+    }
     dispatch(updateDiscussion({
       revision: discussion.revision,
       isPrivate: discussion.isPrivate,
@@ -308,6 +319,7 @@ function getDiscussion(discussionInput) {
       selectedArguments: parsedLayout.selectedArguments || [],
       analysisResults,
       analyzingState,
+      auditResult,
     }))
     if (isUpdate && parsedLayout.navigateTo) {
       const {setNewDiscussionId} = discussionsSlice.actions
@@ -702,6 +714,7 @@ function createDiscussionFromSelection() {
       formalizations: data.formalizations.map(f => ({...f, symbol: remapSymbol(f.symbol)})),
       propositionEvaluations: data.propositionEvaluations.map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
       incoherentSets: data.incoherentSets.map(s => ({...s, symbols: s.symbols.map(remapSymbol)})),
+      phrasingEvaluations: (data.phrasingEvaluations ?? []).map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
     })
 
     const sortedArgPositions = [...state.selectedArguments].sort((a, b) => a - b)
@@ -844,6 +857,31 @@ function deleteArgumentAnalysisResults(position: number) {
 
 export function saveArgumentAnalysisResultsAction(position: number, data: DianoiaResultData) {
   return (dispatch) => dispatch(saveArgumentAnalysisResults(position, data))
+}
+
+function saveAuditResult(result: AuditResult) {
+  const {setAuditResult} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    try {
+      dispatch(setAuditResult(result))
+      await dispatch(updateDiscussionLayout('save audit result'))
+      tryAgainTrials = 0
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
+        tryAgainTrials++
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withoutSentences: true}))
+        dispatch(saveAuditResultAction(result))
+      } else {
+        throw exception
+      }
+    }
+  }
+}
+
+export function saveAuditResultAction(result: AuditResult) {
+  return (dispatch) => dispatch(saveAuditResult(result))
 }
 
 export function deleteArgumentAnalysisResultsAction(position: number) {

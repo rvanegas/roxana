@@ -10,6 +10,7 @@ type Discussion @model {
   goalsSummary: String
   analysisResults: String
   analyzingState: String
+  auditResult: String
   isPrivate: Boolean!
   inviteCode: String @index(name: "byInviteCode", queryField: "queryDiscussionsByInviteCode")
   sentences: [Sentence!] @hasMany(indexName: "byDiscussion", fields: ["id"])
