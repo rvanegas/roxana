@@ -9,32 +9,23 @@ export const getDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      analysisResults
+      analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -51,19 +42,18 @@ export const listDiscussions = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -80,20 +70,19 @@ export const getSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -109,22 +98,12 @@ export const listSentences = /* GraphQL */ `
         content
         searchable
         discussionId
-        discussion {
-          id
-          version
-          revision
-          layout
-          goalsSummary
-          isPrivate
-          inviteCode
-          pool
-          createdAt
-          updatedAt
-        }
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -133,17 +112,12 @@ export const getUser = /* GraphQL */ `
     getUser(username: $username) {
       username
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -164,13 +138,12 @@ export const listUsers = /* GraphQL */ `
     ) {
       items {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -185,29 +158,26 @@ export const getUserDiscussion = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       userId
       user {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -221,28 +191,13 @@ export const listUserDiscussions = /* GraphQL */ `
       items {
         id
         discussionId
-        discussion {
-          id
-          version
-          revision
-          layout
-          goalsSummary
-          isPrivate
-          inviteCode
-          pool
-          createdAt
-          updatedAt
-        }
         userId
-        user {
-          username
-          createdAt
-          updatedAt
-        }
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -267,19 +222,18 @@ export const queryDiscussionsByInviteCode = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -306,19 +260,18 @@ export const queryDiscussionsByPool = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -340,28 +293,13 @@ export const queryUserDiscussionByDiscussionId = /* GraphQL */ `
       items {
         id
         discussionId
-        discussion {
-          id
-          version
-          revision
-          layout
-          goalsSummary
-          isPrivate
-          inviteCode
-          pool
-          createdAt
-          updatedAt
-        }
         userId
-        user {
-          username
-          createdAt
-          updatedAt
-        }
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;
@@ -385,28 +323,13 @@ export const queryUserDiscussionsByUserId = /* GraphQL */ `
       items {
         id
         discussionId
-        discussion {
-          id
-          version
-          revision
-          layout
-          goalsSummary
-          isPrivate
-          inviteCode
-          pool
-          createdAt
-          updatedAt
-        }
         userId
-        user {
-          username
-          createdAt
-          updatedAt
-        }
         createdAt
         updatedAt
+        __typename
       }
       nextToken
+      __typename
     }
   }
 `;

@@ -9,149 +9,119 @@ export const onDiscussionById = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      analysisResults
+      analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onCreateDiscussion = /* GraphQL */ `
-  subscription OnCreateDiscussion {
-    onCreateDiscussion {
+  subscription OnCreateDiscussion(
+    $filter: ModelSubscriptionDiscussionFilterInput
+  ) {
+    onCreateDiscussion(filter: $filter) {
       id
       version
       revision
       layout
       goalsSummary
+      analysisResults
+      analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onUpdateDiscussion = /* GraphQL */ `
-  subscription OnUpdateDiscussion {
-    onUpdateDiscussion {
+  subscription OnUpdateDiscussion(
+    $filter: ModelSubscriptionDiscussionFilterInput
+  ) {
+    onUpdateDiscussion(filter: $filter) {
       id
       version
       revision
       layout
       goalsSummary
+      analysisResults
+      analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onDeleteDiscussion = /* GraphQL */ `
-  subscription OnDeleteDiscussion {
-    onDeleteDiscussion {
+  subscription OnDeleteDiscussion(
+    $filter: ModelSubscriptionDiscussionFilterInput
+  ) {
+    onDeleteDiscussion(filter: $filter) {
       id
       version
       revision
       layout
       goalsSummary
+      analysisResults
+      analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onCreateSentence = /* GraphQL */ `
-  subscription OnCreateSentence {
-    onCreateSentence {
+  subscription OnCreateSentence($filter: ModelSubscriptionSentenceFilterInput) {
+    onCreateSentence(filter: $filter) {
       id
       content
       searchable
@@ -162,26 +132,25 @@ export const onCreateSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onUpdateSentence = /* GraphQL */ `
-  subscription OnUpdateSentence {
-    onUpdateSentence {
+  subscription OnUpdateSentence($filter: ModelSubscriptionSentenceFilterInput) {
+    onUpdateSentence(filter: $filter) {
       id
       content
       searchable
@@ -192,26 +161,25 @@ export const onUpdateSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onDeleteSentence = /* GraphQL */ `
-  subscription OnDeleteSentence {
-    onDeleteSentence {
+  subscription OnDeleteSentence($filter: ModelSubscriptionSentenceFilterInput) {
+    onDeleteSentence(filter: $filter) {
       id
       content
       searchable
@@ -222,83 +190,69 @@ export const onDeleteSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onCreateUser = /* GraphQL */ `
-  subscription OnCreateUser {
-    onCreateUser {
+  subscription OnCreateUser($filter: ModelSubscriptionUserFilterInput) {
+    onCreateUser(filter: $filter) {
       username
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onUpdateUser = /* GraphQL */ `
-  subscription OnUpdateUser {
-    onUpdateUser {
+  subscription OnUpdateUser($filter: ModelSubscriptionUserFilterInput) {
+    onUpdateUser(filter: $filter) {
       username
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onDeleteUser = /* GraphQL */ `
-  subscription OnDeleteUser {
-    onDeleteUser {
+  subscription OnDeleteUser($filter: ModelSubscriptionUserFilterInput) {
+    onDeleteUser(filter: $filter) {
       username
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onCreateUserDiscussion = /* GraphQL */ `
-  subscription OnCreateUserDiscussion {
-    onCreateUserDiscussion {
+  subscription OnCreateUserDiscussion(
+    $filter: ModelSubscriptionUserDiscussionFilterInput
+  ) {
+    onCreateUserDiscussion(filter: $filter) {
       id
       discussionId
       discussion {
@@ -307,35 +261,34 @@ export const onCreateUserDiscussion = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       userId
       user {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onUpdateUserDiscussion = /* GraphQL */ `
-  subscription OnUpdateUserDiscussion {
-    onUpdateUserDiscussion {
+  subscription OnUpdateUserDiscussion(
+    $filter: ModelSubscriptionUserDiscussionFilterInput
+  ) {
+    onUpdateUserDiscussion(filter: $filter) {
       id
       discussionId
       discussion {
@@ -344,35 +297,34 @@ export const onUpdateUserDiscussion = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       userId
       user {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
 export const onDeleteUserDiscussion = /* GraphQL */ `
-  subscription OnDeleteUserDiscussion {
-    onDeleteUserDiscussion {
+  subscription OnDeleteUserDiscussion(
+    $filter: ModelSubscriptionUserDiscussionFilterInput
+  ) {
+    onDeleteUserDiscussion(filter: $filter) {
       id
       discussionId
       discussion {
@@ -381,29 +333,26 @@ export const onDeleteUserDiscussion = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       userId
       user {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;

@@ -12,32 +12,23 @@ export const createDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      analysisResults
+      analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -54,32 +45,21 @@ export const updateDiscussion = /* GraphQL */ `
       goalsSummary
       analysisResults
       analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -94,32 +74,23 @@ export const deleteDiscussion = /* GraphQL */ `
       revision
       layout
       goalsSummary
+      analysisResults
+      analyzingState
+      auditResult
       isPrivate
       inviteCode
       sentences {
-        items {
-          id
-          content
-          searchable
-          discussionId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       pool
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -139,20 +110,19 @@ export const createSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -172,20 +142,19 @@ export const updateSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -205,20 +174,19 @@ export const deleteSentence = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -230,17 +198,12 @@ export const createUser = /* GraphQL */ `
     createUser(input: $input, condition: $condition) {
       username
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -252,17 +215,12 @@ export const updateUser = /* GraphQL */ `
     updateUser(input: $input, condition: $condition) {
       username
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -274,17 +232,12 @@ export const deleteUser = /* GraphQL */ `
     deleteUser(input: $input, condition: $condition) {
       username
       userDiscussions {
-        items {
-          id
-          discussionId
-          userId
-          createdAt
-          updatedAt
-        }
         nextToken
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -302,29 +255,26 @@ export const createUserDiscussion = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       userId
       user {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -342,29 +292,26 @@ export const updateUserDiscussion = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       userId
       user {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -382,29 +329,26 @@ export const deleteUserDiscussion = /* GraphQL */ `
         revision
         layout
         goalsSummary
+        analysisResults
+        analyzingState
+        auditResult
         isPrivate
         inviteCode
-        sentences {
-          nextToken
-        }
-        userDiscussions {
-          nextToken
-        }
         pool
         createdAt
         updatedAt
+        __typename
       }
       userId
       user {
         username
-        userDiscussions {
-          nextToken
-        }
         createdAt
         updatedAt
+        __typename
       }
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
