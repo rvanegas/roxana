@@ -109,10 +109,11 @@ export function Discussion() {
   const anyArgumentDefined = discussions.arguments.some(
     argument => propositionIndexesFromArgument(argument).length >= 2
   )
+  const showAuditButton = false
   const auditResult = discussions.auditResult
   const auditButtons = !import.meta.env.VITE_DIANOIA_URL || !anyArgumentDefined ? undefined : (
     <span style={{display: 'inline-block'}}>
-      {username && (
+      {showAuditButton && username && (
         <Button variation="link" size="small" isDisabled={auditStatus === 'loading'}
           onClick={runAudit}>
           audit
