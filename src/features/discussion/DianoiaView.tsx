@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react'
-import {useSelector} from 'react-redux'
+import {useSelector, useDispatch} from 'react-redux'
 import {View, Button, Heading} from '@aws-amplify/ui-react'
+import {AppDispatch} from '../../app/store'
 import {toAlphaIndex} from '../../app/util'
 import {useDianoia, DianoiaResultData, ImproverRecommendation, AnalyzedStep} from './DianoiaContext'
 import {selectDiscussions} from './discussionsSlice'
+import {applyRecommendationAddAction, applyRecommendationRewriteAction, isActionable} from './data'
 
 function buildCopyText(argLabel: string, steps: AnalyzedStep[], data: DianoiaResultData | undefined): string {
   const lines: string[] = [`Argument ${argLabel} — Analysis`, '']
@@ -241,12 +243,38 @@ const IMPACT_COLOR: Record<string, string> = {
 }
 
 function PropositionChangeRow(
-  {change, symbolToIdx}: {change: ImproverRecommendation['propositions'][number], symbolToIdx: Record<string, number>}
+  {change, fallbackJustifies, symbolToIdx}: {
+    change: ImproverRecommendation['propositions'][number],
+    fallbackJustifies: string,
+    symbolToIdx: Record<string, number>,
+  }
 ) {
+  const dispatch = useDispatch<AppDispatch>()
+  const discussions = useSelector(selectDiscussions)
+  const [applied, setApplied] = useState<'' | 'added' | 'rewritten'>('')
+
   const isRewrite = change.type === 'rewrite'
   const label = isRewrite
     ? `Rewrite ${change.original_symbol != null ? (symbolToIdx[change.original_symbol] ?? change.original_symbol) : ''}`
     : `New${change.justifies_symbol != null ? ` → ${symbolToIdx[change.justifies_symbol] ?? change.justifies_symbol}` : ''}`
+
+  const username = discussions.username
+  const targetPosition = change.original_symbol != null ? Number(change.original_symbol) - 1 : -1
+  const targetSentence = discussions.propositions[targetPosition]
+  const canRewrite = !!username && !!targetSentence && isActionable.edit(targetSentence, username)
+
+  function handleAdd() {
+    const justifiesSymbol = isRewrite ? null : (change.justifies_symbol ?? fallbackJustifies ?? null)
+    dispatch(applyRecommendationAddAction({content: change.proposition, justifiesSymbol}))
+    setApplied('added')
+  }
+
+  function handleRewrite() {
+    if (!canRewrite) return
+    dispatch(applyRecommendationRewriteAction({position: targetPosition, content: change.proposition}))
+    setApplied('rewritten')
+  }
+
   return (
     <View style={{marginTop: '6px', marginLeft: '20px'}}>
       <span style={{
@@ -257,6 +285,30 @@ function PropositionChangeRow(
         {label}
       </span>
       <span style={{color: '#333'}}>{change.proposition}</span>
+      <div style={{marginTop: '4px', display: 'flex', gap: '8px', alignItems: 'center'}}>
+        {applied ? (
+          <span style={{color: 'seagreen', fontSize: '0.85em'}}>
+            ✓ {applied === 'rewritten' ? 'Rewritten in place' : 'Added'}
+          </span>
+        ) : (
+          <>
+            <Button size="small" variation="link" onClick={handleAdd}>Add</Button>
+            {isRewrite && (
+              <Button
+                size="small"
+                variation="link"
+                onClick={handleRewrite}
+                isDisabled={!canRewrite}
+                title={canRewrite
+                  ? 'Replace the target proposition in place'
+                  : 'Target is in an argument or committed by others — unfreeze it first to rewrite in place'}
+              >
+                Rewrite
+              </Button>
+            )}
+          </>
+        )}
+      </div>
     </View>
   )
 }
@@ -284,7 +336,12 @@ function RecommendationCard(
       </div>
       <div style={{color: '#444'}}>{rec.reasoning}</div>
       {rec.propositions.map((change, i) => (
-        <PropositionChangeRow key={i} change={change} symbolToIdx={symbolToIdx} />
+        <PropositionChangeRow
+          key={i}
+          change={change}
+          fallbackJustifies={rec.target_proposition}
+          symbolToIdx={symbolToIdx}
+        />
       ))}
     </View>
   )

@@ -513,6 +513,49 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   }
 }
 
+// Apply an improver recommendation additively: deposit `content` as a new
+// committed proposition, leaving any original proposition untouched. When
+// `justifiesSymbol` is present (a `new` premise), also create a fresh argument
+// in which the new proposition justifies that symbol — the justified
+// proposition is placed last, since the argument's conclusion is its final
+// index (see propositionIndexesFromArgument / discussionsSlice).
+function applyRecommendationAdd(payload: {content: string, justifiesSymbol: string | null}) {
+  const {addSentence} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const {content, justifiesSymbol} = payload
+    dispatch(addSentence({section: 'propositions', status: 'committed'}))
+    const propPosition = getState().discussions.propositions.length - 1
+    await dispatch(replaceSentence({section: 'propositions', position: propPosition, content}))
+    if (justifiesSymbol) {
+      const newIndex = propPosition + 1
+      dispatch(addSentence({section: 'arguments', status: 'committed'}))
+      const argPosition = getState().discussions.arguments.length - 1
+      await dispatch(replaceSentence({
+        section: 'arguments', position: argPosition,
+        content: `${newIndex} ${justifiesSymbol}`,
+      }))
+    }
+  }
+}
+
+// Apply a `rewrite` recommendation in place, replacing the target proposition's
+// content via the same path the inline editor uses (replaceSentence). Gated on
+// isActionable.edit — the caller grays out the action otherwise, and this is a
+// defensive re-check since state may have changed between render and dispatch.
+function applyRecommendationRewrite(payload: {position: number, content: string}) {
+  return async (dispatch, getState) => {
+    const {position, content} = payload
+    const state = getState()
+    const sentence = state.discussions.propositions[position]
+    const username = state.discussions.username
+    if (!sentence || !isActionable.edit(sentence, username)) {
+      console.warn('rewrite target not editable', position)
+      return
+    }
+    await dispatch(replaceSentence({section: 'propositions', position, content}))
+  }
+}
+
 function changeGoalSentence(position: number) {
   const {setGoal} = discussionsSlice.actions
   return async (dispatch, getState) => {
@@ -587,6 +630,8 @@ const eventHandlerFunctions = {
   changeSentenceHidden,
   createInviteCode,
   revokeInviteCode,
+  applyRecommendationAdd,
+  applyRecommendationRewrite,
 }
 
 function enqueueEvent(action) {
@@ -799,6 +844,16 @@ export function replaceSentenceAction(value) {
 export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
   const message = `change sentence status ${value?.position} t=${tryAgainTrials}`
   const action = {handler: 'changeSentenceStatus', message, payload: value}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function applyRecommendationAddAction(value: {content: string, justifiesSymbol: string | null}) {
+  const message = `apply recommendation add t=${tryAgainTrials}`
+  const action = {handler: 'applyRecommendationAdd', message, payload: value}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function applyRecommendationRewriteAction(value: {position: number, content: string}) {
+  const message = `apply recommendation rewrite ${value?.position} t=${tryAgainTrials}`
+  const action = {handler: 'applyRecommendationRewrite', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
 export function changeGoalSentenceAction(value) {
