@@ -10,6 +10,9 @@ import { store } from './app/store'
 import { theme } from './theme'
 import packageJson from '../package.json'
 
+// Gen-1 (aws-exports) config shape. Amplify v6 parses it at runtime, but its
+// `LegacyConfig` type is an intentional stub declaring only aws_project_region,
+// so cast past excess-property checking on the remaining legacy keys.
 Amplify.configure({
   aws_project_region: import.meta.env.VITE_AWS_REGION,
   aws_appsync_graphqlEndpoint: import.meta.env.VITE_APPSYNC_ENDPOINT,
@@ -30,7 +33,7 @@ Amplify.configure({
     passwordPolicyCharacters: [],
   },
   aws_cognito_verification_mechanisms: ['EMAIL'],
-})
+} as unknown as Parameters<typeof Amplify.configure>[0])
 console.log('version', packageJson.version)
 
 Bugsnag.start({

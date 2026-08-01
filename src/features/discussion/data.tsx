@@ -12,7 +12,10 @@ import {createDiscussionLayout, createNewDiscussionLayout,
 import {discussionsSlice, nextUniqueIndex, sentenceCommittedOthers,
   propositionIndexesFromArgument, forcedPropositionPositions} from './discussionsSlice'
 
-let _client: ReturnType<typeof generateClient> | null = null
+// generateClient's return type is a deeply recursive generic that TS cannot
+// compare without exceeding its stack-depth limit; the client is used untyped
+// here (raw graphql strings, results cast to any), so annotate it plainly.
+let _client: any = null
 const client = () => { if (!_client) _client = generateClient({ authMode: 'apiKey' }); return _client }
 
 let tryAgainTrials = 0

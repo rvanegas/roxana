@@ -337,7 +337,7 @@ export function SentenceLine(props: SentenceProps) {
       }
     )
 
-    let checkbox = null
+    let checkbox: React.ReactNode = null
     if (discussions.selectMode) {
       const forced = forcedPropositionPositions(discussions)
       let checked, disabled
