@@ -34,6 +34,31 @@ export interface PhrasingEvaluation {
   recommendation: string
 }
 
+export interface PropositionChange {
+  symbol: string | null
+  proposition: string
+  type: 'new' | 'rewrite'
+  original_symbol: string | null
+  original_proposition: string | null
+  justifies_symbol: string | null
+  justification_suggestions: string[]
+}
+
+export interface ExpectedConclusionImprovement {
+  truth_score_improvement: string
+  content_validity_improvement: string
+  formal_validity_improvement: string
+}
+
+export interface ImproverRecommendation {
+  id: string
+  reasoning: string
+  impact: 'high' | 'medium' | 'low'
+  target_proposition: string
+  expected_conclusion_improvement: ExpectedConclusionImprovement
+  propositions: PropositionChange[]
+}
+
 export interface AuditFinding {
   condition: 'connectivity' | 'conclusion' | 'integrity'
   step_symbols: string[]
@@ -52,7 +77,6 @@ export interface DianoiaResultData {
   validityEvaluations: ValidityEvaluation[]
   incoherentSets: IncoherentSet[]
   contentLogicalIssues: string[]
-  contentRecommendations: string[]
   // formalizer
   formalizations: FormalizationItem[]
   // phrasing_evaluator (absent in results saved before it existed)
@@ -61,5 +85,7 @@ export interface DianoiaResultData {
   propositionEvaluations: PropositionEvaluation[]
   argumentValidity: number | null
   formalLogicalIssues: string[]
-  formalRecommendations: string[]
+  // improver — the sole source of applyable recommendations
+  // (absent in results saved before evaluators stopped emitting free-text recommendations)
+  improverRecommendations?: ImproverRecommendation[]
 }

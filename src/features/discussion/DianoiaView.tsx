@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 import {useSelector} from 'react-redux'
 import {View, Button, Heading} from '@aws-amplify/ui-react'
 import {toAlphaIndex} from '../../app/util'
-import {useDianoia, DianoiaResultData, AnalyzedStep} from './DianoiaContext'
+import {useDianoia, DianoiaResultData, ImproverRecommendation, AnalyzedStep} from './DianoiaContext'
 import {selectDiscussions} from './discussionsSlice'
 
 function buildCopyText(argLabel: string, steps: AnalyzedStep[], data: DianoiaResultData | undefined): string {
@@ -71,10 +71,19 @@ function buildCopyText(argLabel: string, steps: AnalyzedStep[], data: DianoiaRes
     lines.push('')
   }
 
-  const allRecs = [...data.formalRecommendations, ...data.contentRecommendations]
-  if (allRecs.length > 0) {
+  const recs = data.improverRecommendations ?? []
+  if (recs.length > 0) {
     lines.push('Recommendations')
-    for (const rec of allRecs) lines.push(`  - ${rec}`)
+    for (const rec of recs) {
+      lines.push(`  [${rec.impact}] targets ${rec.target_proposition}: ${rec.reasoning}`)
+      for (const p of rec.propositions) {
+        if (p.type === 'rewrite') {
+          lines.push(`    rewrite ${p.original_symbol ?? '?'}: ${p.proposition}`)
+        } else {
+          lines.push(`    new${p.justifies_symbol ? ` (justifies ${p.justifies_symbol})` : ''}: ${p.proposition}`)
+        }
+      }
+    }
     lines.push('')
   }
 
@@ -117,16 +126,16 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
   const hasValidity = data.validityEvaluations.length > 0
 
   const hasContentIssues = data.contentLogicalIssues.length > 0
-  const hasContentRecs = data.contentRecommendations.length > 0
   const hasPropEvals = data.propositionEvaluations.length > 0
   const hasFormalIssues = data.formalLogicalIssues.length > 0
-  const hasFormalRecs = data.formalRecommendations.length > 0
+  const improverRecommendations = data.improverRecommendations ?? []
+  const hasRecs = improverRecommendations.length > 0
   const phrasingEvaluations = data.phrasingEvaluations ?? []
   const hasPhrasing = phrasingEvaluations.length > 0
 
   const hasAnything = hasFormalizations || hasTruth || hasValidity
-    || hasContentIssues || hasContentRecs || hasPropEvals || hasFormalIssues
-    || hasFormalRecs || hasPhrasing
+    || hasContentIssues || hasPropEvals || hasFormalIssues
+    || hasRecs || hasPhrasing
 
   if (!hasAnything) {
     return <span style={{color: '#888'}}>No results available.</span>
@@ -216,18 +225,67 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
         </ResultSection>
       )}
 
-      {(hasFormalRecs || hasContentRecs) && (
+      {hasRecs && (
         <ResultSection title="Recommendations">
-          <ul style={{margin: 0, paddingLeft: '20px'}}>
-            {data.formalRecommendations.map((rec, i) => (
-              <li key={`f${i}`} style={{marginBottom: '4px'}}>{rec}</li>
-            ))}
-            {data.contentRecommendations.map((rec, i) => (
-              <li key={`c${i}`} style={{marginBottom: '4px'}}>{rec}</li>
-            ))}
-          </ul>
+          {improverRecommendations.map((rec, i) => (
+            <RecommendationCard key={rec.id ?? i} rec={rec} symbolToIdx={symbolToIdx} />
+          ))}
         </ResultSection>
       )}
+    </View>
+  )
+}
+
+const IMPACT_COLOR: Record<string, string> = {
+  high: 'firebrick', medium: '#856404', low: '#555',
+}
+
+function PropositionChangeRow(
+  {change, symbolToIdx}: {change: ImproverRecommendation['propositions'][number], symbolToIdx: Record<string, number>}
+) {
+  const isRewrite = change.type === 'rewrite'
+  const label = isRewrite
+    ? `Rewrite ${change.original_symbol != null ? (symbolToIdx[change.original_symbol] ?? change.original_symbol) : ''}`
+    : `New${change.justifies_symbol != null ? ` → ${symbolToIdx[change.justifies_symbol] ?? change.justifies_symbol}` : ''}`
+  return (
+    <View style={{marginTop: '6px', marginLeft: '20px'}}>
+      <span style={{
+        display: 'inline-block', fontSize: '0.75em', fontWeight: 'bold',
+        textTransform: 'uppercase', color: isRewrite ? '#856404' : 'seagreen',
+        marginRight: '8px',
+      }}>
+        {label}
+      </span>
+      <span style={{color: '#333'}}>{change.proposition}</span>
+    </View>
+  )
+}
+
+function RecommendationCard(
+  {rec, symbolToIdx}: {rec: ImproverRecommendation, symbolToIdx: Record<string, number>}
+) {
+  return (
+    <View style={{
+      marginBottom: '14px', paddingLeft: '10px',
+      borderLeft: `3px solid ${IMPACT_COLOR[rec.impact] ?? '#ccc'}`,
+    }}>
+      <div style={{marginBottom: '2px'}}>
+        <span style={{
+          fontSize: '0.75em', fontWeight: 'bold', textTransform: 'uppercase',
+          color: IMPACT_COLOR[rec.impact] ?? '#555', marginRight: '8px',
+        }}>
+          {rec.impact} impact
+        </span>
+        {rec.target_proposition && (
+          <span style={{color: '#888', fontSize: '0.85em'}}>
+            targets {symbolToIdx[rec.target_proposition] ?? rec.target_proposition}
+          </span>
+        )}
+      </div>
+      <div style={{color: '#444'}}>{rec.reasoning}</div>
+      {rec.propositions.map((change, i) => (
+        <PropositionChangeRow key={i} change={change} symbolToIdx={symbolToIdx} />
+      ))}
     </View>
   )
 }

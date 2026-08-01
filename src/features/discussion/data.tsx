@@ -707,6 +707,7 @@ function createDiscussionFromSelection() {
     }
 
     const remapSymbol = (sym: string) => String(propNumberMap.get(Number(sym)) ?? sym)
+    const remapMaybe = (sym: string | null) => sym == null ? sym : remapSymbol(sym)
     const remapAnalysis = (data: DianoiaResultData): DianoiaResultData => ({
       ...data,
       truthEvaluations: data.truthEvaluations.map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
@@ -715,6 +716,15 @@ function createDiscussionFromSelection() {
       propositionEvaluations: data.propositionEvaluations.map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
       incoherentSets: data.incoherentSets.map(s => ({...s, symbols: s.symbols.map(remapSymbol)})),
       phrasingEvaluations: (data.phrasingEvaluations ?? []).map(ev => ({...ev, symbol: remapSymbol(ev.symbol)})),
+      improverRecommendations: (data.improverRecommendations ?? []).map(rec => ({
+        ...rec,
+        target_proposition: remapSymbol(rec.target_proposition),
+        propositions: rec.propositions.map(p => ({
+          ...p,
+          original_symbol: remapMaybe(p.original_symbol),
+          justifies_symbol: remapMaybe(p.justifies_symbol),
+        })),
+      })),
     })
 
     const sortedArgPositions = [...state.selectedArguments].sort((a, b) => a - b)

@@ -6,11 +6,11 @@ import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction,
   setAnalyzingStateAction, saveAuditResultAction} from './data'
 import {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
   IncoherentSet, FormalizationItem, PropositionEvaluation,
-  PhrasingEvaluation, AuditFinding, AuditResult} from './dianoia.types'
+  PhrasingEvaluation, ImproverRecommendation, AuditFinding, AuditResult} from './dianoia.types'
 
 export type {DianoiaResultData, TruthEvaluation, ValidityEvaluation,
   IncoherentSet, FormalizationItem, PropositionEvaluation,
-  PhrasingEvaluation, AuditFinding, AuditResult}
+  PhrasingEvaluation, ImproverRecommendation, AuditFinding, AuditResult}
 
 export type AnalyzedStep = {sentence: {content: string}, displayIdx: number}
 
@@ -181,13 +181,12 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             validityEvaluations: [],
             incoherentSets: [],
             contentLogicalIssues: [],
-            contentRecommendations: [],
             formalizations: [],
             phrasingEvaluations: [],
             propositionEvaluations: [],
             argumentValidity: null,
             formalLogicalIssues: [],
-            formalRecommendations: [],
+            improverRecommendations: [],
           }
 
           for (const r of (rba.truth_evaluator ?? [])) {
@@ -202,7 +201,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             if (!c) continue
             merged.validityEvaluations.push(...(c.validity_evaluations ?? []))
             merged.contentLogicalIssues.push(...(c.logical_issues ?? []))
-            merged.contentRecommendations.push(...(c.recommendations ?? []))
           }
 
           for (const r of (rba.formalizer ?? [])) {
@@ -223,7 +221,12 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
             merged.propositionEvaluations.push(...(c.proposition_evaluations ?? []))
             if (c.argument_validity != null) merged.argumentValidity = c.argument_validity
             merged.formalLogicalIssues.push(...(c.logical_issues ?? []))
-            merged.formalRecommendations.push(...(c.recommendations ?? []))
+          }
+
+          for (const r of (rba.improver ?? [])) {
+            const c = r.result_content
+            if (!c) continue
+            merged.improverRecommendations!.push(...(c.recommendations ?? []))
           }
 
           dispatch(saveArgumentAnalysisResultsAction(argumentPosition, merged))
