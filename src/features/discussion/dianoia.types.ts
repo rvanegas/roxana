@@ -88,4 +88,8 @@ export interface DianoiaResultData {
   // improver — the sole source of applyable recommendations
   // (absent in results saved before evaluators stopped emitting free-text recommendations)
   improverRecommendations?: ImproverRecommendation[]
+  // keys (`${rec.id ?? recIndex}#${changeIndex}`) of recommendation changes that
+  // have already been applied from this argument's analysis. Persisted so the
+  // "applied" marker survives view re-entry and reload.
+  appliedChanges?: string[]
 }

@@ -115,7 +115,14 @@ function PropIdx({symbol, symbolToIdx}: {symbol: string, symbolToIdx: Record<str
   )
 }
 
-function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedStep[]}) {
+function ResultsPanel(
+  {data, steps, position, argumentContent}: {
+    data: DianoiaResultData,
+    steps: AnalyzedStep[],
+    position: number,
+    argumentContent: string,
+  }
+) {
   const symbolToIdx = Object.fromEntries(steps.map(s => [String(s.displayIdx), s.displayIdx]))
 
   const symbolOrder = steps.map(s => String(s.displayIdx))
@@ -230,7 +237,14 @@ function ResultsPanel({data, steps}: {data: DianoiaResultData, steps: AnalyzedSt
       {hasRecs && (
         <ResultSection title="Recommendations">
           {improverRecommendations.map((rec, i) => (
-            <RecommendationCard key={rec.id ?? i} rec={rec} symbolToIdx={symbolToIdx} />
+            <RecommendationCard
+              key={rec.id ?? i}
+              rec={rec}
+              recKey={rec.id ?? String(i)}
+              position={position}
+              argumentContent={argumentContent}
+              symbolToIdx={symbolToIdx}
+            />
           ))}
         </ResultSection>
       )}
@@ -243,36 +257,49 @@ const IMPACT_COLOR: Record<string, string> = {
 }
 
 function PropositionChangeRow(
-  {change, fallbackJustifies, symbolToIdx}: {
+  {change, position, argumentContent, changeKey, symbolToIdx}: {
     change: ImproverRecommendation['propositions'][number],
-    fallbackJustifies: string,
+    position: number,
+    argumentContent: string,
+    changeKey: string,
     symbolToIdx: Record<string, number>,
   }
 ) {
   const dispatch = useDispatch<AppDispatch>()
   const discussions = useSelector(selectDiscussions)
-  const [applied, setApplied] = useState<'' | 'added' | 'rewritten'>('')
+  const [pending, setPending] = useState(false)
 
   const isRewrite = change.type === 'rewrite'
   const label = isRewrite
     ? `Rewrite ${change.original_symbol != null ? (symbolToIdx[change.original_symbol] ?? change.original_symbol) : ''}`
     : `New${change.justifies_symbol != null ? ` → ${symbolToIdx[change.justifies_symbol] ?? change.justifies_symbol}` : ''}`
 
+  const applied = discussions.analysisResults?.[position]?.appliedChanges?.includes(changeKey) ?? false
+
+  // For a rewrite, decide whether the target can be replaced in place (won't
+  // clear another user's commitment) purely to set the tooltip; the handler
+  // re-decides from current state.
   const username = discussions.username
   const targetPosition = change.original_symbol != null ? Number(change.original_symbol) - 1 : -1
   const targetSentence = discussions.propositions[targetPosition]
-  const canRewrite = !!username && !!targetSentence && isActionable.edit(targetSentence, username)
+  const willRewriteInPlace = isRewrite && !!username && !!targetSentence
+    && isActionable.rewrite(targetSentence, username)
 
-  function handleAdd() {
-    const justifiesSymbol = isRewrite ? null : (change.justifies_symbol ?? fallbackJustifies ?? null)
-    dispatch(applyRecommendationAddAction({content: change.proposition, justifiesSymbol}))
-    setApplied('added')
-  }
-
-  function handleRewrite() {
-    if (!canRewrite) return
-    dispatch(applyRecommendationRewriteAction({position: targetPosition, content: change.proposition}))
-    setApplied('rewritten')
+  function handleApply() {
+    setPending(true)
+    if (isRewrite) {
+      dispatch(applyRecommendationRewriteAction({
+        content: change.proposition,
+        argumentContent,
+        originalSymbol: String(change.original_symbol ?? ''),
+        position,
+        changeKey,
+      }))
+    } else {
+      dispatch(applyRecommendationAddAction({
+        content: change.proposition, argumentContent, position, changeKey,
+      }))
+    }
   }
 
   return (
@@ -288,25 +315,23 @@ function PropositionChangeRow(
       <div style={{marginTop: '4px', display: 'flex', gap: '8px', alignItems: 'center'}}>
         {applied ? (
           <span style={{color: 'seagreen', fontSize: '0.85em'}}>
-            ✓ {applied === 'rewritten' ? 'Rewritten in place' : 'Added'}
+            ✓ {isRewrite ? 'Rewritten' : 'Added'}
           </span>
+        ) : pending ? (
+          <span style={{color: '#888', fontSize: '0.85em'}}>Applying…</span>
         ) : (
-          <>
-            <Button size="small" variation="link" onClick={handleAdd}>Add</Button>
-            {isRewrite && (
-              <Button
-                size="small"
-                variation="link"
-                onClick={handleRewrite}
-                isDisabled={!canRewrite}
-                title={canRewrite
-                  ? 'Replace the target proposition in place'
-                  : 'Target is in an argument or committed by others — unfreeze it first to rewrite in place'}
-              >
-                Rewrite
-              </Button>
-            )}
-          </>
+          <Button
+            size="small"
+            variation="link"
+            onClick={handleApply}
+            title={isRewrite
+              ? (willRewriteInPlace
+                ? 'Replace the target proposition in place'
+                : 'Target is committed by others — adds a new proposition and a new argument instead')
+              : 'Adds a new proposition and a new argument that uses it'}
+          >
+            {isRewrite ? 'Rewrite' : 'Add'}
+          </Button>
         )}
       </div>
     </View>
@@ -314,7 +339,13 @@ function PropositionChangeRow(
 }
 
 function RecommendationCard(
-  {rec, symbolToIdx}: {rec: ImproverRecommendation, symbolToIdx: Record<string, number>}
+  {rec, recKey, position, argumentContent, symbolToIdx}: {
+    rec: ImproverRecommendation,
+    recKey: string,
+    position: number,
+    argumentContent: string,
+    symbolToIdx: Record<string, number>,
+  }
 ) {
   return (
     <View style={{
@@ -339,7 +370,9 @@ function RecommendationCard(
         <PropositionChangeRow
           key={i}
           change={change}
-          fallbackJustifies={rec.target_proposition}
+          position={position}
+          argumentContent={argumentContent}
+          changeKey={`${recKey}#${i}`}
           symbolToIdx={symbolToIdx}
         />
       ))}
@@ -444,7 +477,12 @@ export function DianoiaView() {
 
           <div className="dianoia-results">
             {data ? (
-              <ResultsPanel data={data} steps={steps} />
+              <ResultsPanel
+                data={data}
+                steps={steps}
+                position={viewPosition}
+                argumentContent={argument?.content ?? ''}
+              />
             ) : (
               <span style={{color: '#888'}}>Results not yet available.</span>
             )}

@@ -415,6 +415,13 @@ export const isActionable = {
   edit: (sentence: Sentence, username: string) => !sentence.inArgument
     && !sentenceCommittedOthers(sentence, username)
     && !(sentence.status === 'draft' && sentence.owner !== username),
+  // Like `edit` but without the `!inArgument` restriction: an in-place rewrite
+  // replaces the proposition at the same array position, so arguments that
+  // reference it stay valid. Only unsafe when it would discard another user's
+  // commitment (accept/reject) or an other-owned draft.
+  rewrite: (sentence: Sentence, username: string) =>
+    !sentenceCommittedOthers(sentence, username)
+    && !(sentence.status === 'draft' && sentence.owner !== username),
   accept: (sentence: Sentence, username: string) => sentence.status === 'committed'
     && isPresent(sentence.content),
   reject: (sentence: Sentence, username: string) => sentence.status === 'committed'
@@ -516,46 +523,91 @@ function changeSentenceStatus(input: ChangeSentenceStatusInput) {
   }
 }
 
-// Apply an improver recommendation additively: deposit `content` as a new
-// committed proposition, leaving any original proposition untouched. When
-// `justifiesSymbol` is present (a `new` premise), also create a fresh argument
-// in which the new proposition justifies that symbol — the justified
-// proposition is placed last, since the argument's conclusion is its final
-// index (see propositionIndexesFromArgument / discussionsSlice).
-function applyRecommendationAdd(payload: {content: string, justifiesSymbol: string | null}) {
+// Insert a new symbol immediately before the argument's conclusion (its last
+// symbol): insertBeforeConclusion("1 2 3", 4) -> "1 2 4 3". An empty argument
+// yields just the new symbol.
+function insertBeforeConclusion(content: string, newSymbol: number): string {
+  const parts = content.trim() ? content.trim().split(/\s+/) : []
+  if (parts.length === 0) return String(newSymbol)
+  parts.splice(parts.length - 1, 0, String(newSymbol))
+  return parts.join(' ')
+}
+
+// Substitute one symbol token for another: substituteSymbol("1 2 3", "1", 4) -> "4 2 3".
+function substituteSymbol(content: string, oldSymbol: string, newSymbol: number): string {
+  return content.trim().split(/\s+/)
+    .map(t => (t === String(oldSymbol) ? String(newSymbol) : t))
+    .join(' ')
+}
+
+function markRecommendationAppliedThunk(position: number, key: string) {
+  const {markRecommendationApplied} = discussionsSlice.actions
+  return async (dispatch) => {
+    dispatch(markRecommendationApplied({position, key}))
+    await dispatch(updateDiscussionLayout('mark recommendation applied'))
+  }
+}
+
+// Apply a `new` recommendation: deposit `content` as a new committed proposition
+// and fold it into the analyzed argument. E.g. analyzed argument "1 2 3" + new
+// proposition (symbol 4) -> a new argument "1 2 4 3" (inserted before the
+// conclusion). Originals are left untouched. `position` is the analyzed
+// argument's position (used to persist the applied marker).
+function applyRecommendationAdd(payload: {
+  content: string, argumentContent: string, position: number, changeKey: string,
+}) {
   const {addSentence} = discussionsSlice.actions
   return async (dispatch, getState) => {
-    const {content, justifiesSymbol} = payload
+    const {content, argumentContent, position, changeKey} = payload
     dispatch(addSentence({section: 'propositions', status: 'committed'}))
     const propPosition = getState().discussions.propositions.length - 1
     await dispatch(replaceSentence({section: 'propositions', position: propPosition, content}))
-    if (justifiesSymbol) {
-      const newIndex = propPosition + 1
+    const newSymbol = propPosition + 1
+    dispatch(addSentence({section: 'arguments', status: 'committed'}))
+    const argPosition = getState().discussions.arguments.length - 1
+    await dispatch(replaceSentence({
+      section: 'arguments', position: argPosition,
+      content: insertBeforeConclusion(argumentContent, newSymbol),
+    }))
+    await dispatch(markRecommendationAppliedThunk(position, changeKey))
+  }
+}
+
+// Apply a `rewrite` recommendation. Prefer an in-place edit of the target
+// proposition (same path the inline editor uses) when that won't clear another
+// user's commitment — the analyzed argument keeps referencing the same position,
+// so no new argument is needed. Otherwise fall back to the additive form: a new
+// committed proposition plus a new argument with the target symbol substituted
+// (analyzed argument "1 2 3", rewrite symbol 1 -> new argument "4 2 3"). The
+// in-place vs additive decision is re-made here from current state, not trusted
+// from render time.
+function applyRecommendationRewrite(payload: {
+  content: string, argumentContent: string, originalSymbol: string,
+  position: number, changeKey: string,
+}) {
+  const {addSentence} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const {content, argumentContent, originalSymbol, position, changeKey} = payload
+    const state = getState()
+    const targetPosition = Number(originalSymbol) - 1
+    const sentence = state.discussions.propositions[targetPosition]
+    const username = state.discussions.username
+
+    if (sentence && isActionable.rewrite(sentence, username)) {
+      await dispatch(replaceSentence({section: 'propositions', position: targetPosition, content}))
+    } else {
+      dispatch(addSentence({section: 'propositions', status: 'committed'}))
+      const propPosition = getState().discussions.propositions.length - 1
+      await dispatch(replaceSentence({section: 'propositions', position: propPosition, content}))
+      const newSymbol = propPosition + 1
       dispatch(addSentence({section: 'arguments', status: 'committed'}))
       const argPosition = getState().discussions.arguments.length - 1
       await dispatch(replaceSentence({
         section: 'arguments', position: argPosition,
-        content: `${newIndex} ${justifiesSymbol}`,
+        content: substituteSymbol(argumentContent, originalSymbol, newSymbol),
       }))
     }
-  }
-}
-
-// Apply a `rewrite` recommendation in place, replacing the target proposition's
-// content via the same path the inline editor uses (replaceSentence). Gated on
-// isActionable.edit — the caller grays out the action otherwise, and this is a
-// defensive re-check since state may have changed between render and dispatch.
-function applyRecommendationRewrite(payload: {position: number, content: string}) {
-  return async (dispatch, getState) => {
-    const {position, content} = payload
-    const state = getState()
-    const sentence = state.discussions.propositions[position]
-    const username = state.discussions.username
-    if (!sentence || !isActionable.edit(sentence, username)) {
-      console.warn('rewrite target not editable', position)
-      return
-    }
-    await dispatch(replaceSentence({section: 'propositions', position, content}))
+    await dispatch(markRecommendationAppliedThunk(position, changeKey))
   }
 }
 
@@ -849,13 +901,17 @@ export function changeSentenceStatusAction(value: ChangeSentenceStatusInput) {
   const action = {handler: 'changeSentenceStatus', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function applyRecommendationAddAction(value: {content: string, justifiesSymbol: string | null}) {
+export function applyRecommendationAddAction(
+  value: {content: string, argumentContent: string, position: number, changeKey: string}
+) {
   const message = `apply recommendation add t=${tryAgainTrials}`
   const action = {handler: 'applyRecommendationAdd', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }
-export function applyRecommendationRewriteAction(value: {position: number, content: string}) {
-  const message = `apply recommendation rewrite ${value?.position} t=${tryAgainTrials}`
+export function applyRecommendationRewriteAction(
+  value: {content: string, argumentContent: string, originalSymbol: string, position: number, changeKey: string}
+) {
+  const message = `apply recommendation rewrite ${value?.originalSymbol} t=${tryAgainTrials}`
   const action = {handler: 'applyRecommendationRewrite', message, payload: value}
   return dispatch => dispatch(enqueueEvent(action))
 }

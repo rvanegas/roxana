@@ -389,6 +389,18 @@ export const discussionsSlice = createSlice({
       const {position, data} = action.payload
       state.analysisResults = {...state.analysisResults, [position]: data}
     },
+    markRecommendationApplied(state, action: {payload: {position: number, key: string}}) {
+      const {position, key} = action.payload
+      const result = state.analysisResults[position]
+      if (!result) return
+      const applied = result.appliedChanges ?? []
+      if (!applied.includes(key)) {
+        state.analysisResults = {
+          ...state.analysisResults,
+          [position]: {...result, appliedChanges: [...applied, key]},
+        }
+      }
+    },
     clearArgumentAnalysisResults(state, action: {payload: number}) {
       const next = {...state.analysisResults}
       delete next[action.payload]
