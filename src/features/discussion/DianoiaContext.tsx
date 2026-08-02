@@ -143,7 +143,17 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     setAnalyzedPosition(argumentPosition)
     dispatch(setAnalyzingStateAction({position: argumentPosition, username: username ?? ''}))
 
-    const conversationId = `${sessionId}:${discussionId}`
+    // Roxana analyzes one argument at a time with no progressive display, so each
+    // request must be stateless. Dianoia keys all retained agent results on
+    // conversation_id and inherits results from earlier snapshots of the *same*
+    // conversation (the noesis "progressive" model, where a stable conversation_id
+    // + incrementing snapshot_id lets later evaluations build on earlier ones).
+    // Reusing one conversation_id per discussion here caused a second argument's
+    // improver to inherit the first argument's (now stale) proposition results.
+    // A fresh conversation_id per analysis isolates the request: the backend has
+    // no prior snapshot to inherit, giving us the stateless workflow while noesis
+    // keeps the progressive one by reusing its conversation_id.
+    const conversationId = `${sessionId}:${discussionId}:${argumentPosition}:${crypto.randomUUID()}`
     const symbols = steps.map(({displayIdx}) => String(displayIdx))
     const argument = steps.map(({sentence, displayIdx}, i) => ({
       symbol: String(displayIdx),

@@ -112,7 +112,7 @@ export function Discussion() {
   const anyArgumentDefined = discussions.arguments.some(
     argument => propositionIndexesFromArgument(argument).length >= 2
   )
-  const showAuditButton = false
+  const showAuditButton = true
   const auditResult = discussions.auditResult
   const auditButtons = !import.meta.env.VITE_DIANOIA_URL || !anyArgumentDefined ? undefined : (
     <span style={{display: 'inline-block'}}>
