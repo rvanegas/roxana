@@ -10,7 +10,7 @@ import {useDianoia} from './DianoiaContext'
 import {dlog} from '../../app/util'
 import * as custom from '../../graphql/custom'
 import {CurrentUserContext} from '../user/User'
-import {selectDiscussions, discussionsSlice, propositionIndexesFromArgument} from './discussionsSlice'
+import {selectDiscussions, discussionsSlice} from './discussionsSlice'
 import {getDiscussionAction, initializeDiscussionAction,
   createInviteCodeAction, revokeInviteCodeAction} from './data'
 import {AppDispatch} from '../../app/store'
@@ -24,12 +24,11 @@ const client = () => { if (!_client) _client = generateClient({ authMode: 'apiKe
 export function Discussion() {
   const dispatch = useDispatch<AppDispatch>()
   const params = useParams()
-  const {analysisViewOpen, auditViewOpen, auditStatus, runAudit, openAuditView} = useDianoia()
+  const {analysisViewOpen, auditViewOpen} = useDianoia()
   const propositionsListRef = useRef() as MutableRefObject<HTMLDivElement>
   const argumentsListRef = useRef() as MutableRefObject<HTMLDivElement>
   const {route} = useContext(CurrentUserContext) as unknown as {user, route}
   const discussions = useSelector(selectDiscussions)
-  const username = discussions.username
   const discussionId = discussions.discussionId
   const {toggleHideDiscussant, toggleShowHidden} = discussionsSlice.actions
   const inviteLink = `${window.location.protocol}//${window.location.host}/invite/${discussions.inviteCode}`
@@ -109,30 +108,6 @@ export function Discussion() {
     )
   })
 
-  const anyArgumentDefined = discussions.arguments.some(
-    argument => propositionIndexesFromArgument(argument).length >= 2
-  )
-  const showAuditButton = true
-  const auditResult = discussions.auditResult
-  const auditButtons = !import.meta.env.VITE_DIANOIA_URL || !anyArgumentDefined ? undefined : (
-    <span style={{display: 'inline-block'}}>
-      {showAuditButton && username && (
-        <Button variation="link" size="small" isDisabled={auditStatus === 'loading'}
-          onClick={runAudit}>
-          audit
-        </Button>
-      )}
-      {auditResult && (
-        <Button variation="link" size="small" onClick={openAuditView}>
-          view audit{auditResult.satisfied ? '' : ` (${auditResult.findings.length})`}
-        </Button>
-      )}
-      {auditStatus === 'error' && (
-        <span style={{color: 'firebrick', fontSize: '0.8em'}}>audit failed</span>
-      )}
-    </span>
-  )
-
   const privateWithInviteButton = (
     <View>
       <Button variation="link" size="small" onClick={handleCreateInviteLink}>create invite link</Button>
@@ -153,7 +128,6 @@ export function Discussion() {
       <View className="view-toggles" columnStart="1" columnEnd="-1">
         {hiddenToggle}
         {discussantToggles}
-        {auditButtons}
       </View>
       <Grid templateColumns="1fr 1fr">
         <Heading className="sentence-list-header sentence-list-header-adjacent">

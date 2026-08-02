@@ -10,12 +10,22 @@ import {CurrentUserContext} from './features/user/User'
 import {DianoiaProvider, useDianoia} from './features/discussion/DianoiaContext'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
-import {selectDiscussions, discussionsSlice} from './features/discussion/discussionsSlice'
+import {selectDiscussions, discussionsSlice, propositionIndexesFromArgument} from './features/discussion/discussionsSlice'
 import {acceptInviteCode, createDiscussionFromSelectionAction, enterSelectModeAction, exitSelectModeAction} from './features/discussion/data'
 import {AppDispatch} from './app/store'
 
-function HamburgerMenu({username, signOut, onSelect, showSelect}: {username: string, signOut: () => void, onSelect: () => void, showSelect: boolean}) {
+type AuditMenu = {
+  available: boolean
+  status: 'idle' | 'loading' | 'error'
+  result: {satisfied: boolean, findings: unknown[]} | null | undefined
+  runAudit: () => void
+  openAuditView: () => void
+}
+
+function HamburgerMenu({username, signOut, onSelect, showSelect, audit}: {username: string, signOut: () => void, onSelect: () => void, showSelect: boolean, audit: AuditMenu}) {
   const [open, setOpen] = useState(false)
+
+  const itemStyle = {display: 'block', width: '100%', textAlign: 'left' as const, padding: '8px 12px'}
 
   function handleSignOut() {
     setOpen(false)
@@ -25,6 +35,16 @@ function HamburgerMenu({username, signOut, onSelect, showSelect}: {username: str
   function handleSelect() {
     setOpen(false)
     onSelect()
+  }
+
+  function handleRunAudit() {
+    setOpen(false)
+    audit.runAudit()
+  }
+
+  function handleOpenAuditView() {
+    setOpen(false)
+    audit.openAuditView()
   }
 
   return (
@@ -43,11 +63,23 @@ function HamburgerMenu({username, signOut, onSelect, showSelect}: {username: str
             {username}
           </Text>
           {showSelect && <Button variation="link" size="small" onClick={handleSelect}
-            style={{display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px'}}>
+            style={itemStyle}>
             select
           </Button>}
+          {audit.available && <Button variation="link" size="small" isDisabled={audit.status === 'loading'}
+            onClick={handleRunAudit} style={itemStyle}>
+            audit
+          </Button>}
+          {audit.available && audit.result && <Button variation="link" size="small" onClick={handleOpenAuditView}
+            style={itemStyle}>
+            view audit{audit.result.satisfied ? '' : ` (${audit.result.findings.length})`}
+          </Button>}
+          {audit.available && audit.status === 'error' && <Text
+            style={{...itemStyle, color: 'firebrick', fontSize: '0.85em'}}>
+            audit failed
+          </Text>}
           <Button variation="link" size="small" onClick={handleSignOut}
-            style={{display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px'}}>
+            style={itemStyle}>
             sign out
           </Button>
         </View>
@@ -111,12 +143,22 @@ function Home() {
   const discussionElementIfAny = locationInDiscussion ? discussionElement : undefined
   const syncIndicator = <View title={eventMessages} className={indicatorClasses}></View>
   const syncIndicatorIfAny = user ? syncIndicator : undefined
-  const {status: dianoiaStatus} = useDianoia()
+  const {status: dianoiaStatus, auditStatus, runAudit, openAuditView} = useDianoia()
+  const anyArgumentDefined = discussions.arguments.some(
+    argument => propositionIndexesFromArgument(argument).length >= 2
+  )
+  const audit = {
+    available: !!import.meta.env.VITE_DIANOIA_URL && anyArgumentDefined && locationInDiscussion && !!username,
+    status: auditStatus,
+    result: discussions.auditResult,
+    runAudit,
+    openAuditView,
+  }
   const dianoiaIndicator = import.meta.env.VITE_DIANOIA_URL && dianoiaStatus !== 'idle'
     ? <View className={`indicator dianoia-${dianoiaStatus}`} title={`Dianoia: ${dianoiaStatus}`} style={{marginRight: '4px'}} />
     : null
   const hamburger = location.pathname === '/signin' ? null : user ?
-    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} /> :
+    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} audit={audit} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
   const navbarRight = discussions.selectMode ? (
     <>
