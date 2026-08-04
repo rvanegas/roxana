@@ -92,4 +92,9 @@ export interface DianoiaResultData {
   // have already been applied from this argument's analysis. Persisted so the
   // "applied" marker survives view re-entry and reload.
   appliedChanges?: string[]
+  // position of the single new argument derived from applying recommendations of
+  // this analysis. The first apply that spawns a new argument records it here;
+  // subsequent applies fold their change into that same argument instead of
+  // creating another. Persisted so the merge target survives reload.
+  derivedArgumentPosition?: number
 }

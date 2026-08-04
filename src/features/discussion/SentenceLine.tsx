@@ -191,7 +191,10 @@ export function SentenceLine(props: SentenceProps) {
     const content = setFinalContent()
     const input = {section, position, content}
     dispatch(replaceSentenceAction(input))
-    if (section === 'arguments') resetAnalysis(position)
+    // Only invalidate analysis when the argument string actually changed.
+    // Accepting/rejecting an argument blurs the editor without editing its
+    // content, and that must not discard the existing analysis.
+    if (section === 'arguments' && content !== sentence.content) resetAnalysis(position)
   }
 
   function handleStatusToggle() {

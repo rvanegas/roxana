@@ -401,6 +401,15 @@ export const discussionsSlice = createSlice({
         }
       }
     },
+    recordDerivedArgument(state, action: {payload: {position: number, argumentPosition: number}}) {
+      const {position, argumentPosition} = action.payload
+      const result = state.analysisResults[position]
+      if (!result) return
+      state.analysisResults = {
+        ...state.analysisResults,
+        [position]: {...result, derivedArgumentPosition: argumentPosition},
+      }
+    },
     clearArgumentAnalysisResults(state, action: {payload: number}) {
       const next = {...state.analysisResults}
       delete next[action.payload]

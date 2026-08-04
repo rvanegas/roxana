@@ -548,11 +548,37 @@ function markRecommendationAppliedThunk(position: number, key: string) {
   }
 }
 
+// Resolve the single argument that recommendations from this analysis fold into,
+// so that applying several recommendations yields one consolidated argument
+// rather than one new argument per recommendation. The first additive apply
+// creates a fresh argument seeded from the original `argumentContent` and records
+// its position on the analysis result; later applies reuse that argument, folding
+// their change into its *current* content. Returns the target argument position
+// and the base content to transform. No layout save here — the caller's final
+// markRecommendationAppliedThunk persists the recorded position.
+function ensureDerivedArgument(position: number, argumentContent: string) {
+  return (dispatch, getState): {argPosition: number, baseContent: string} => {
+    const {addSentence, recordDerivedArgument} = discussionsSlice.actions
+    const derived = getState().discussions.analysisResults?.[position]?.derivedArgumentPosition
+    const args = getState().discussions.arguments
+    if (derived != null && args[derived]) {
+      return {argPosition: derived, baseContent: args[derived].content}
+    }
+    dispatch(addSentence({section: 'arguments', status: 'committed'}))
+    const argPosition = getState().discussions.arguments.length - 1
+    dispatch(recordDerivedArgument({position, argumentPosition: argPosition}))
+    return {argPosition, baseContent: argumentContent}
+  }
+}
+
 // Apply a `new` recommendation: deposit `content` as a new committed proposition
 // and fold it into the analyzed argument. E.g. analyzed argument "1 2 3" + new
 // proposition (symbol 4) -> a new argument "1 2 4 3" (inserted before the
-// conclusion). Originals are left untouched. `position` is the analyzed
-// argument's position (used to persist the applied marker).
+// conclusion). Originals are left untouched. Multiple recommendations applied
+// from the same analysis are consolidated into a single derived argument: a
+// second added proposition (symbol 5) folds into "1 2 4 3" to give "1 2 4 5 3"
+// rather than spawning a separate "1 2 5 3". `position` is the analyzed
+// argument's position (used to persist the applied marker and the merge target).
 function applyRecommendationAdd(payload: {
   content: string, argumentContent: string, position: number, changeKey: string,
 }) {
@@ -563,11 +589,10 @@ function applyRecommendationAdd(payload: {
     const propPosition = getState().discussions.propositions.length - 1
     await dispatch(replaceSentence({section: 'propositions', position: propPosition, content}))
     const newSymbol = propPosition + 1
-    dispatch(addSentence({section: 'arguments', status: 'committed'}))
-    const argPosition = getState().discussions.arguments.length - 1
+    const {argPosition, baseContent} = dispatch(ensureDerivedArgument(position, argumentContent))
     await dispatch(replaceSentence({
       section: 'arguments', position: argPosition,
-      content: insertBeforeConclusion(argumentContent, newSymbol),
+      content: insertBeforeConclusion(baseContent, newSymbol),
     }))
     await dispatch(markRecommendationAppliedThunk(position, changeKey))
   }
@@ -577,10 +602,11 @@ function applyRecommendationAdd(payload: {
 // proposition (same path the inline editor uses) when that won't clear another
 // user's commitment — the analyzed argument keeps referencing the same position,
 // so no new argument is needed. Otherwise fall back to the additive form: a new
-// committed proposition plus a new argument with the target symbol substituted
-// (analyzed argument "1 2 3", rewrite symbol 1 -> new argument "4 2 3"). The
-// in-place vs additive decision is re-made here from current state, not trusted
-// from render time.
+// committed proposition plus a derived argument with the target symbol
+// substituted (analyzed argument "1 2 3", rewrite symbol 1 -> "4 2 3"). Like the
+// add path, the additive rewrite folds into this analysis's single consolidated
+// argument rather than spawning its own. The in-place vs additive decision is
+// re-made here from current state, not trusted from render time.
 function applyRecommendationRewrite(payload: {
   content: string, argumentContent: string, originalSymbol: string,
   position: number, changeKey: string,
@@ -600,11 +626,10 @@ function applyRecommendationRewrite(payload: {
       const propPosition = getState().discussions.propositions.length - 1
       await dispatch(replaceSentence({section: 'propositions', position: propPosition, content}))
       const newSymbol = propPosition + 1
-      dispatch(addSentence({section: 'arguments', status: 'committed'}))
-      const argPosition = getState().discussions.arguments.length - 1
+      const {argPosition, baseContent} = dispatch(ensureDerivedArgument(position, argumentContent))
       await dispatch(replaceSentence({
         section: 'arguments', position: argPosition,
-        content: substituteSymbol(argumentContent, originalSymbol, newSymbol),
+        content: substituteSymbol(baseContent, originalSymbol, newSymbol),
       }))
     }
     await dispatch(markRecommendationAppliedThunk(position, changeKey))
