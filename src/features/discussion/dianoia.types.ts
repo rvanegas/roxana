@@ -60,7 +60,7 @@ export interface ImproverRecommendation {
 }
 
 export interface AuditFinding {
-  condition: 'connectivity' | 'conclusion' | 'integrity'
+  condition: 'connectivity' | 'conclusion' | 'integrity' | 'circular'
   step_symbols: string[]
   issue: string
   pointer: string

@@ -8,6 +8,7 @@ const conditionTitles: Record<AuditFinding['condition'], string> = {
   connectivity: 'Connectivity',
   conclusion: 'Conclusion',
   integrity: 'Integrity',
+  circular: 'Circular Reasoning',
 }
 
 function FindingCard({finding}: {finding: AuditFinding}) {
