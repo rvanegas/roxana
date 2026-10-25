@@ -28,7 +28,8 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "roxana": "tsc -p tsconfig.cli.json"
+    "roxana": "tsc -p tsconfig.cli.json",
+    "dianoia-types": "openapi-typescript https://dianoia.rvanegas.co/openapi.json -o src/features/discussion/dianoia.openapi.ts"
   },
   "browserslist": {
     "production": [
@@ -49,6 +50,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "openapi-typescript": "^7.13.0",
     "playwright": "^1.60.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.0"

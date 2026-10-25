@@ -1,78 +1,29 @@
-export interface TruthEvaluation {
-  symbol: string
-  truth_value: number
-  reasoning?: string
-}
+// dianoia's own shapes come from its published contract. dianoia.openapi.ts is
+// generated from https://dianoia.rvanegas.co/openapi.json by
+// `npm run dianoia-types` and is never edited by hand; regenerate it whenever
+// dianoia's schemas/api_results.py changes (rvanegas-site SITE.md, Phase 4).
+// The names below are Roxana's for those shapes.
+import type {components} from './dianoia.openapi'
 
-export interface ValidityEvaluation {
-  symbol: string
-  validity_value: number
-  reasoning?: string
-}
+type Schemas = components['schemas']
 
-export interface IncoherentSet {
-  symbols: string[]
-  incoherence_value: number
-  reasoning?: string
-}
+export type TruthEvaluation = Schemas['TruthEvaluation']
+export type ValidityEvaluation = Schemas['ValidityEvaluation']
+export type IncoherentSet = Schemas['IncoherentSet']
+export type FormalizationItem = Schemas['FormalizationItem']
+export type PropositionEvaluation = Schemas['PropositionEvaluation']
+export type PhrasingEvaluation = Schemas['PhrasingEvaluation']
+export type PropositionChange = Schemas['ImprovementProposition']
+export type ExpectedConclusionImprovement = Schemas['ExpectedConclusionImprovement']
+export type ImproverRecommendation = Schemas['ImprovementRecommendation']
+export type AuditFinding = Schemas['AuditFinding']
+export type AuditResult = Schemas['AuditResult']
+export type AgentResultsResponse = Schemas['AgentResultsResponse']
 
-export interface FormalizationItem {
-  symbol: string
-  ascii: string
-  json_structure: string
-}
-
-export interface PropositionEvaluation {
-  symbol: string
-  validity: number
-  reasoning: string
-}
-
-export interface PhrasingEvaluation {
-  symbol: string
-  issues: string[]
-  recommendation: string
-}
-
-export interface PropositionChange {
-  symbol: string | null
-  proposition: string
-  type: 'new' | 'rewrite'
-  original_symbol: string | null
-  original_proposition: string | null
-  justifies_symbol: string | null
-  justification_suggestions: string[]
-}
-
-export interface ExpectedConclusionImprovement {
-  truth_score_improvement: string
-  content_validity_improvement: string
-  formal_validity_improvement: string
-}
-
-export interface ImproverRecommendation {
-  id: string
-  reasoning: string
-  impact: 'high' | 'medium' | 'low'
-  target_proposition: string
-  expected_conclusion_improvement: ExpectedConclusionImprovement
-  propositions: PropositionChange[]
-}
-
-export interface AuditFinding {
-  condition: 'connectivity' | 'conclusion' | 'integrity' | 'circular'
-  step_symbols: string[]
-  issue: string
-  pointer: string
-}
-
-export interface AuditResult {
-  satisfied: boolean
-  findings: AuditFinding[]
-}
-
+// Roxana's own: the merged view of one argument's analysis, persisted with the
+// discussion, so it is not dianoia's to define.
 export interface DianoiaResultData {
-  // content_evaluator
+  // truth_evaluator and content_validity_evaluator
   truthEvaluations: TruthEvaluation[]
   validityEvaluations: ValidityEvaluation[]
   incoherentSets: IncoherentSet[]
