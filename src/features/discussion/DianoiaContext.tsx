@@ -1,4 +1,5 @@
 import React, {createContext, useContext, useState, useRef} from 'react'
+import {fetchAuthSession} from 'aws-amplify/auth'
 import {useDispatch, useSelector} from 'react-redux'
 import {AppDispatch} from '../../app/store'
 import {selectDiscussions, propositionIndexesFromArgument} from './discussionsSlice'
@@ -16,20 +17,13 @@ export type AnalyzedStep = {sentence: {content: string}, displayIdx: number}
 
 const sessionId = crypto.randomUUID()
 
-const whitelist = new Set(
-  (import.meta.env.VITE_DIANOIA_WHITELIST ?? '').split(',').map((s: string) => s.trim()).filter(Boolean)
-)
-
-const LAST_ANALYZED_KEY = 'dianoia:lastAnalyzed'
-
-function isToday(isoString: string): boolean {
-  return new Date(isoString).toDateString() === new Date().toDateString()
-}
-
-function isRateLimited(username: string | undefined): boolean {
-  if (!username || whitelist.has(username)) return false
-  const stored = localStorage.getItem(LAST_ANALYZED_KEY)
-  return stored !== null && isToday(stored)
+// dianoia requires a caller on every route: the signed-in user's Cognito ID
+// token, which it verifies against this user pool (rvanegas-site SITE.md,
+// Phase 4). fetchAuthSession refreshes an expired one before handing it over.
+async function dianoiaHeaders(): Promise<Record<string, string>> {
+  const idToken = (await fetchAuthSession()).tokens?.idToken?.toString()
+  if (!idToken) throw new Error('not signed in')
+  return {'Content-Type': 'application/json', Authorization: `Bearer ${idToken}`}
 }
 
 interface DianoiaState {
@@ -39,7 +33,6 @@ interface DianoiaState {
   viewPosition: number | null
   auditStatus: 'idle' | 'loading' | 'error'
   auditViewOpen: boolean
-  checkRateLimited: (username: string | undefined) => boolean
   startAnalysis: (steps: AnalyzedStep[], discussionId: string, argumentPosition: number, username?: string) => void
   cancelAnalysis: () => void
   resetAnalysis: (position?: number) => void
@@ -57,7 +50,6 @@ const DianoiaContext = createContext<DianoiaState>({
   viewPosition: null,
   auditStatus: 'idle',
   auditViewOpen: false,
-  checkRateLimited: () => false,
   startAnalysis: () => {},
   cancelAnalysis: () => {},
   resetAnalysis: () => {},
@@ -77,9 +69,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
   const [viewPosition, setViewPosition] = useState<number | null>(null)
   const [auditStatus, setAuditStatus] = useState<DianoiaState['auditStatus']>('idle')
   const [auditViewOpen, setAuditViewOpen] = useState(false)
-  const [lastAnalyzedStamp, setLastAnalyzedStamp] = useState<string | null>(
-    () => localStorage.getItem(LAST_ANALYZED_KEY)
-  )
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   function clearPoll() {
@@ -87,11 +76,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
       clearInterval(pollRef.current)
       pollRef.current = null
     }
-  }
-
-  function checkRateLimited(username: string | undefined): boolean {
-    if (!username || whitelist.has(username)) return false
-    return lastAnalyzedStamp !== null && isToday(lastAnalyzedStamp)
   }
 
   function cancelAnalysis() {
@@ -136,7 +120,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
   async function startAnalysis(steps: AnalyzedStep[], discussionId: string, argumentPosition: number, username?: string) {
     const baseUrl = import.meta.env.VITE_DIANOIA_URL
     if (!baseUrl) return
-    if (isRateLimited(username)) return
 
     clearPoll()
     setStatus('loading')
@@ -166,7 +149,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     try {
       const postRes = await fetch(postUrl, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: await dianoiaHeaders(),
         body: JSON.stringify({assumptions: [], argument, file_ids: []}),
       })
       if (!postRes.ok) throw new Error(`POST failed: ${postRes.status}`)
@@ -179,7 +162,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     const pollUrl = `${baseUrl}/api/agents/results?conversation_id=${encodeURIComponent(conversationId)}&snapshot_id=1`
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch(pollUrl)
+        const res = await fetch(pollUrl, {headers: await dianoiaHeaders()})
         if (!res.ok) throw new Error(`poll failed: ${res.status}`)
         const data = await res.json()
         if (data.tasks_complete) {
@@ -241,11 +224,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
 
           dispatch(saveArgumentAnalysisResultsAction(argumentPosition, merged))
 
-          if (!whitelist.has(username ?? '')) {
-            const stamp = new Date().toISOString()
-            localStorage.setItem(LAST_ANALYZED_KEY, stamp)
-            setLastAnalyzedStamp(stamp)
-          }
           setStatus('done')
         }
       } catch (e) {
@@ -286,7 +264,7 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     try {
       const res = await fetch(`${baseUrl}/api/argument/audit`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: await dianoiaHeaders(),
         body: JSON.stringify({argument, file_ids: []}),
       })
       if (!res.ok) throw new Error(`audit failed: ${res.status}`)
@@ -312,7 +290,6 @@ export function DianoiaProvider({children}: {children: React.ReactNode}) {
     <DianoiaContext.Provider value={{
       status, analyzedPosition, analysisViewOpen, viewPosition,
       auditStatus, auditViewOpen,
-      checkRateLimited,
       startAnalysis, cancelAnalysis, resetAnalysis, openView, closeView,
       runAudit, openAuditView, closeAuditView,
     }}>

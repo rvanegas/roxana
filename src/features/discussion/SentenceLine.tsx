@@ -34,7 +34,7 @@ export function SentenceLine(props: SentenceProps) {
   const isArguments = section === 'arguments'
   const {user} = useContext(CurrentUserContext) as unknown as {user, route}
   const username = user?.username
-  const {startAnalysis, cancelAnalysis, resetAnalysis, openView, checkRateLimited,
+  const {startAnalysis, cancelAnalysis, resetAnalysis, openView,
     status: dianoiaStatus, analyzedPosition: dianoiaAnalyzedPosition} = useDianoia()
   const propositionIndexes = section === 'arguments' ? propositionIndexesFromArgument(sentence) : []
   const editorContainerRef = useRef() as MutableRefObject<HTMLDivElement>
@@ -552,7 +552,7 @@ export function SentenceLine(props: SentenceProps) {
         })
         .filter(Boolean) as Array<{sentence: typeof propositions[0], displayIdx: number}>
 
-      const analyzeDisabled = isAnalyzing || hasResults || checkRateLimited(username)
+      const analyzeDisabled = isAnalyzing || hasResults
       modalActions.push(
         <Button key="analyze" variation="link" size="small" isDisabled={analyzeDisabled}
           style={analyzeDisabled ? {color: 'gray'} : undefined}
