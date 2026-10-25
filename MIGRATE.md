@@ -1,8 +1,23 @@
 # Domain Migration Plan
 
-## Migration 1: roxana.rvanegas.co (Amplify)
+## Migration 1: roxana.rvanegas.co (Amplify) — done 2026-10-25
 
 Move `tryroxana.com` → `roxana.rvanegas.co`
+
+**Done 2026-10-25** as SITE Phase 3 (`~/src/rvanegas-site/SITE.md`), by CLI
+rather than the console, with one change to Step 4: `tryroxana.com` was kept
+and redirects, not removed. What was done:
+
+- `aws amplify create-domain-association --domain-name rvanegas.co
+  --sub-domain-settings prefix=roxana,branchName=master` — only `roxana` is
+  mapped; the apex and other names are served elsewhere.
+- Namecheap got a `roxana` CNAME and an ACM validation CNAME (not a TXT).
+  The values are in `~/src/rvanegas-site/DNS.md`.
+- `tryroxana.com` stays associated. A custom rule, ahead of the SPA rewrite,
+  301s it to the same path on `roxana.rvanegas.co`. A changed rule shows only
+  after a `RELEASE` job clears CloudFront's cache.
+
+The steps below are the original plan.
 
 ### Step 1 — Add domain in Amplify Console
 1. Go to Amplify Console → roxana app (ID: `d1gtwcafz2d83t`) → **Domain management** → **Add domain**
@@ -20,7 +35,7 @@ Move `tryroxana.com` → `roxana.rvanegas.co`
 - SSL provisioning + DNS propagation: 15–30 min
 - Verify at `https://roxana.rvanegas.co`
 
-### Step 4 — Remove old domain
+### Step 4 — Remove old domain (not done: redirected instead)
 - Amplify Console → Domain management → remove `tryroxana.com`
 
 ---
