@@ -182,7 +182,7 @@ export interface paths {
         put?: never;
         /**
          * Extract
-         * @description Extract a structured argument from plain text (used by mdc).
+         * @description Extract a structured argument from plain text (used by noesis).
          */
         post: operations["extract_api_argument_extract_post"];
         delete?: never;
@@ -202,7 +202,7 @@ export interface paths {
         put?: never;
         /**
          * Evaluate
-         * @description Start the evaluation agents on a whole argument (used by mdc).
+         * @description Start the evaluation agents on a whole argument (used by noesis).
          *
          *     Returns the ids to poll with GET /api/agents/results until its
          *     tasks_complete is true.
