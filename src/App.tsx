@@ -156,7 +156,7 @@ function Home() {
   const dianoiaIndicator = import.meta.env.VITE_DIANOIA_URL && dianoiaStatus !== 'idle'
     ? <View className={`indicator dianoia-${dianoiaStatus}`} title={`Dianoia: ${dianoiaStatus}`} style={{marginRight: '4px'}} />
     : null
-  const hamburger = location.pathname === '/signin' || route === 'loading' ? null : user ?
+  const hamburger = location.pathname.replace(/\/$/, '') === '/signin' || route === 'loading' ? null : user ?
     <HamburgerMenu username={user.username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} audit={audit} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
   const navbarRight = discussions.selectMode ? (

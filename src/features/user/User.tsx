@@ -34,7 +34,8 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
 
   useEffect(() => {
     // The callback page signs in, then reloads into where the person was.
-    if (window.location.pathname === '/signin') return
+    // (Amplify Hosting serves it as /signin/.)
+    if (window.location.pathname.replace(/\/$/, '') === '/signin') return
     currentUser().then(found => {
       setUser(found)
       setRoute(found ? 'authenticated' : 'signedOut')
