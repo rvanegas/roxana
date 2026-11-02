@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react'
 import {useSelector, useDispatch} from 'react-redux'
 import {BrowserRouter, Routes, Route, Outlet, useParams, useLocation, useNavigate} from 'react-router-dom'
-import {Authenticator, useAuthenticator, Flex, Text, View, Heading, Button} from '@aws-amplify/ui-react'
+import {Flex, Text, View, Heading, Button} from '@aws-amplify/ui-react'
 import classNames from 'classnames'
 import '@aws-amplify/ui-react/styles.css'
 import 'draft-js/dist/Draft.css'
 import {dlog} from './app/util'
-import {CurrentUserContext} from './features/user/User'
+import {CurrentUserContext, useAuth} from './features/user/User'
+import {signIn, completeSignIn} from './features/user/auth'
 import {DianoiaProvider, useDianoia} from './features/discussion/DianoiaContext'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
@@ -92,8 +93,7 @@ function HamburgerMenu({username, signOut, onSelect, showSelect, audit}: {userna
 
 function Home() {
   const dispatch = useDispatch<AppDispatch>()
-  // @ts-ignore
-  const {user, signOut, route}: {user: any, signOut: () => {}, route: string} = useAuthenticator(context => [context.user])
+  const {user, signOut, route} = useAuth()
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -101,7 +101,7 @@ function Home() {
   const username = user?.username
   const isSynced = discussions.eventQueue.length === 0
   const eventMessages = discussions.eventQueue.map(e => e.message).join('\n')
-  const {setNewDiscussionId, setReloadPath, setUsername} = discussionsSlice.actions
+  const {setNewDiscussionId, setUsername} = discussionsSlice.actions
 
   useEffect(() => {
     dispatch(setUsername(username))
@@ -129,8 +129,7 @@ function Home() {
   }
 
   function navigateToSignIn() {
-    dispatch(setReloadPath(window.location.pathname))
-    navigate('/signin')
+    signIn(window.location.pathname)
   }
 
   const roxanaHeader = <Heading level={3} onClick={handleHome}
@@ -157,8 +156,8 @@ function Home() {
   const dianoiaIndicator = import.meta.env.VITE_DIANOIA_URL && dianoiaStatus !== 'idle'
     ? <View className={`indicator dianoia-${dianoiaStatus}`} title={`Dianoia: ${dianoiaStatus}`} style={{marginRight: '4px'}} />
     : null
-  const hamburger = location.pathname === '/signin' ? null : user ?
-    <HamburgerMenu username={username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} audit={audit} /> :
+  const hamburger = location.pathname === '/signin' || route === 'loading' ? null : user ?
+    <HamburgerMenu username={user.username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} audit={audit} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
   const navbarRight = discussions.selectMode ? (
     <>
@@ -219,17 +218,24 @@ function Home() {
   )
 }
 
+// noesis sends the person back here (auth.ts); arriving without its answer
+// starts a sign-in instead.
 function SignIn() {
-  const discussions = useSelector(selectDiscussions)
+  const [error, setError] = useState<string | null>(null)
 
-  return (
-    <Authenticator>
-      {({signOut, user}) => {
-        window.location.href = discussions.reloadPath
-        return <div/>
-      }}
-    </Authenticator>
-  )
+  useEffect(() => {
+    const search = window.location.search
+    const params = new URLSearchParams(search)
+    if (!params.has('code') && !params.has('error')) {
+      signIn('/')
+      return
+    }
+    completeSignIn(search)
+      .then(returnPath => window.location.replace(returnPath))
+      .catch(e => setError(String(e.message ?? e)))
+  }, [])
+
+  return error ? <Text>Signing in failed: {error}. <a href="/signin">Try again</a>.</Text> : <Text>Signing in…</Text>
 }
 
 function Invite() {

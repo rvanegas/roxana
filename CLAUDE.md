@@ -14,12 +14,14 @@ Node 24.13.0 required (see `.node-version`). No test suite configured.
 
 The `cli/` directory is a separate TypeScript tool for AWS admin operations; run it independently with its own `npm` commands.
 
+`src/cli.ts` is the admin CLI (`npm run roxana`, then `AWS_PROFILE=amplify node cli-build/cli.js <command>`): `discussions`, `users`, `delete`, `publish`, and `rename <file>`, which renames people everywhere Roxana keeps a name (User, UserDiscussion, each layout's owner and votes, analyzingState) from `old<TAB>new` lines; a dry run without `--confirm`. It moved the Cognito-era names onto noesis user names in 2026-11.
+
 ## aws-exports.js
 
 `aws-exports.js` is gitignored (contains secrets) but required to run the app. The production values can be found in the AWS Console:
 - **AppSync endpoint and API key**: AppSync → roxana-roxana → Settings
-- **Cognito user pool and client**: Cognito → User pools → roxana31481408_userpool_31481408-roxana
-- **Identity pool**: Cognito → Identity pools
+
+The app reads its AppSync settings from `.env.local` (`VITE_AWS_REGION`, `VITE_APPSYNC_ENDPOINT`, `VITE_APPSYNC_API_KEY`), and noesis's from `VITE_NOESIS_URL` / `VITE_NOESIS_CLIENT_ID` (defaults `https://noesis.rvanegas.co`, `roxana`). The Cognito pool (`roxana31481408_userpool_31481408-roxana`) no longer signs anyone in.
 
 ## ⚠️ AppSync API key expires 2027-06-07
 
@@ -45,7 +47,7 @@ The `cli/` directory is a separate TypeScript tool for AWS admin operations; run
 2. **Persistence** — the Redux state is serialized to a string `layout` field before being written to DynamoDB via AppSync mutations (`data.tsx`).
 3. **Sync queue** — optimistic UI updates go through an `eventQueue` in Redux state; a `syncIndicator` shows pending/synced status to the user.
 4. **Real-time** — `onDiscussionById` AppSync subscription pushes remote changes back into Redux.
-5. **Auth** — AWS Cognito via `Amplify.Auth`; the authenticated user is surfaced through `src/features/user/`.
+5. **Auth** — noesis's OAuth server (`noesis.rvanegas.co`), not Cognito (since 2026-11-02). Roxana is its public client `roxana` (PKCE, identity-only: the token answers noesis's `/me` and dianoia, nothing else). `src/features/user/auth.ts` runs the flow: `signIn` redirects to noesis's `/authorize`, which comes back to `/signin` (`completeSignIn`); the refresh token is in localStorage, the access token in memory (`getAccessToken`, also sent to dianoia). `AuthProvider`/`useAuth` (`User.tsx`) surface the user, whose username is their noesis user name. Local development signs in through `http://localhost:3000/signin`, which the client's registration names.
 
 ### Notable patterns
 

@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useState, useRef} from 'react'
-import {fetchAuthSession} from 'aws-amplify/auth'
 import {useDispatch, useSelector} from 'react-redux'
 import {AppDispatch} from '../../app/store'
+import {getAccessToken} from '../user/auth'
 import {selectDiscussions, propositionIndexesFromArgument} from './discussionsSlice'
 import {saveArgumentAnalysisResultsAction, deleteArgumentAnalysisResultsAction,
   setAnalyzingStateAction, saveAuditResultAction} from './data'
@@ -17,13 +17,13 @@ export type AnalyzedStep = {sentence: {content: string}, displayIdx: number}
 
 const sessionId = crypto.randomUUID()
 
-// dianoia requires a caller on every route: the signed-in user's Cognito ID
-// token, which it verifies against this user pool (rvanegas-site SITE.md,
-// Phase 4). fetchAuthSession refreshes an expired one before handing it over.
+// dianoia requires a caller on every route: the signed-in user's noesis access
+// token, which it checks by asking noesis's /me (dianoia's api/auth.py).
+// getAccessToken refreshes an expiring one before handing it over.
 async function dianoiaHeaders(): Promise<Record<string, string>> {
-  const idToken = (await fetchAuthSession()).tokens?.idToken?.toString()
-  if (!idToken) throw new Error('not signed in')
-  return {'Content-Type': 'application/json', Authorization: `Bearer ${idToken}`}
+  const token = await getAccessToken()
+  if (!token) throw new Error('not signed in')
+  return {'Content-Type': 'application/json', Authorization: `Bearer ${token}`}
 }
 
 interface DianoiaState {
