@@ -2,6 +2,7 @@
 import { DynamoDBClient, ScanCommand, DeleteItemCommand,
   QueryCommand, UpdateItemCommand, PutItemCommand, ScanCommandInput, ScanCommandOutput } from '@aws-sdk/client-dynamodb'
 import { readFileSync, realpathSync } from 'fs'
+import { randomUUID } from 'crypto'
 import { pathToFileURL } from 'url'
 
 const db = new DynamoDBClient({ region: 'us-west-2' })
@@ -110,6 +111,75 @@ async function publishDiscussion() {
     ConditionExpression: 'attribute_exists(id)',
   }))
   console.log(`Discussion ${id} is now public.`)
+}
+
+// Everyone who voted on a sentence (accepted, rejected, cleared or goal) keeps
+// access, as a UserDiscussion row: a private discussion is open only to those.
+async function privatizeDiscussion() {
+  const id = process.argv[3]
+  const confirmed = process.argv.includes('--confirm')
+  if (!id) {
+    console.error('Usage: roxana privatize <id> [--confirm]')
+    process.exit(1)
+  }
+
+  const result = await db.send(new QueryCommand({
+    TableName: table('Discussion'),
+    KeyConditionExpression: 'id = :id',
+    ExpressionAttributeValues: { ':id': { S: id } },
+  }))
+  const item = result.Items?.[0]
+  if (!item) {
+    console.error(`No discussion ${id}.`)
+    process.exit(1)
+  }
+  const layout = JSON.parse(item.layout?.S ?? '{}')
+  const voters = new Set<string>()
+  for (const section of ['propositions', 'arguments']) {
+    for (const entry of layout[section] ?? []) {
+      for (const vote of [...VOTES, 'goal']) {
+        for (const name of entry[vote] ?? []) voters.add(name)
+      }
+    }
+  }
+
+  const rows = await db.send(new QueryCommand({
+    TableName: table('UserDiscussion'),
+    IndexName: 'byDiscussion',
+    KeyConditionExpression: 'discussionId = :id',
+    ExpressionAttributeValues: { ':id': { S: id } },
+  }))
+  const members = new Set((rows.Items ?? []).map(row => row.userId?.S ?? ''))
+  const toAdd = [...voters].filter(name => !members.has(name)).sort()
+
+  console.log(`Discussion:   ${id}${item.isPrivate?.BOOL ? '  (already private)' : ''}`)
+  console.log(`Voters:       ${[...voters].sort().join(', ') || 'none'}`)
+  console.log(`Participants: ${[...members].sort().join(', ') || 'none'}`)
+  console.log(`To add:       ${toAdd.join(', ') || 'none'}`)
+
+  if (!confirmed) {
+    console.log('\nDry run — pass --confirm to make it private.')
+    return
+  }
+
+  const now = new Date().toISOString()
+  for (const userId of toAdd) {
+    await db.send(new PutItemCommand({
+      TableName: table('UserDiscussion'),
+      Item: {
+        id: { S: randomUUID() }, __typename: { S: 'UserDiscussion' },
+        discussionId: { S: id }, userId: { S: userId }, createdAt: { S: now }, updatedAt: { S: now },
+      },
+    }))
+  }
+  await db.send(new UpdateItemCommand({
+    TableName: table('Discussion'),
+    Key: { id: { S: id } },
+    UpdateExpression: 'SET isPrivate = :t',
+    ExpressionAttributeValues: { ':t': { BOOL: true } },
+    ConditionExpression: 'attribute_exists(id)',
+  }))
+  console.log(`Discussion ${id} is now private.`)
 }
 
 async function scanAll(input: ScanCommandInput) {
@@ -312,6 +382,7 @@ const commands: Record<string, () => Promise<void>> = {
   users:       listUsers,
   delete:      deleteDiscussion,
   publish:     publishDiscussion,
+  privatize:   privatizeDiscussion,
   rename:      renameUsers,
 }
 

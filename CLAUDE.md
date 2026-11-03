@@ -14,7 +14,7 @@ Node 24.13.0 required (see `.node-version`). No test suite configured.
 
 The `cli/` directory is a separate TypeScript tool for AWS admin operations; run it independently with its own `npm` commands.
 
-`src/cli.ts` is the admin CLI (`npm run roxana`, then `AWS_PROFILE=amplify node cli-build/cli.js <command>`): `discussions`, `users`, `delete`, `publish`, and `rename <file>`, which renames people everywhere Roxana keeps a name (User, UserDiscussion, each layout's owner and votes, analyzingState) from `old<TAB>new` lines; a dry run without `--confirm`. It moved the Cognito-era names onto noesis user names in 2026-11.
+`src/cli.ts` is the admin CLI (`npm run roxana`, then `AWS_PROFILE=amplify node cli-build/cli.js <command>`): `discussions`, `users`, `delete`, `publish`, `privatize <id>` (makes a public discussion private, giving everyone who voted on it a UserDiscussion row so they keep access; a dry run without `--confirm`), and `rename <file>`, which renames people everywhere Roxana keeps a name (User, UserDiscussion, each layout's owner and votes, analyzingState) from `old<TAB>new` lines; a dry run without `--confirm`. It moved the Cognito-era names onto noesis user names in 2026-11.
 
 ## aws-exports.js
 
