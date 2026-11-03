@@ -12,7 +12,8 @@ import {DianoiaProvider, useDianoia} from './features/discussion/DianoiaContext'
 import {Discussion} from './features/discussion/Discussion'
 import {DiscussionsList} from './features/discussion/DiscussionsList'
 import {selectDiscussions, discussionsSlice, propositionIndexesFromArgument} from './features/discussion/discussionsSlice'
-import {acceptInviteCode, createDiscussionFromSelectionAction, enterSelectModeAction, exitSelectModeAction} from './features/discussion/data'
+import {acceptInviteCode, createDiscussionFromSelectionAction, enterSelectModeAction, exitSelectModeAction,
+  makePrivateAction, makePublicAction} from './features/discussion/data'
 import {AppDispatch} from './app/store'
 
 type AuditMenu = {
@@ -23,7 +24,14 @@ type AuditMenu = {
   openAuditView: () => void
 }
 
-function HamburgerMenu({username, signOut, onSelect, showSelect, audit}: {username: string, signOut: () => void, onSelect: () => void, showSelect: boolean, audit: AuditMenu}) {
+type PrivacyMenu = {
+  available: boolean
+  isPrivate: boolean
+  makePrivate: () => void
+  makePublic: () => void
+}
+
+function HamburgerMenu({username, signOut, onSelect, showSelect, audit, privacy}: {username: string, signOut: () => void, onSelect: () => void, showSelect: boolean, audit: AuditMenu, privacy: PrivacyMenu}) {
   const [open, setOpen] = useState(false)
 
   const itemStyle = {display: 'block', width: '100%', textAlign: 'left' as const, padding: '8px 12px'}
@@ -46,6 +54,20 @@ function HamburgerMenu({username, signOut, onSelect, showSelect, audit}: {userna
   function handleOpenAuditView() {
     setOpen(false)
     audit.openAuditView()
+  }
+
+  function handleMakePrivate() {
+    setOpen(false)
+    if (window.confirm('Make this discussion private? Only those who have voted on it, and those you invite, will see it.')) {
+      privacy.makePrivate()
+    }
+  }
+
+  function handleMakePublic() {
+    setOpen(false)
+    if (window.confirm('Make this discussion public? Anyone will be able to see it, and its invite link stops working.')) {
+      privacy.makePublic()
+    }
   }
 
   return (
@@ -79,6 +101,14 @@ function HamburgerMenu({username, signOut, onSelect, showSelect, audit}: {userna
             style={{...itemStyle, color: 'firebrick', fontSize: '0.85em'}}>
             audit failed
           </Text>}
+          {privacy.available && !privacy.isPrivate && <Button variation="link" size="small" onClick={handleMakePrivate}
+            style={itemStyle}>
+            make private
+          </Button>}
+          {privacy.available && privacy.isPrivate && <Button variation="link" size="small" onClick={handleMakePublic}
+            style={itemStyle}>
+            make public
+          </Button>}
           <Button variation="link" size="small" onClick={handleSignOut}
             style={itemStyle}>
             sign out
@@ -153,11 +183,17 @@ function Home() {
     runAudit,
     openAuditView,
   }
+  const privacy = {
+    available: locationInDiscussion && !!discussions.revision,
+    isPrivate: !!discussions.isPrivate,
+    makePrivate: () => dispatch(makePrivateAction()),
+    makePublic: () => dispatch(makePublicAction()),
+  }
   const dianoiaIndicator = import.meta.env.VITE_DIANOIA_URL && dianoiaStatus !== 'idle'
     ? <View className={`indicator dianoia-${dianoiaStatus}`} title={`Dianoia: ${dianoiaStatus}`} style={{marginRight: '4px'}} />
     : null
   const hamburger = location.pathname.replace(/\/$/, '') === '/signin' || route === 'loading' ? null : user ?
-    <HamburgerMenu username={user.username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} audit={audit} /> :
+    <HamburgerMenu username={user.username} signOut={signOut} onSelect={() => dispatch(enterSelectModeAction())} showSelect={locationInDiscussion} audit={audit} privacy={privacy} /> :
     <Button variation="link" size="small" onClick={navigateToSignIn}>sign in</Button>
   const navbarRight = discussions.selectMode ? (
     <>

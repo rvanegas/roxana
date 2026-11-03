@@ -233,6 +233,9 @@ export const discussionsSlice = createSlice({
     setInviteCode(state, action) {
       state.inviteCode = action.payload
     },
+    setIsPrivate(state, action) {
+      state.isPrivate = action.payload
+    },
     setNewInviteCode(state, action) {
       state.newInviteCode = action.payload
     },

@@ -65,8 +65,9 @@ function updateDiscussionLayout(changeNote: string) {
       const auditResult = state.discussions.auditResult
         ? JSON.stringify(state.discussions.auditResult)
         : null
+      const isPrivate = state.discussions.isPrivate
       const variables = {
-        input: {id, version, revision, layout, goalsSummary, analysisResults, analyzingState, auditResult, inviteCode, pool},
+        input: {id, version, revision, layout, goalsSummary, analysisResults, analyzingState, auditResult, inviteCode, isPrivate, pool},
         condition: {revision: {eq: oldRevision}}
       }
       await client().graphql({ query: mutations.updateDiscussion, variables })
@@ -699,6 +700,70 @@ function revokeInviteCode() {
   }
 }
 
+// Everyone who voted on a sentence (accepted, rejected, cleared or goal) keeps
+// access, as a UserDiscussion row: a private discussion is open only to those.
+// The CLI's privatize does the same.
+function makePrivate() {
+  const {setIsPrivate} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    const discussionId = state.discussions.discussionId
+    try {
+      const voters = new Set<string>([state.discussions.username])
+      for (const sentence of state.discussions.propositions.concat(state.discussions.arguments)) {
+        for (const vote of ['accepted', 'rejected', 'cleared', 'goal']) {
+          for (const name of sentence[vote] ?? []) voters.add(name)
+        }
+      }
+      const response = await client().graphql({ query: queries.queryUserDiscussionByDiscussionId, variables: { discussionId, limit: 1000 } }) as {data: any}
+      const members = new Set(response.data.queryUserDiscussionByDiscussionId.items.map(item => item.userId))
+      for (const userId of voters) {
+        if (!members.has(userId)) {
+          await client().graphql({ query: mutations.createUserDiscussion, variables: { input: {discussionId, userId} } })
+        }
+      }
+      dispatch(setIsPrivate(true))
+      await dispatch(updateDiscussionLayout('make private'))
+      tryAgainTrials = 0
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
+        tryAgainTrials++
+        dispatch(getDiscussionAction({id: discussionId, withoutSentences: true}))
+        dispatch(makePrivateAction())
+      }
+      else {
+        throw exception
+      }
+    }
+  }
+}
+
+// The invite code goes too: left behind, it would let anyone holding the link
+// back in should the discussion be made private again.
+function makePublic() {
+  const {setIsPrivate, setInviteCode} = discussionsSlice.actions
+  return async (dispatch, getState) => {
+    const state = getState()
+    try {
+      dispatch(setIsPrivate(false))
+      dispatch(setInviteCode(undefined))
+      await dispatch(updateDiscussionLayout('make public'))
+      tryAgainTrials = 0
+    }
+    catch (exception: any) {
+      if (exception.name === 'UnexpectedLayoutRevision' && tryAgainTrials < tryAgainTrialsMax) {
+        tryAgainTrials++
+        dispatch(getDiscussionAction({id: state.discussions.discussionId, withoutSentences: true}))
+        dispatch(makePublicAction())
+      }
+      else {
+        throw exception
+      }
+    }
+  }
+}
+
 const eventHandlerFunctions = {
   createNewDiscussion,
   createDiscussionFromSelection,
@@ -710,6 +775,8 @@ const eventHandlerFunctions = {
   changeSentenceHidden,
   createInviteCode,
   revokeInviteCode,
+  makePrivate,
+  makePublic,
   applyRecommendationAdd,
   applyRecommendationRewrite,
 }
@@ -958,6 +1025,16 @@ export function createInviteCodeAction() {
 export function revokeInviteCodeAction() {
   const message = `revoke invite code t=${tryAgainTrials}`
   const action = {handler: 'revokeInviteCode', message}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function makePrivateAction() {
+  const message = `make private t=${tryAgainTrials}`
+  const action = {handler: 'makePrivate', message}
+  return dispatch => dispatch(enqueueEvent(action))
+}
+export function makePublicAction() {
+  const message = `make public t=${tryAgainTrials}`
+  const action = {handler: 'makePublic', message}
   return dispatch => dispatch(enqueueEvent(action))
 }
 
