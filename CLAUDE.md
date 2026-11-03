@@ -16,6 +16,8 @@ The `cli/` directory is a separate TypeScript tool for AWS admin operations; run
 
 `src/cli.ts` is the admin CLI (`npm run roxana`, then `AWS_PROFILE=amplify node cli-build/cli.js <command>`): `discussions`, `users`, `delete`, `publish`, `privatize <id>` (makes a public discussion private, giving everyone who voted on it a UserDiscussion row so they keep access; a dry run without `--confirm`), and `rename <file>`, which renames people everywhere Roxana keeps a name (User, UserDiscussion, each layout's owner and votes, analyzingState) from `old<TAB>new` lines; a dry run without `--confirm`. It moved the Cognito-era names onto noesis user names in 2026-11.
 
+The web app does `publish` and `privatize` too, from the hamburger menu inside a discussion (`App.tsx`): "make private" / "make public", each after a confirmation, through the event queue (`makePrivate` / `makePublic` in `data.tsx`). "make private" keeps in, beyond the voters, whoever clicks it; "make public" also drops the invite code, which the CLI's `publish` leaves.
+
 ## aws-exports.js
 
 `aws-exports.js` is gitignored (contains secrets) but required to run the app. The production values can be found in the AWS Console:
