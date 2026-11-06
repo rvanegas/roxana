@@ -1,11 +1,4 @@
-# TODO
-
-Deferred work, one section per item. Strike an item by deleting it in the
-commit that does it.
-
----
-
-## Publish a discussion back into noesis, as a new `.argument.md`
+# Publish a discussion back into noesis, as a new `.argument.md`
 
 Asked for 2026-11-05. The way between the projects runs one way today: noesis
 extracts an argument through dianoia and exports it here
