@@ -2,9 +2,8 @@
 
 # Working on Roxana
 
-**This file is 6,968 bytes, under technosophia's cap of 20,000.** Read
-technosophia's `INSTRUCTIONS.md` before adding to it, and correct the figure
-in the same commit.
+**This file is capped at technosophia's 20,000 bytes**, which `ts instructions
+check` measures. Read technosophia's `INSTRUCTIONS.md` before adding to it.
 
 **The practices this project shares with others are technosophia's**, at
 `~/src/technosophia`. This file imports its `WORKING.md` (trunk, the verbs,
