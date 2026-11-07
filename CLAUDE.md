@@ -26,9 +26,10 @@ file, resolved with `ts note find`. Read it before filing or resolving one.
 npm start          # Dev server (Vite, port 3000)
 npm run build      # Production build → dist/
 npm run preview    # Preview production build locally
+npm test           # The suite (Vitest)
 ```
 
-Node 24.13.0 required (see `.node-version`). No test suite configured.
+Node 24.13.0 required (see `.node-version`). `npm test` runs the suite (Vitest, `test/`), which so far only holds `CLAUDE.md` to technosophia's cap; Amplify's build does not run it.
 
 The `cli/` directory is a separate TypeScript tool for AWS admin operations; run it independently with its own `npm` commands.
 
