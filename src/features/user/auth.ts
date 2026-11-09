@@ -140,6 +140,10 @@ export async function currentUser(): Promise<AuthUser | null> {
   return {username: me.user, email: me.email}
 }
 
+// Signing out revokes Roxana's grant, then ends this browser's session at
+// auth (its /logout), which comes back here: otherwise the next sign-in
+// would finish at once on that session, as if nobody had signed out. Other
+// applications signed in through auth stay signed in.
 export async function signOut() {
   const token = storedRefresh()
   access = null
@@ -152,4 +156,6 @@ export async function signOut() {
       body: new URLSearchParams({client_id: CLIENT_ID, client_secret: '', token}),
     }).catch(() => {})
   }
+  const query = new URLSearchParams({client_id: CLIENT_ID, post_logout_redirect_uri: `${window.location.origin}/`})
+  window.location.assign(`${AUTH_URL}/logout?${query}`)
 }
