@@ -2,7 +2,7 @@ import React, {createContext, useCallback, useContext, useEffect, useState} from
 import { generateClient } from 'aws-amplify/api'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
-import {NoesisUser, currentUser, signOut as noesisSignOut} from './auth'
+import {AuthUser, currentUser, signOut as authSignOut} from './auth'
 
 // generateClient's return type is a deeply recursive generic that TS cannot
 // compare without exceeding its stack-depth limit; the client is used untyped
@@ -22,14 +22,14 @@ export async function initializeUserFromAuth(username) {
   }
 }
 
-// Who is signed in, through noesis (auth.ts). `route` is 'loading' until
-// noesis has answered, then 'authenticated' or 'signedOut'.
-type Auth = {user: NoesisUser | null, route: 'loading' | 'authenticated' | 'signedOut', signOut: () => void}
+// Who is signed in, through auth (auth.ts). `route` is 'loading' until
+// auth has answered, then 'authenticated' or 'signedOut'.
+type Auth = {user: AuthUser | null, route: 'loading' | 'authenticated' | 'signedOut', signOut: () => void}
 
 const AuthContext = createContext<Auth>({user: null, route: 'loading', signOut: () => {}})
 
 export function AuthProvider({children}: {children: React.ReactNode}) {
-  const [user, setUser] = useState<NoesisUser | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [route, setRoute] = useState<Auth['route']>('loading')
 
   useEffect(() => {
@@ -41,13 +41,13 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
       setRoute(found ? 'authenticated' : 'signedOut')
       if (found) initializeUserFromAuth(found.username)
     }).catch(e => {
-      console.error('[auth] noesis', e)
+      console.error('[auth]', e)
       setRoute('signedOut')
     })
   }, [])
 
   const signOut = useCallback(() => {
-    noesisSignOut().finally(() => {
+    authSignOut().finally(() => {
       setUser(null)
       setRoute('signedOut')
     })

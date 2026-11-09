@@ -1,18 +1,22 @@
-// Sign-in through noesis's OAuth server (noesis.rvanegas.co), which replaced
-// Roxana's Cognito pool. Roxana is a public client of noesis (PKCE, no
-// secret) registered identity-only: its tokens answer noesis's /me, which says
-// who signed in, and dianoia, which asks /me, and reach nothing else.
+// Sign-in through auth (auth.rvanegas.co), the one sign-in for The Floor,
+// noesis, dianoia and Roxana, which replaced noesis's own OAuth server
+// (2026-11-08) as that had replaced Roxana's Cognito pool. Roxana is a public
+// client of auth (PKCE, no secret) with the `identity` scope alone: its tokens
+// answer auth's /me, which says who signed in, and dianoia, which checks them
+// by auth's keys, and reach nothing else.
 //
 // The refresh token (90 days, rotated on every use) is kept in localStorage,
-// the access token (an hour) in memory. The PKCE verifier and the path to
-// return to wait in sessionStorage across the redirect to noesis and back.
+// the access token (a quarter hour) in memory. The PKCE verifier and the path
+// to return to wait in sessionStorage across the redirect to auth and back.
+// The storage keys keep noesis's name: auth carried noesis's refresh tokens
+// over, so nobody signed in had to sign in again.
 
-const NOESIS_URL = (import.meta.env.VITE_NOESIS_URL ?? 'https://noesis.rvanegas.co').replace(/\/$/, '')
-const CLIENT_ID = import.meta.env.VITE_NOESIS_CLIENT_ID ?? 'roxana'
+const AUTH_URL = (import.meta.env.VITE_AUTH_URL ?? 'https://auth.rvanegas.co').replace(/\/$/, '')
+const CLIENT_ID = import.meta.env.VITE_AUTH_CLIENT_ID ?? 'roxana'
 const REFRESH_KEY = 'roxana.noesis.refresh'
 const PENDING_KEY = 'roxana.noesis.pending'
 
-export type NoesisUser = {username: string, email: string | null}
+export type AuthUser = {username: string, email: string | null}
 
 let access: {token: string, expiresAt: number} | null = null
 let refreshing: Promise<string | null> | null = null
@@ -42,7 +46,7 @@ function storeRefresh(token: string | null) {
 }
 
 async function postToken(params: Record<string, string>): Promise<Response> {
-  return fetch(`${NOESIS_URL}/token`, {
+  return fetch(`${AUTH_URL}/token`, {
     method: 'POST',
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
     body: new URLSearchParams({client_id: CLIENT_ID, ...params}),
@@ -56,7 +60,7 @@ async function keepTokens(response: Response): Promise<string> {
   return tokens.access_token
 }
 
-// Off to noesis's sign-in; it comes back to /signin, completeSignIn's.
+// Off to auth's sign-in; it comes back to /signin, completeSignIn's.
 export async function signIn(returnPath: string) {
   const verifier = randomString()
   const state = randomString()
@@ -70,10 +74,10 @@ export async function signIn(returnPath: string) {
     code_challenge_method: 'S256',
     state,
   })
-  window.location.assign(`${NOESIS_URL}/authorize?${query}`)
+  window.location.assign(`${AUTH_URL}/authorize?${query}`)
 }
 
-// noesis's answer at /signin: the code exchanged for tokens. Returns the path
+// auth's answer at /signin: the code exchanged for tokens. Returns the path
 // the person signed in from. Once per code, so StrictMode's second effect
 // waits on the first.
 export function completeSignIn(search: string): Promise<string> {
@@ -89,7 +93,7 @@ async function exchange(params: URLSearchParams): Promise<string> {
   const pending = JSON.parse(sessionStorage.getItem(PENDING_KEY) ?? 'null')
   sessionStorage.removeItem(PENDING_KEY)
   const returnPath = pending?.returnPath ?? '/'
-  if (params.get('error')) return returnPath  // declined at noesis
+  if (params.get('error')) return returnPath  // declined at auth
   if (!pending || params.get('state') !== pending.state || !params.get('code')) {
     throw new Error('this sign-in is not the one Roxana started')
   }
@@ -104,7 +108,7 @@ async function exchange(params: URLSearchParams): Promise<string> {
   return returnPath
 }
 
-// An access token for noesis's /me and dianoia, refreshed when it is about to
+// An access token for auth's /me and dianoia, refreshed when it is about to
 // expire; null when nobody is signed in or the grant is gone.
 export async function getAccessToken(): Promise<string | null> {
   if (access && access.expiresAt - 60_000 > Date.now()) return access.token
@@ -127,10 +131,10 @@ async function refresh(): Promise<string | null> {
   return null
 }
 
-export async function currentUser(): Promise<NoesisUser | null> {
+export async function currentUser(): Promise<AuthUser | null> {
   const token = await getAccessToken()
   if (!token) return null
-  const response = await fetch(`${NOESIS_URL}/me`, {headers: {Authorization: `Bearer ${token}`}})
+  const response = await fetch(`${AUTH_URL}/me`, {headers: {Authorization: `Bearer ${token}`}})
   if (!response.ok) return null
   const me = await response.json()
   return {username: me.user, email: me.email}
@@ -142,7 +146,7 @@ export async function signOut() {
   storeRefresh(null)
   if (token) {
     // Revoking the refresh token ends its access tokens too.
-    await fetch(`${NOESIS_URL}/revoke`, {
+    await fetch(`${AUTH_URL}/revoke`, {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: new URLSearchParams({client_id: CLIENT_ID, client_secret: '', token}),

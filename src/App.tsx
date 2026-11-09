@@ -254,7 +254,7 @@ function Home() {
   )
 }
 
-// noesis sends the person back here (auth.ts); arriving without its answer
+// auth sends the person back here (auth.ts); arriving without its answer
 // starts a sign-in instead.
 function SignIn() {
   const [error, setError] = useState<string | null>(null)

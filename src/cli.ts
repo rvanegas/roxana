@@ -193,7 +193,7 @@ async function scanAll(input: ScanCommandInput) {
   return items
 }
 
-// A person is their noesis user name since Roxana signs in through noesis; one
+// A person is their user name at auth (noesis's, before 2026-11-08) since Roxana signs in there; one
 // who was known here by another name (a Cognito username, or two of them) is
 // renamed to it everywhere a name is kept: User, UserDiscussion.userId, and in
 // each discussion's layout the sentences' owner, accepted, rejected, cleared

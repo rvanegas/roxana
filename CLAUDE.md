@@ -42,7 +42,7 @@ The web app does `publish` and `privatize` too, from the hamburger menu inside a
 `aws-exports.js` is gitignored (contains secrets) but required to run the app. The production values can be found in the AWS Console:
 - **AppSync endpoint and API key**: AppSync → roxana-roxana → Settings
 
-The app reads its AppSync settings from `.env.local` (`VITE_AWS_REGION`, `VITE_APPSYNC_ENDPOINT`, `VITE_APPSYNC_API_KEY`), and noesis's from `VITE_NOESIS_URL` / `VITE_NOESIS_CLIENT_ID` (defaults `https://noesis.rvanegas.co`, `roxana`). The Cognito pool (`roxana31481408_userpool_31481408-roxana`) no longer signs anyone in.
+The app reads its AppSync settings from `.env.local` (`VITE_AWS_REGION`, `VITE_APPSYNC_ENDPOINT`, `VITE_APPSYNC_API_KEY`), and auth's from `VITE_AUTH_URL` / `VITE_AUTH_CLIENT_ID` (defaults `https://auth.rvanegas.co`, `roxana`). The Cognito pool (`roxana31481408_userpool_31481408-roxana`) no longer signs anyone in.
 
 ## ⚠️ AppSync API key expires 2027-06-07
 
@@ -68,7 +68,7 @@ The app reads its AppSync settings from `.env.local` (`VITE_AWS_REGION`, `VITE_A
 2. **Persistence** — the Redux state is serialized to a string `layout` field before being written to DynamoDB via AppSync mutations (`data.tsx`).
 3. **Sync queue** — optimistic UI updates go through an `eventQueue` in Redux state; a `syncIndicator` shows pending/synced status to the user.
 4. **Real-time** — `onDiscussionById` AppSync subscription pushes remote changes back into Redux.
-5. **Auth** — noesis's OAuth server (`noesis.rvanegas.co`), not Cognito (since 2026-11-02). Roxana is its public client `roxana` (PKCE, identity-only: the token answers noesis's `/me` and dianoia, nothing else). `src/features/user/auth.ts` runs the flow: `signIn` redirects to noesis's `/authorize`, which comes back to `/signin` (`completeSignIn`); the refresh token is in localStorage, the access token in memory (`getAccessToken`, also sent to dianoia). `AuthProvider`/`useAuth` (`User.tsx`) surface the user, whose username is their noesis user name. Local development signs in through `http://localhost:3000/signin`, which the client's registration names.
+5. **Auth** — auth (`auth.rvanegas.co`, the one sign-in for every project, since 2026-11-08; noesis's OAuth server before it, Cognito before that). Roxana is its public client `roxana` (PKCE, scope `identity`: the token answers auth's `/me` and dianoia, nothing else). `src/features/user/auth.ts` runs the flow: `signIn` redirects to auth's `/authorize`, which comes back to `/signin` (`completeSignIn`); the refresh token is in localStorage, the access token in memory (`getAccessToken`, also sent to dianoia). `AuthProvider`/`useAuth` (`User.tsx`) surface the user, whose username is their user name at auth. Local development signs in through `http://localhost:3000/signin`, which the client's registration names.
 
 ### Notable patterns
 

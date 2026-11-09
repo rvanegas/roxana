@@ -9,3 +9,7 @@ Roxana's part, in Phase 1: `src/features/user/auth.ts` signs in at auth
 (`VITE_AUTH_URL` where `VITE_NOESIS_URL` serves sign-in) as the same
 identity-only public client, and `currentUser` reads auth's `/me`. Nothing
 else changes; SSO and passkeys then come with no change here.
+
+**Built 2026-11-08, not deployed:** branch `auth-sign-in`. Its build is the
+cut-over's last step, after auth carries the `roxana` client and its people's
+refresh tokens over from noesis.

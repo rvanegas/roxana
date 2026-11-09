@@ -17,8 +17,8 @@ export type AnalyzedStep = {sentence: {content: string}, displayIdx: number}
 
 const sessionId = crypto.randomUUID()
 
-// dianoia requires a caller on every route: the signed-in user's noesis access
-// token, which it checks by asking noesis's /me (dianoia's api/auth.py).
+// dianoia requires a caller on every route: the signed-in user's access token
+// from auth, which it checks by auth's published keys (dianoia's api/auth.py).
 // getAccessToken refreshes an expiring one before handing it over.
 async function dianoiaHeaders(): Promise<Record<string, string>> {
   const token = await getAccessToken()
