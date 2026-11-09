@@ -9,6 +9,7 @@ import 'draft-js/dist/Draft.css'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {CurrentUserContext} from '../user/User'
+import {useDisplayNames} from '../user/displayNames'
 import {selectDiscussions} from './discussionsSlice'
 import {loadRecentDiscussions, createNewDiscussionAction, usernamesFromDiscussion} from './data'
 dayjs.extend(relativeTime)
@@ -18,6 +19,9 @@ export function DiscussionsList() {
   const {route} = useContext(CurrentUserContext) as unknown as {user, route}
   const discussions = useSelector(selectDiscussions)
   const username = discussions.username
+  // The people in each private discussion, by the display names auth keeps.
+  const shownAs = useDisplayNames((discussions.recentDiscussions?.privateDiscussions ?? [])
+    .flatMap(item => usernamesFromDiscussion(item.discussion)))
 
   useEffect(() => {
     dispatch(loadRecentDiscussions())
@@ -39,7 +43,7 @@ export function DiscussionsList() {
       discussionsList.filter(item => item.discussion.isPrivate && usernamesFromDiscussion(item.discussion).includes(username))
     const links = myDiscussionsList.map((item, index) => {
       const discussion = isPrivate ? item.discussion : item
-      const discussants = () => usernamesFromDiscussion(discussion).join(', ')
+      const discussants = () => usernamesFromDiscussion(discussion).map(shownAs).join(', ')
       const description = isPrivate ? `[${discussants()}] ${discussion.goalsSummary}` : discussion.goalsSummary
 
       return (

@@ -3,6 +3,7 @@ import { generateClient } from 'aws-amplify/api'
 import * as mutations from '../../graphql/mutations'
 import * as queries from '../../graphql/queries'
 import {AuthUser, currentUser, signOut as authSignOut} from './auth'
+import {rememberDisplayName} from './displayNames'
 
 // generateClient's return type is a deeply recursive generic that TS cannot
 // compare without exceeding its stack-depth limit; the client is used untyped
@@ -39,7 +40,10 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     currentUser().then(found => {
       setUser(found)
       setRoute(found ? 'authenticated' : 'signedOut')
-      if (found) initializeUserFromAuth(found.username)
+      if (found) {
+        rememberDisplayName(found.username, found.displayName)
+        initializeUserFromAuth(found.username)
+      }
     }).catch(e => {
       console.error('[auth]', e)
       setRoute('signedOut')

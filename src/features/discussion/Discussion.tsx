@@ -10,6 +10,7 @@ import {useDianoia} from './DianoiaContext'
 import {dlog} from '../../app/util'
 import * as custom from '../../graphql/custom'
 import {CurrentUserContext} from '../user/User'
+import {useDisplayNames} from '../user/displayNames'
 import {selectDiscussions, discussionsSlice} from './discussionsSlice'
 import {getDiscussionAction, initializeDiscussionAction,
   createInviteCodeAction, revokeInviteCodeAction} from './data'
@@ -97,12 +98,14 @@ export function Discussion() {
     />
   )
 
+  // Each discussant by the display name auth keeps; hidden and shown by user name.
+  const shownAs = useDisplayNames(discussions.discussants)
   const discussantToggles = discussions.discussants.map(discussant => {
     const isHidden = discussions.hideDiscussants[discussant]
     return (
       <SwitchField
         style={{display: 'inline-block', lineHeight: '30px'}}
-        key={discussant} labelPosition="end" label={discussant} isChecked={!isHidden}
+        key={discussant} labelPosition="end" label={shownAs(discussant)} isChecked={!isHidden}
         onClick={e => handleDiscussantSwitch(e, discussant)}
       />
     )

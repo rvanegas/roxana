@@ -8,6 +8,7 @@ import {throttle, sortBy, keys} from 'lodash'
 import {Editor, EditorState, ContentState, getDefaultKeyBinding} from 'draft-js'
 import classNames from 'classnames'
 import {CurrentUserContext} from '../user/User'
+import {useDisplayNames} from '../user/displayNames'
 import {useDianoia} from './DianoiaContext'
 import {toAlphaIndex, verticalPixelsBelowViewport, scrollableAncestor} from '../../app/util'
 import {Section, Sentence} from './discussion.d'
@@ -107,6 +108,9 @@ export function SentenceLine(props: SentenceProps) {
       return () => { document.body.style.overflow = '' }
     }
   }, [inSentenceModal])
+
+  // Who is named here, by the display names auth keeps (displayNames.ts).
+  const shownAs = useDisplayNames([...sentence.accepted, ...sentence.rejected, ...sentence.cleared, ...sentence.goal])
 
   if (discussions.showHidden && sentence.hidden && !inSentenceModal) {
     return null
@@ -502,24 +506,24 @@ export function SentenceLine(props: SentenceProps) {
         rejected: 'firebrick',
         cleared: 'gray',
       }
-      const elements = sortBy(keys(commitments)).map((name, index) =>
+      const elements = sortBy(keys(commitments), name => shownAs(name)).map((name, index) =>
         <View key={`c${index}`}>
           <span
             className="oi sentence-icon"
             style={{color: colors[commitments[name]], paddingRight: '10px'}}
             data-glyph={glyphs[commitments[name]]}
           />
-          {name}
+          {shownAs(name)}
         </View>
       )
-      elements.unshift(...sortBy(sentence.goal).map((name, index) =>
+      elements.unshift(...sortBy(sentence.goal, name => shownAs(name)).map((name, index) =>
         <View key={`g${index}`}>
           <span
             className="oi sentence-icon"
             style={{color: 'royalblue', paddingRight: '10px'}}
             data-glyph="target"
           />
-          {name}
+          {shownAs(name)}
         </View>
       ))
       return elements

@@ -16,7 +16,7 @@ const CLIENT_ID = import.meta.env.VITE_AUTH_CLIENT_ID ?? 'roxana'
 const REFRESH_KEY = 'roxana.noesis.refresh'
 const PENDING_KEY = 'roxana.noesis.pending'
 
-export type AuthUser = {username: string, email: string | null}
+export type AuthUser = {username: string, email: string | null, displayName: string | null}
 
 let access: {token: string, expiresAt: number} | null = null
 let refreshing: Promise<string | null> | null = null
@@ -137,7 +137,7 @@ export async function currentUser(): Promise<AuthUser | null> {
   const response = await fetch(`${AUTH_URL}/me`, {headers: {Authorization: `Bearer ${token}`}})
   if (!response.ok) return null
   const me = await response.json()
-  return {username: me.user, email: me.email}
+  return {username: me.user, email: me.email, displayName: me.display_name ?? null}
 }
 
 // Signing out revokes Roxana's grant, then ends this browser's session at
