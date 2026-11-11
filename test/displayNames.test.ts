@@ -34,6 +34,12 @@ describe('display names', () => {
     expect(asked).toEqual(['ann1', 'bob1'])
   })
 
+  it('asks once when many ask at the same moment', async () => {
+    const names = await import('../src/features/user/displayNames')
+    await Promise.all(Array.from({ length: 9 }, () => names.lookUpDisplayNames(['ann1'])))
+    expect(asked).toEqual(['ann1'])
+  })
+
   it('takes the signed-in person from what /me said, without asking', async () => {
     const names = await import('../src/features/user/displayNames')
     names.rememberDisplayName('cy11', 'Cy')
@@ -49,5 +55,8 @@ describe('display names', () => {
     await names.lookUpDisplayNames(['ann1'])
     expect(names.displayName('ann1')).toBe('ann1')
     expect(asked).toEqual([])
+    // Signed in later, they are asked after all.
+    await names.lookUpDisplayNames(['ann1'])
+    expect(asked).toEqual(['ann1'])
   })
 })

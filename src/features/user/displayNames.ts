@@ -35,9 +35,13 @@ export function rememberDisplayName(username: string, name: string | null) {
 export async function lookUpDisplayNames(usernames: string[]): Promise<void> {
   const wanted = [...new Set(usernames)].filter(u => u && !asked.has(u))
   if (wanted.length === 0) return
-  const token = await getAccessToken()
-  if (!token) return
+  // Marked before the wait for a token, or every toggle rendered at once asks too.
   wanted.forEach(u => asked.add(u))
+  const token = await getAccessToken()
+  if (!token) {
+    wanted.forEach(u => asked.delete(u))
+    return
+  }
   for (let i = 0; i < wanted.length; i += BATCH) {
     const query = new URLSearchParams(wanted.slice(i, i + BATCH).map(u => ['user', u]))
     try {
