@@ -29,6 +29,16 @@ npm run preview    # Preview production build locally
 npm test           # The suite (Vitest)
 ```
 
+**Deploying is `ts amplify-deploy`, and pushing `master` deploys nothing.**
+Amplify Hosting serves Roxana, and its `master` branch has auto-build off
+(since 2026-11-15). `ts amplify-deploy` is Roxana's own, named apart from the
+shared `ts deploy` (which rsyncs to a box, and here stops for want of a
+`HOST`): it refuses a dirty tree or a HEAD that `origin/master` lacks, since
+Amplify builds from GitHub rather than from this checkout; runs the suite and
+the build here; starts a RELEASE job for HEAD and waits; and checks that
+`/deployed.json`, stamped by `amplify.yml`, names that commit. `ts health`
+reads the stamp, and `ts amplify-jobs` reads Amplify's list of jobs.
+
 Node 24.13.0 required (see `.node-version`). `npm test` runs the suite (Vitest, `test/`), which so far only holds `CLAUDE.md` to technosophia's cap; Amplify's build does not run it.
 
 The `cli/` directory is a separate TypeScript tool for AWS admin operations; run it independently with its own `npm` commands.

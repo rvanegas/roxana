@@ -12,6 +12,15 @@ frontend:
     build:
       commands:
         - npm run build
+        # What `ts health` and `ts amplify-deploy` read: the commit this build is of.
+        - |
+          cat > dist/deployed.json <<JSON
+          {
+            "commit": "$(git rev-parse --short HEAD)",
+            "branch": "$AWS_BRANCH",
+            "at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          JSON
   artifacts:
     baseDirectory: dist
     files:

@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# What Amplify has built and served, newest first, from its own list of jobs.
+#
+#   ts amplify-jobs          the last twenty
+#   ts amplify-jobs -n 50    the last fifty
+#
+# Settings (bin/ts.env): AMPLIFY_APP_ID, AMPLIFY_BRANCH, AMPLIFY_PROFILE,
+# AMPLIFY_REGION.
+#
+# Read-only. Roxana's counterpart to technosophia's `ts deploys`, which reads
+# a log on a box: Amplify keeps the record, one job per deploy, failures included. Since
+# the branch's auto-build is off, a job here is a `ts amplify-deploy` (or a click in
+# the console); one from before then is a push to master.
+set -euo pipefail
+: "${TS_ROOT:=$(git rev-parse --show-toplevel)}"
+while IFS= read -r line; do
+  [[ "$line" =~ ^[A-Z_][A-Z0-9_]*= ]] && eval "export $line"
+done < "$TS_ROOT/bin/ts.env"
+
+count=20
+case "${1:-}" in
+  -n) count=${2:?-n needs a number} ;;
+  -h|--help) awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"; exit 0 ;;
+  "") ;;
+  *) echo "amplify-jobs: unknown option: $1" >&2; exit 2 ;;
+esac
+
+aws amplify list-jobs --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" \
+  --profile "$AMPLIFY_PROFILE" --region "$AMPLIFY_REGION" --max-items "$count" \
+  --output json \
+  | python3 -c 'import json, sys
+for j in json.load(sys.stdin).get("jobSummaries", []):
+    subject = (j.get("commitMessage") or "").splitlines()[:1] or [""]
+    print(j["startTime"][:16], j["commitId"][:7], "%-9s" % j["status"], subject[0], sep="  ")'

@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+# Has Amplify build and serve this checkout's HEAD, once origin has it.
+#
+#   ts amplify-deploy    refuses a dirty tree, and a HEAD origin's branch lacks
+#
+# Settings (bin/ts.env): URL, HEALTH_PATH, AMPLIFY_APP_ID, AMPLIFY_BRANCH,
+# AMPLIFY_PROFILE, AMPLIFY_REGION.
+#
+# **Roxana's own, and named apart from technosophia's `ts deploy`**, which
+# rsyncs a working tree to a box: the two do different things, so they do not
+# share a name, and `ts deploy` here stops for want of a HOST. Amplify
+# Hosting builds from GitHub, so what it can serve is a pushed commit and
+# never the working tree: there is no `--dirty`, and pushing stays
+# landing's job rather than this one's. **The branch's auto-build is off**, so
+# pushing master deploys nothing; this is the one thing that does.
+#
+# It runs the suite and the build here first, because Amplify's build runs
+# neither. Then it starts a RELEASE job for HEAD's exact commit, waits for it,
+# and **ends by checking that the commit it asked for is the one answering**
+# at URL + HEALTH_PATH, which amplify.yml stamps from the commit it built. The
+# record is Amplify's own list of jobs, which `ts amplify-jobs` reads.
+set -euo pipefail
+: "${TS_ROOT:=$(git rev-parse --show-toplevel)}"
+cd "$TS_ROOT"
+while IFS= read -r line; do
+  [[ "$line" =~ ^[A-Z_][A-Z0-9_]*= ]] && eval "export $line"
+done < bin/ts.env
+
+die() { echo "amplify-deploy: $*" >&2; exit 1; }
+
+case "${1:-}" in
+  -h|--help) awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"; exit 0 ;;
+  "") ;;
+  *) die "unknown argument: $1" ;;
+esac
+
+amplify() {
+  aws amplify "$@" --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" \
+    --profile "$AMPLIFY_PROFILE" --region "$AMPLIFY_REGION" --output text
+}
+
+if [ -n "$(git status --porcelain)" ]; then
+  git status --short >&2
+  die "✗ the tree is dirty; Amplify builds a pushed commit, so commit and land first"
+fi
+
+git fetch -q origin "$AMPLIFY_BRANCH"
+COMMIT=$(git rev-parse HEAD)
+SHA=$(git rev-parse --short HEAD)
+git merge-base --is-ancestor "$COMMIT" "origin/$AMPLIFY_BRANCH" \
+  || die "✗ origin/$AMPLIFY_BRANCH does not have $SHA; Amplify builds from GitHub, so land it first"
+[ "$COMMIT" = "$(git rev-parse "origin/$AMPLIFY_BRANCH")" ] \
+  || echo "⚠ deploying $SHA, behind origin/$AMPLIFY_BRANCH" >&2
+
+echo "→ the suite and the build"
+npm test
+npm run build
+
+# Compared as commits, not strings: the build's clone may abbreviate the sha
+# to a different length than this checkout does.
+commit_of() { sed -n 's/.*"commit": *"\([^"]*\)".*/\1/p'; }
+serving() {
+  local got
+  got=$(curl -fsS --max-time 5 "$URL$HEALTH_PATH?$(date +%s)" 2>/dev/null | commit_of || true)
+  [ -n "$got" ] && git rev-parse -q --verify "$got^{commit}" 2>/dev/null || echo "${got:-nothing}"
+}
+
+if [ "$(serving)" = "$COMMIT" ]; then
+  echo "✓ $URL already serves $SHA"
+  exit 0
+fi
+
+JOB=$(amplify start-job --job-type RELEASE --commit-id "$COMMIT" \
+  --commit-message "$(git log -1 --format=%s)" --query 'jobSummary.jobId')
+echo "→ Amplify job $JOB, building $SHA"
+
+while :; do
+  STATUS=$(amplify get-job --job-id "$JOB" --query 'job.summary.status')
+  case "$STATUS" in
+    SUCCEED) break ;;
+    FAILED|CANCELLED) die "✗ Amplify job $JOB $STATUS; its log is in the console" ;;
+  esac
+  sleep 15
+done
+
+echo "→ checking $URL$HEALTH_PATH"
+for _ in $(seq 1 20); do
+  got=$(serving)
+  if [ "$got" = "$COMMIT" ]; then
+    echo "✓ deployed $SHA, answering at $URL"
+    exit 0
+  fi
+  sleep 3
+done
+die "✗ $URL$HEALTH_PATH answers $got, not $SHA"
