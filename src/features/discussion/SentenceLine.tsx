@@ -14,6 +14,7 @@ import {toAlphaIndex, verticalPixelsBelowViewport, scrollableAncestor} from '../
 import {Section, Sentence} from './discussion.d'
 import {selectDiscussions, propositionIndexesFromArgument,
   forcedPropositionPositions, discussionsSlice} from './discussionsSlice'
+import {parseArgumentInput, argumentContent, argumentDisplay} from './argumentInput'
 import {replaceSentenceAction, changeGoalSentenceAction, focusOnSentence,
   changeSentenceStatusAction, changeSentenceHiddenAction, isActionable,
   toggleSelectPropositionAction, toggleSelectArgumentAction} from './data'
@@ -59,8 +60,13 @@ export function SentenceLine(props: SentenceProps) {
   const [, setRepositionTick] = useState(0)
   let canonicalContent
 
+  // An argument's field shows its stored content as `1, 2, 3 -> 4`.
+  function editorText(content) {
+    return section === 'arguments' ? argumentDisplay(parseArgumentInput(content) ?? []) : content
+  }
+
   function setEditorStateFromProp() {
-    const contentState = ContentState.createFromText(sentence.content)
+    const contentState = ContentState.createFromText(editorText(sentence.content))
     return EditorState.createWithContent(contentState)
   }
 
@@ -122,16 +128,12 @@ export function SentenceLine(props: SentenceProps) {
   }
 
   function setDisplayFromArgumentInput(argumentInput) {
-    const invalidPattern = /[^\d\s]/
-    const separatorPattern = /\s+/
-
-    if (invalidPattern.test(argumentInput)) {
+    const indexes = parseArgumentInput(argumentInput)
+    if (indexes === null) {
       // console.warn('invalid pattern, syntax')
       setArgumentInputInvalid(true)
       return
     }
-    const indexes = argumentInput.split(separatorPattern)
-      .map(index => parseInt(index)).filter(Number.isInteger)
     if (indexes.length !== (new Set(indexes)).size) {
       // console.warn('invalid pattern, numbers')
       setArgumentInputInvalid(true)
@@ -155,7 +157,7 @@ export function SentenceLine(props: SentenceProps) {
   function handleChange(editorState) {
     const offsetHeightRaw = editorContainerRef?.current?.offsetHeight
     if (canonicalContent !== undefined) {
-      const contentState = ContentState.createFromText(canonicalContent)
+      const contentState = ContentState.createFromText(editorText(canonicalContent))
       setEditorState(EditorState.createWithContent(contentState))
       setArgumentInputInvalid(false)
     }
@@ -180,8 +182,8 @@ export function SentenceLine(props: SentenceProps) {
       return canonicalContent
     }
     else if (section === 'arguments') {
-      const content = displayPropositionIndexes.join(' ')
-      if (editorState.getCurrentContent().getPlainText() !== sentence.content) {
+      const content = argumentContent(displayPropositionIndexes)
+      if (editorState.getCurrentContent().getPlainText() !== argumentDisplay(displayPropositionIndexes)) {
         canonicalContent = content
       }
       return content
