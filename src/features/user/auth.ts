@@ -1,4 +1,4 @@
-// Sign-in through auth (auth.rvanegas.co), the one sign-in for The Floor,
+// Sign-in through auth (auth.twohands.co), the one sign-in for The Floor,
 // noesis, dianoia and Roxana, which replaced noesis's own OAuth server
 // (2026-11-08) as that had replaced Roxana's Cognito pool. Roxana is a public
 // client of auth (PKCE, no secret) with the `identity` scope alone: its tokens
@@ -11,7 +11,7 @@
 // The storage keys keep noesis's name: auth carried noesis's refresh tokens
 // over, so nobody signed in had to sign in again.
 
-const AUTH_URL = (import.meta.env.VITE_AUTH_URL ?? 'https://auth.rvanegas.co').replace(/\/$/, '')
+const AUTH_URL = (import.meta.env.VITE_AUTH_URL ?? 'https://auth.twohands.co').replace(/\/$/, '')
 const CLIENT_ID = import.meta.env.VITE_AUTH_CLIENT_ID ?? 'roxana'
 const REFRESH_KEY = 'roxana.noesis.refresh'
 const PENDING_KEY = 'roxana.noesis.pending'

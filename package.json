@@ -30,7 +30,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "roxana": "tsc -p tsconfig.cli.json",
-    "dianoia-types": "openapi-typescript https://dianoia.rvanegas.co/openapi.json -o src/features/discussion/dianoia.openapi.ts"
+    "dianoia-types": "openapi-typescript https://dianoia.twohands.co/openapi.json -o src/features/discussion/dianoia.openapi.ts"
   },
   "browserslist": {
     "production": [

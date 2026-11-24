@@ -1,5 +1,5 @@
 // What people are shown as: the display name each keeps at auth
-// (auth.rvanegas.co, since 2026-11-09), the one The Floor shows too.
+// (auth.twohands.co, since 2026-11-09 under its old name), the one The Floor shows too.
 //
 // A discussion's lists (accepted, rejected, cleared, goal) and its
 // discussants keep user names, which identify people and are what the
@@ -11,7 +11,7 @@
 import {useEffect, useState} from 'react'
 import {getAccessToken} from './auth'
 
-const AUTH_URL = (import.meta.env.VITE_AUTH_URL ?? 'https://auth.rvanegas.co').replace(/\/$/, '')
+const AUTH_URL = (import.meta.env.VITE_AUTH_URL ?? 'https://auth.twohands.co').replace(/\/$/, '')
 // auth's limit on one lookup.
 const BATCH = 200
 

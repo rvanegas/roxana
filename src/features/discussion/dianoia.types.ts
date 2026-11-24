@@ -1,5 +1,5 @@
 // dianoia's own shapes come from its published contract. dianoia.openapi.ts is
-// generated from https://dianoia.rvanegas.co/openapi.json by
+// generated from https://dianoia.twohands.co/openapi.json by
 // `npm run dianoia-types` and is never edited by hand; regenerate it whenever
 // dianoia's schemas/api_results.py changes (rvanegas-site SITE.md, Phase 4).
 // The names below are Roxana's for those shapes.
