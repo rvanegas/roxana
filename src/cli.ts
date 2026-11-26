@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { DynamoDBClient, ScanCommand, DeleteItemCommand,
-  QueryCommand, UpdateItemCommand, PutItemCommand, ScanCommandInput, ScanCommandOutput } from '@aws-sdk/client-dynamodb'
+  QueryCommand, UpdateItemCommand, PutItemCommand, ScanCommandInput, ScanCommandOutput,
+  QueryCommandInput, QueryCommandOutput } from '@aws-sdk/client-dynamodb'
 import { readFileSync, realpathSync } from 'fs'
 import { randomUUID } from 'crypto'
 import { pathToFileURL } from 'url'
@@ -12,8 +13,7 @@ const API_ID = 'ogl3fer6ojag7awhbu33p664va'
 const table = (name: string) => `${name}-${API_ID}-${ENV}`
 
 async function listDiscussions() {
-  const result = await db.send(new ScanCommand({ TableName: table('Discussion') }))
-  const items = (result.Items ?? []).map(item => ({
+  const items = (await scanAll({ TableName: table('Discussion') })).map(item => ({
     id:           item.id?.S ?? '',
     updatedAt:    item.updatedAt?.S ?? '',
     revision:     item.revision?.N ?? '0',
@@ -32,8 +32,7 @@ async function listDiscussions() {
 }
 
 async function listUsers() {
-  const result = await db.send(new ScanCommand({ TableName: table('User') }))
-  const usernames = (result.Items ?? []).map(item => item.username?.S ?? '').sort()
+  const usernames = (await scanAll({ TableName: table('User') })).map(item => item.username?.S ?? '').sort()
   for (const u of usernames) {
     console.log(u)
   }
@@ -50,22 +49,23 @@ async function deleteDiscussion() {
   }
 
   // Find sentences belonging to this discussion
-  const sentenceResult = await db.send(new ScanCommand({
+  // Every page of the scan: the filter applies after each page is read, so a
+  // discussion's sentences are spread across all of them (one was missed on
+  // 2026-11-26 when only the first was read).
+  const sentenceIds = (await scanAll({
     TableName: table('Sentence'),
     FilterExpression: 'discussionId = :id',
     ExpressionAttributeValues: { ':id': { S: id } },
     ProjectionExpression: 'id',
-  }))
-  const sentenceIds = (sentenceResult.Items ?? []).map(s => s.id?.S ?? '')
+  })).map(s => s.id?.S ?? '')
 
   // Find UserDiscussion entries for this discussion
-  const udResult = await db.send(new ScanCommand({
+  const userDiscussions = (await scanAll({
     TableName: table('UserDiscussion'),
     FilterExpression: 'discussionId = :id',
     ExpressionAttributeValues: { ':id': { S: id } },
     ProjectionExpression: 'id, userId',
-  }))
-  const userDiscussions = (udResult.Items ?? []).map(u => ({ id: u.id?.S ?? '', userId: u.userId?.S ?? '' }))
+  })).map(u => ({ id: u.id?.S ?? '', userId: u.userId?.S ?? '' }))
 
   console.log(`Discussion:   ${id}`)
   console.log(`Sentences:    ${sentenceIds.length}`)
@@ -143,13 +143,13 @@ async function privatizeDiscussion() {
     }
   }
 
-  const rows = await db.send(new QueryCommand({
+  const rows = await queryAll({
     TableName: table('UserDiscussion'),
     IndexName: 'byDiscussion',
     KeyConditionExpression: 'discussionId = :id',
     ExpressionAttributeValues: { ':id': { S: id } },
-  }))
-  const members = new Set((rows.Items ?? []).map(row => row.userId?.S ?? ''))
+  })
+  const members = new Set(rows.map(row => row.userId?.S ?? ''))
   const toAdd = [...voters].filter(name => !members.has(name)).sort()
 
   console.log(`Discussion:   ${id}${item.isPrivate?.BOOL ? '  (already private)' : ''}`)
@@ -182,11 +182,25 @@ async function privatizeDiscussion() {
   console.log(`Discussion ${id} is now private.`)
 }
 
+// A scan or a query returns one page, about a megabyte read, and says where
+// the next begins: these read them all. Every scan and multi-row query here
+// goes through them.
 async function scanAll(input: ScanCommandInput) {
   const items: NonNullable<ScanCommandOutput['Items']> = []
   let ExclusiveStartKey: ScanCommandOutput['LastEvaluatedKey']
   do {
     const result = await db.send(new ScanCommand({ ...input, ExclusiveStartKey }))
+    items.push(...(result.Items ?? []))
+    ExclusiveStartKey = result.LastEvaluatedKey
+  } while (ExclusiveStartKey)
+  return items
+}
+
+async function queryAll(input: QueryCommandInput) {
+  const items: NonNullable<QueryCommandOutput['Items']> = []
+  let ExclusiveStartKey: QueryCommandOutput['LastEvaluatedKey']
+  do {
+    const result = await db.send(new QueryCommand({ ...input, ExclusiveStartKey }))
     items.push(...(result.Items ?? []))
     ExclusiveStartKey = result.LastEvaluatedKey
   } while (ExclusiveStartKey)
